@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Registro</title>
+  <link rel="stylesheet" href="../estilo.css">
+  <style>
+    body {
+      background: linear-gradient(160deg, #c8f5e2 0%, #e8fff5 40%, #f0fff8 100%);
+      min-height: 100vh;
+    }
+    .reg-header {
+      background: linear-gradient(135deg, #2e7d32, #43a047, #66bb6a);
+      border-radius: 0 0 36px 36px;
+      padding: 32px 24px 28px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(46,125,50,.25);
+      position: relative; overflow: hidden;
+    }
+    .reg-header::before {
+      content: ""; position: absolute; top: -30px; right: -30px;
+      width: 120px; height: 120px; background: rgba(255,255,255,.10); border-radius: 50%;
+    }
+    .reg-header .icon-grande { font-size: 52px; display: block; margin-bottom: 8px; }
+    .reg-header h1 { margin: 0 0 4px; color: #fff; font-size: 26px; font-weight: 900; text-shadow: 0 2px 6px rgba(0,0,0,.2); }
+    .reg-header p  { margin: 0; color: rgba(255,255,255,.85); font-size: 13px; }
+    .panel { padding-top: 0 !important; }
+
+    /* Step 1 — login */
+    #loginBox { border-color: #a5d6a7; background: #fff; }
+    #btnEntrar {
+      background: linear-gradient(135deg, #43a047, #66bb6a) !important;
+      color: #fff !important; font-size: 17px;
+      box-shadow: 0 4px 14px rgba(46,125,50,.30);
+    }
+
+    /* Navegación semana */
+    .semana-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fff; border: 2px solid #a5d6a7; border-radius: 14px;
+      padding: 10px 12px; margin-bottom: 12px;
+    }
+    .semana-nav-btn {
+      background: #c8f5e2; border: none; border-radius: 10px;
+      padding: 8px 14px; font-size: 16px; font-weight: 900; color: #1b5e20; cursor: pointer;
+    }
+    .semana-nav-btn:active { opacity: .7; }
+    .semana-nav-label { font-size: 13px; font-weight: 800; color: #2e7d32; text-align: center; }
+
+    /* Step 2 — tarjetas de comida */
+    .comida-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .comida-tile {
+      background: #fff; border: 2px solid #a5d6a7; border-radius: 18px;
+      padding: 18px 10px; text-align: center; cursor: pointer;
+      transition: transform .1s;
+    }
+    .comida-tile:active { transform: scale(0.97); }
+    .comida-tile.completa { border-color: #43a047; background: #f1fff6; }
+    .comida-tile.parcial  { border-color: #fbc02d; background: #fffde7; }
+    .tile-icon  { font-size: 36px; display: block; margin-bottom: 6px; }
+    .tile-name  { font-size: 14px; font-weight: 800; color: #1b5e20; display: block; }
+    .tile-estado { font-size: 12px; color: #888; display: block; margin-top: 3px; }
+    .comida-tile.completa .tile-estado { color: #2e7d32; font-weight: 700; }
+    .comida-tile.parcial  .tile-estado { color: #f57f17; font-weight: 700; }
+
+    /* Step 3 — semana de una comida */
+    .meal-week-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+    }
+    .btn-volver-meals {
+      padding: 8px 14px; border: 1.5px solid #a5d6a7; border-radius: 12px;
+      background: #f4fff8; color: #2e7d32; font-size: 13px; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+    }
+    .meal-week-titulo { font-size: 20px; font-weight: 900; color: #1b5e20; }
+
+    /* Filas de día */
+    .dia-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-bottom: 1px solid #e0f2e0; gap: 10px;
+    }
+    .dia-row:last-child { border-bottom: none; }
+    .dia-row.hoy { background: #f1fff6; }
+    .dia-info { flex: 1; }
+    .dia-nombre { font-size: 14px; font-weight: 800; color: #333; }
+    .dia-fecha  { font-size: 12px; color: #888; }
+    /* Fila de día libre — resaltada y bloqueada */
+    .dia-row.libre {
+      background: linear-gradient(90deg, #fff8e1, #fffde7);
+      border-left: 4px solid #fbc02d;
+      opacity: 0.9;
+      cursor: default;
+    }
+    .dia-row.libre:hover { background: linear-gradient(90deg, #fff8e1, #fffde7); }
+    .dia-libre-bloque {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .dia-libre-icono {
+      font-size: 22px; line-height: 1;
+    }
+    .dia-libre-texto {
+      background: #fbc02d; color: #fff; font-size: 11px; font-weight: 900;
+      padding: 3px 10px; border-radius: 8px; letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .dia-libre-sub {
+      font-size: 10px; color: #8d6e00; font-weight: 700;
+    }
+    .dia-menu {
+      font-size: 11px; color: #3d7a55; margin-top: 4px;
+      font-style: italic; line-height: 1.4;
+    }
+    .dia-row.libre .dia-menu { color: #a08020; }
+    .hoy-tag {
+      font-size: 10px; font-weight: 700; color: #fff; background: #43a047;
+      border-radius: 6px; padding: 2px 6px; margin-left: 5px;
+    }
+
+    /* Botones SI/NO inline */
+    .yn-row { display: flex; gap: 8px; }
+    .btn-si, .btn-no {
+      padding: 9px 16px; border: 2px solid; border-radius: 12px;
+      font-size: 14px; font-weight: 900; cursor: pointer; transition: all .1s;
+    }
+    .btn-si { background: #e8f5e9; border-color: #a5d6a7; color: #1b5e20; }
+    .btn-no { background: #fce4ec; border-color: #f48fb1; color: #880e4f; }
+    .btn-si.sel { background: #2e7d32; border-color: #2e7d32; color: #fff; box-shadow: 0 2px 8px rgba(46,125,50,.3); }
+    .btn-no.sel { background: #c2185b; border-color: #c2185b; color: #fff; box-shadow: 0 2px 8px rgba(194,24,91,.3); }
+    .btn-si:active, .btn-no:active { opacity: .8; transform: scale(0.97); }
+
+    /* Botón confirmar */
+    #btnConfirmarMeal {
+      width: 100%; padding: 15px; border: none; border-radius: 16px;
+      background: linear-gradient(135deg, #43a047, #66bb6a);
+      color: #fff; font-size: 16px; font-weight: 900; cursor: pointer;
+      margin-top: 14px; box-shadow: 0 4px 14px rgba(46,125,50,.30);
+    }
+    #btnConfirmarMeal:disabled { background: #ccc; color: #999; box-shadow: none; cursor: not-allowed; }
+    #btnConfirmarMeal:not(:disabled):active { transform: scale(0.98); }
+    .aviso-completa { text-align: center; font-size: 13px; color: #888; margin-top: 8px; }
+
+    /* Step éxito */
+    #stepExito {
+      text-align: center; padding: 30px 20px;
+    }
+    .exito-icon  { font-size: 64px; display: block; margin-bottom: 12px; }
+    .exito-titulo { font-size: 24px; font-weight: 900; color: #2e7d32; margin: 0 0 6px; }
+    .exito-sub    { font-size: 15px; color: #555; margin: 0 0 24px; }
+    #btnOtraPersona {
+      width: 100%; padding: 14px; border: none; border-radius: 16px;
+      background: linear-gradient(135deg, #43a047, #66bb6a);
+      color: #fff; font-size: 16px; font-weight: 900;
+      cursor: pointer; margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<main class="panel" style="padding-top:0;">
+
+  <div class="reg-header">
+    <span class="icon-grande">✏️</span>
+    <h1>Registro de comidas</h1>
+    <p>Marcá tus comidas de la semana</p>
+  </div>
+
+  <!-- ===== STEP 1: TURNO + NOMBRE ===== -->
+  <section class="form-card" id="loginBox">
+    <h3 style="margin:0 0 6px; color:#2e7d32;">Buscá tu nombre</h3>
+    <p style="font-size:13px; color:#888; margin:0 0 14px;">El horario y día libre se cargan automáticamente.</p>
+    <label class="campo" style="margin-bottom:6px;">
+      <span>Tu nombre</span>
+      <div class="autocomplete-wrap">
+        <input type="text" id="nombreInput" placeholder="Escribí tu nombre..." autocomplete="off">
+        <div class="autocomplete-list hidden" id="autoList"></div>
+      </div>
+    </label>
+    <button class="btn-primario" id="btnEntrar" type="button" style="margin-top:10px;">➡️ Entrar</button>
+    <p class="nota" id="msgLogin"></p>
+    <div style="margin-top:14px;">
+      <a class="btn-volver-pequeno" href="../index.html">⬅ Volver al inicio</a>
+    </div>
+  </section>
+
+  <!-- ===== STEP 2: ELEGIR COMIDA ===== -->
+  <section class="hidden" id="appBox">
+    <div class="datos-persona" id="datosPersona" style="margin-bottom:12px;"></div>
+
+    <div id="stepMeals">
+      <!-- Navegación semana -->
+      <div class="semana-nav">
+        <button class="semana-nav-btn" id="btnSemAnterior" type="button">◀</button>
+        <span class="semana-nav-label" id="semanaLabel">—</span>
+        <button class="semana-nav-btn" id="btnSemSiguiente" type="button">▶</button>
+      </div>
+
+      <div class="form-card" style="border-color:#a5d6a7;">
+        <h4 style="margin:0 0 14px; color:#2e7d32;">Seleccioná una comida</h4>
+        <div class="comida-tiles" id="comidaTiles"></div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <a class="btn-volver-pequeno" href="../index.html">⬅ Inicio</a>
+      </div>
+    </div>
+
+    <!-- ===== STEP 3: SEMANA DE UNA COMIDA ===== -->
+    <div id="stepMealWeek" class="hidden">
+      <div class="form-card" style="border-color:#a5d6a7;">
+        <div class="meal-week-header">
+          <button class="btn-volver-meals" id="btnVolverMeals" type="button">← Comidas</button>
+          <span class="meal-week-titulo" id="mealWeekTitulo"></span>
+        </div>
+
+        <!-- Semana nav (dentro de la comida) -->
+        <div class="semana-nav" style="margin-bottom:10px;">
+          <button class="semana-nav-btn" id="btnSemAnterior2" type="button">◀</button>
+          <span class="semana-nav-label" id="semanaLabel2">—</span>
+          <button class="semana-nav-btn" id="btnSemSiguiente2" type="button">▶</button>
+        </div>
+
+        <!-- Menú del día (info) -->
+        <div id="menuInfoWrap" style="margin-bottom:10px;"></div>
+
+        <!-- Filas de días -->
+        <div id="diasRows"></div>
+
+        <p class="aviso-completa" id="avisoCompleta"></p>
+        <button id="btnConfirmarMeal" type="button" disabled>💾 Confirmar</button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 4: ÉXITO ===== -->
+    <div id="stepExito" class="hidden">
+      <span class="exito-icon">🎉</span>
+      <h2 class="exito-titulo">¡Listo! Gracias</h2>
+      <p class="exito-sub">Tu registro fue guardado correctamente.</p>
+      <button id="btnOtraPersona" type="button">👤 Registrar otra persona</button>
+      <a class="btn-volver-bottom" href="../index.html" style="margin-top:0;">⬅ Volver al inicio</a>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+const loginBox      = document.getElementById("loginBox");
+const appBox        = document.getElementById("appBox");
+const nombreInput   = document.getElementById("nombreInput");
+const autoList      = document.getElementById("autoList");
+const btnEntrar     = document.getElementById("btnEntrar");
+const msgLogin      = document.getElementById("msgLogin");
+const datosPersona  = document.getElementById("datosPersona");
+const stepMeals     = document.getElementById("stepMeals");
+const stepMealWeek  = document.getElementById("stepMealWeek");
+const stepExito     = document.getElementById("stepExito");
+const comidaTiles   = document.getElementById("comidaTiles");
+const diasRows      = document.getElementById("diasRows");
+const mealWeekTitulo= document.getElementById("mealWeekTitulo");
+const avisoCompleta = document.getElementById("avisoCompleta");
+const btnConfirmarMeal = document.getElementById("btnConfirmarMeal");
+
+let persona       = null;
+let diaLibreIdx   = -1;  // 0=Lun … 6=Dom, -1 = sin restricción
+let todosPersonal = {};
+let semanaOffset  = 0;
+let weekFechas    = [];
+let weekRegistros = {};  // { fecha: { meal: "SI"|"NO"|null } }
+let weekMenu      = {};  // { fecha: menuData }
+let mealActual    = null;
+let pendingMarks  = {};  // { fecha: "SI"|"NO" } — marcas en la vista actual antes de confirmar
+
+// Calcula el índice del día libre (0=Lun…6=Dom) sin depender de esDiaLibre
+function calcDiaLibreIdx(p) {
+  if (!p || !p.diaLibre || p.diaLibre === "otro") return -1;
+  const norm = p.diaLibre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"].indexOf(norm);
+}
+
+// ¿Es el índice de semana el día libre? (0=Lun…6=Dom)
+function esDiaLibreLocal(idx) {
+  return diaLibreIdx >= 0 && diaLibreIdx === idx;
+}
+
+// ===== CARGAR PERSONAL =====
+dbGet("personal").then(data => { todosPersonal = data || {}; });
+
+// ===== AUTOCOMPLETADO =====
+nombreInput.addEventListener("input", () => {
+  nombreInput.dataset.selectedKey = "";
+  const query = nombreInput.value.trim().toLowerCase();
+  if (!query) { autoList.classList.add("hidden"); return; }
+
+  const res = Object.entries(todosPersonal)
+    .filter(([, p]) => p.activo && (p.nombre || "").toLowerCase().includes(query))
+    .sort((a, b) => (a[1].nombre || "").localeCompare(b[1].nombre || "", "es"))
+    .slice(0, 8);
+
+  if (!res.length) { autoList.classList.add("hidden"); return; }
+  autoList.innerHTML = res.map(([key, p]) => `
+    <div class="autocomplete-item" data-key="${key}" data-nombre="${p.nombre || ""}">
+      <strong>${p.nombre || ""}</strong>
+      <span style="font-size:12px;color:#888;margin-left:8px;">🕐 ${labelTurno(p)}</span>
+    </div>`).join("");
+  autoList.classList.remove("hidden");
+
+  autoList.querySelectorAll(".autocomplete-item").forEach(item => {
+    item.addEventListener("click", () => {
+      nombreInput.value = item.dataset.nombre;
+      nombreInput.dataset.selectedKey = item.dataset.key;
+      autoList.classList.add("hidden");
+    });
+  });
+});
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".autocomplete-wrap")) autoList.classList.add("hidden");
+});
+
+// ===== ENTRAR =====
+btnEntrar.addEventListener("click", async () => {
+  const query = nombreInput.value.trim();
+  if (!query) { msgLogin.textContent = "Escribí tu nombre."; return; }
+
+  btnEntrar.disabled = true;
+  btnEntrar.textContent = "Buscando...";
+
+  try {
+    let foundKey = nombreInput.dataset.selectedKey || null;
+    let foundData = null;
+
+    if (foundKey && todosPersonal[foundKey]) {
+      foundData = todosPersonal[foundKey];
+    } else {
+      const match = Object.entries(todosPersonal).find(([, p]) =>
+        p.activo && (p.nombre || "").toLowerCase() === query.toLowerCase()
+      );
+      if (match) { foundKey = match[0]; foundData = match[1]; }
+    }
+
+    if (!foundData)         { msgLogin.textContent = "❌ Nombre no encontrado."; }
+    else if (!foundData.activo) { msgLogin.textContent = "❌ Persona inactiva. Consultá al admin."; }
+    else {
+      persona = { key: foundKey, ...foundData };
+      diaLibreIdx = calcDiaLibreIdx(persona);
+      semanaOffset = 0;
+      mostrarApp();
+    }
+  } catch { msgLogin.textContent = "❌ Sin conexión. Verifica el WiFi."; }
+
+  btnEntrar.disabled = false;
+  btnEntrar.textContent = "➡️ Entrar";
+});
+
+nombreInput.addEventListener("keydown", e => { if (e.key === "Enter") btnEntrar.click(); });
+
+// ===== MOSTRAR APP =====
+function mostrarApp() {
+  loginBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+  stepMeals.classList.remove("hidden");
+  stepMealWeek.classList.add("hidden");
+  stepExito.classList.add("hidden");
+
+  datosPersona.innerHTML = `
+    <div style="background:#fff;border:1.5px solid #a5d6a7;border-radius:14px;padding:14px 16px;margin-bottom:4px;">
+      <div style="font-size:18px;font-weight:900;color:#1b5e20;margin-bottom:8px;">👤 ${persona.nombre}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#2e7d32;">🏢 ${labelSector(persona)}</span>
+        <span style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#1565c0;">🕐 ${labelTurno(persona)}</span>
+        <span style="background:#fff9c4;border:1px solid #ffe082;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#7a5900;">📅 Libre: ${labelDiaLibre(persona)}</span>
+      </div>
+    </div>`;
+
+  cargarSemana();
+}
+
+// ===== CALCULAR FECHAS =====
+function calcWeekFechas() {
+  const lunes = startOfWeekMonday(addDays(new Date(), semanaOffset * 7));
+  weekFechas = Array.from({ length: 7 }, (_, i) => iso(addDays(lunes, i)));
+}
+
+function actualizarLabelSemana(labelId) {
+  const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const f0 = new Date(weekFechas[0] + "T00:00:00");
+  const f6 = new Date(weekFechas[6] + "T00:00:00");
+  document.getElementById(labelId).textContent =
+    `${f0.getDate()} ${meses[f0.getMonth()]} – ${f6.getDate()} ${meses[f6.getMonth()]} ${f6.getFullYear()}`;
+}
+
+// ===== CARGAR SEMANA =====
+async function cargarSemana() {
+  calcWeekFechas();
+  actualizarLabelSemana("semanaLabel");
+  actualizarLabelSemana("semanaLabel2");
+
+  comidaTiles.innerHTML = '<p class="loading" style="font-size:13px;">Cargando...</p>';
+
+  const comidasTurno = comidasDeTurno(persona.turno);
+  weekRegistros = {};
+  weekMenu      = {};
+
+  await Promise.all(weekFechas.map(async fecha => {
+    const [reg, menu] = await Promise.all([
+      dbGet(`registros/${persona.key}/${fecha}`).catch(() => null),
+      dbGet(`menu/${fecha}`).catch(() => null)
+    ]);
+    weekRegistros[fecha] = {};
+    comidasTurno.forEach(c => { weekRegistros[fecha][c] = reg?.[c] || null; });
+    weekMenu[fecha] = menu || null;
+  }));
+
+  renderMealTiles();
+}
+
+// ===== RENDER TARJETAS DE COMIDA =====
+function renderMealTiles() {
+  const comidasTurno = comidasDeTurno(persona.turno);
+  const hoyISO = iso(new Date());
+
+  comidaTiles.innerHTML = comidasTurno.map(meal => {
+    // Contar días aplicables y marcados (excluyendo día libre)
+    let total = 0, marcados = 0;
+    weekFechas.forEach((fecha, i) => {
+      if (esDiaLibreLocal(i)) return;
+      total++;
+      if (weekRegistros[fecha]?.[meal] !== null && weekRegistros[fecha]?.[meal] !== undefined) marcados++;
+    });
+
+    let clsTile = "", estadoTxt = "";
+    if (marcados === 0)      { clsTile = "";         estadoTxt = "Sin marcar"; }
+    else if (marcados < total){ clsTile = "parcial";  estadoTxt = `${marcados}/${total} días`; }
+    else                      { clsTile = "completa"; estadoTxt = "✅ Completo"; }
+
+    return `<div class="comida-tile ${clsTile}" data-meal="${meal}">
+      <span class="tile-icon">${COMIDA_ICON[meal]}</span>
+      <span class="tile-name">${COMIDA_LABEL[meal]}</span>
+      <span class="tile-estado">${estadoTxt}</span>
+    </div>`;
+  }).join("");
+
+  comidaTiles.querySelectorAll(".comida-tile").forEach(tile => {
+    tile.addEventListener("click", () => abrirMealSemana(tile.dataset.meal));
+  });
+}
+
+// ===== ABRIR SEMANA DE UNA COMIDA =====
+function abrirMealSemana(meal) {
+  mealActual = meal;
+  pendingMarks = {};
+
+  // Día libre → automático "NO"; resto → cargar de Firebase
+  weekFechas.forEach((fecha, i) => {
+    if (esDiaLibreLocal(i)) {
+      pendingMarks[fecha] = "NO";
+    } else {
+      pendingMarks[fecha] = weekRegistros[fecha]?.[meal] || null;
+    }
+  });
+
+  mealWeekTitulo.textContent = `${COMIDA_ICON[meal]} ${COMIDA_LABEL[meal]}`;
+  stepMeals.classList.add("hidden");
+  stepMealWeek.classList.remove("hidden");
+  actualizarLabelSemana("semanaLabel2");
+  renderDiasRows();
+}
+
+// ===== RENDER FILAS DE DÍAS =====
+function renderDiasRows() {
+  const hoyISO = iso(new Date());
+
+  // Limpiar el bloque de menú separado (ya no se usa)
+  document.getElementById("menuInfoWrap").innerHTML = "";
+
+  // Filas — el menú aparece dentro de cada fila
+  diasRows.innerHTML = weekFechas.map((fecha, i) => {
+    const esLibre = esDiaLibreLocal(i);
+    const esHoy   = fecha === hoyISO;
+    const val     = pendingMarks[fecha];
+
+    // Armar texto del menú para este día
+    const menu = weekMenu[fecha]?.[mealActual];
+    let menuTxt = "";
+    if (menu) {
+      const partes = [];
+      if (menu.plato)    partes.push(menu.plato);
+      if (menu.sopa)     partes.push(`🥣 ${menu.sopa}`);
+      if (menu.frio)     partes.push(`❄️ ${menu.frio}`);
+      if (menu.caliente) partes.push(`☕ ${menu.caliente}`);
+      if (partes.length) menuTxt = partes.join(" · ");
+    }
+
+    if (esLibre) {
+      return `<div class="dia-row libre${esHoy ? " hoy" : ""}">
+        <div class="dia-info">
+          <div class="dia-nombre" style="color:#7a5900;">${DIA_LUN_DOM[i]}${esHoy ? '<span class="hoy-tag">HOY</span>' : ""}</div>
+          <div class="dia-fecha">${formatDMY(fecha)}</div>
+        </div>
+        <div class="dia-libre-bloque">
+          <span class="dia-libre-icono">🏖️</span>
+          <span class="dia-libre-texto">DÍA LIBRE</span>
+          <span class="dia-libre-sub">No trabaja</span>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="dia-row${esHoy ? " hoy" : ""}" data-fecha="${fecha}">
+      <div class="dia-info">
+        <div class="dia-nombre">${DIA_LUN_DOM[i]}${esHoy ? '<span class="hoy-tag">HOY</span>' : ""}</div>
+        <div class="dia-fecha">${formatDMY(fecha)}</div>
+        ${menuTxt ? `<div class="dia-menu">${menuTxt}</div>` : ""}
+      </div>
+      <div class="yn-row">
+        <button class="btn-si${val === "SI" ? " sel" : ""}" data-fecha="${fecha}" type="button">SI</button>
+        <button class="btn-no${val === "NO" ? " sel" : ""}" data-fecha="${fecha}" type="button">NO</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Eventos SI/NO
+  diasRows.querySelectorAll(".btn-si").forEach(btn => {
+    btn.addEventListener("click", () => marcarDia(btn.dataset.fecha, "SI"));
+  });
+  diasRows.querySelectorAll(".btn-no").forEach(btn => {
+    btn.addEventListener("click", () => marcarDia(btn.dataset.fecha, "NO"));
+  });
+
+  actualizarBtnConfirmar();
+}
+
+// ===== MARCAR DÍA =====
+function marcarDia(fecha, val) {
+  pendingMarks[fecha] = val;
+  renderDiasRows();
+}
+
+// ===== VALIDAR Y HABILITAR CONFIRMAR =====
+function actualizarBtnConfirmar() {
+  const comidasTurno = comidasDeTurno(persona.turno);
+  let total = 0, marcados = 0;
+  weekFechas.forEach((fecha, i) => {
+    if (esDiaLibreLocal(i)) return;
+    total++;
+    if (pendingMarks[fecha] !== null && pendingMarks[fecha] !== undefined) marcados++;
+  });
+
+  const listo = marcados >= total && total > 0;
+  btnConfirmarMeal.disabled = !listo;
+  const diaLibreLabel = persona.diaLibre && persona.diaLibre !== "otro"
+    ? ` · ${labelDiaLibre(persona)}: día libre (automático)`
+    : "";
+  avisoCompleta.textContent = listo
+    ? "¡Todos los días marcados! Confirmá para guardar."
+    : `Faltan ${total - marcados} día(s) por marcar${diaLibreLabel}.`;
+}
+
+// ===== CONFIRMAR Y GUARDAR =====
+btnConfirmarMeal.addEventListener("click", async () => {
+  btnConfirmarMeal.disabled = true;
+  btnConfirmarMeal.textContent = "Guardando...";
+  avisoCompleta.textContent = "";
+
+  try {
+    await Promise.all(
+      Object.entries(pendingMarks)
+        .filter(([, v]) => v !== null)
+        .map(([fecha, val]) =>
+          dbSet(`registros/${persona.key}/${fecha}/${mealActual}`, val)
+        )
+    );
+
+    // Actualizar caché local
+    Object.entries(pendingMarks).forEach(([fecha, val]) => {
+      if (val !== null) {
+        if (!weekRegistros[fecha]) weekRegistros[fecha] = {};
+        weekRegistros[fecha][mealActual] = val;
+      }
+    });
+
+    // Volver a tiles con estado actualizado
+    stepMealWeek.classList.add("hidden");
+    stepMeals.classList.remove("hidden");
+    renderMealTiles();
+
+    // Si todas las comidas están completas → éxito
+    const comidasTurno = comidasDeTurno(persona.turno);
+    const todasCompletas = comidasTurno.every(meal => {
+      let total = 0, marcados = 0;
+      weekFechas.forEach((fecha, i) => {
+        if (esDiaLibreLocal(i)) return;
+        total++;
+        if (weekRegistros[fecha]?.[meal]) marcados++;
+      });
+      return marcados >= total && total > 0;
+    });
+
+    if (todasCompletas) {
+      stepMeals.classList.add("hidden");
+      stepExito.classList.remove("hidden");
+    }
+
+  } catch {
+    avisoCompleta.textContent = "❌ Error al guardar. Verifica el WiFi.";
+    btnConfirmarMeal.disabled = false;
+  }
+
+  btnConfirmarMeal.textContent = "💾 Confirmar";
+});
+
+// ===== VOLVER A TILES =====
+document.getElementById("btnVolverMeals").addEventListener("click", () => {
+  stepMealWeek.classList.add("hidden");
+  stepMeals.classList.remove("hidden");
+  renderMealTiles();
+});
+
+// ===== NAVEGACIÓN SEMANA (en step 2 y step 3) =====
+document.getElementById("btnSemAnterior").addEventListener("click", () => {
+  semanaOffset--; cargarSemana();
+});
+document.getElementById("btnSemSiguiente").addEventListener("click", () => {
+  semanaOffset++; cargarSemana();
+});
+document.getElementById("btnSemAnterior2").addEventListener("click", () => {
+  semanaOffset--;
+  cargarSemana().then(() => { if (mealActual) abrirMealSemana(mealActual); });
+});
+document.getElementById("btnSemSiguiente2").addEventListener("click", () => {
+  semanaOffset++;
+  cargarSemana().then(() => { if (mealActual) abrirMealSemana(mealActual); });
+});
+
+// ===== OTRA PERSONA =====
+document.getElementById("btnOtraPersona").addEventListener("click", () => {
+  persona = null; diaLibreIdx = -1; semanaOffset = 0; weekRegistros = {}; weekMenu = {};
+  appBox.classList.add("hidden");
+  loginBox.classList.remove("hidden");
+  stepMeals.classList.remove("hidden");
+  stepMealWeek.classList.add("hidden");
+  stepExito.classList.add("hidden");
+  nombreInput.value = "";
+  nombreInput.dataset.selectedKey = "";
+  msgLogin.textContent = "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+
+</body>
+</html>

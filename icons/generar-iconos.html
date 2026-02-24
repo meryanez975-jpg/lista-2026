@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Generar iconos PWA</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f9f5ff; }
+    canvas { display: none; }
+    .btn { padding: 14px 24px; border: none; border-radius: 12px; background: #7c3aed; color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; margin: 8px; }
+    .btn:active { opacity: .8; }
+    p { color: #555; }
+    .icono-preview { width: 96px; height: 96px; border-radius: 20px; margin: 10px; display: inline-block; }
+  </style>
+</head>
+<body>
+  <h2>🖼️ Generador de iconos PWA</h2>
+  <p>Hacé clic en cada botón para descargar el icono correspondiente.</p>
+  <p>Guardá los dos archivos <strong>en esta misma carpeta</strong> (<code>icons/</code>).</p>
+
+  <canvas id="c"></canvas>
+
+  <div>
+    <button class="btn" onclick="generar(192)">⬇️ Descargar icon-192.png</button>
+    <button class="btn" onclick="generar(512)">⬇️ Descargar icon-512.png</button>
+  </div>
+
+  <p style="margin-top:20px; font-size:13px; color:#888;">
+    Cuando los dos archivos estén guardados, podés cerrar esta página.
+  </p>
+
+  <script>
+    function generar(size) {
+      const canvas = document.getElementById("c");
+      canvas.width  = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+
+      // Fondo degradado morado
+      const grad = ctx.createLinearGradient(0, 0, size, size);
+      grad.addColorStop(0, "#7c3aed");
+      grad.addColorStop(1, "#a855f7");
+      ctx.fillStyle = grad;
+      const r = size * 0.18;
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(size - r, 0);
+      ctx.quadraticCurveTo(size, 0, size, r);
+      ctx.lineTo(size, size - r);
+      ctx.quadraticCurveTo(size, size, size - r, size);
+      ctx.lineTo(r, size);
+      ctx.quadraticCurveTo(0, size, 0, size - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // Emoji de comida
+      ctx.font = `${size * 0.5}px serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🍽️", size / 2, size / 2);
+
+      const link = document.createElement("a");
+      link.download = `icon-${size}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+  </script>
+</body>
+</html>

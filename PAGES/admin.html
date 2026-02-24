@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Administración</title>
+  <link rel="stylesheet" href="../estilo.css">
+  <style>
+    body { background: linear-gradient(160deg, #e8d5ff 0%, #f5eeff 40%, #fdfbff 100%); }
+    /* Hero cards más grandes */
+    .admin-hero-grid { gap: 14px; }
+    .hero-card { min-height: 175px; }
+    /* Botón salir fijo abajo izquierda */
+    #btnSalir {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      width: auto;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<main class="panel login-panel" id="loginPanel">
+  <h2 class="login-titulo">🔐 Administración</h2>
+
+  <section class="form-card">
+    <label class="campo">
+      <span>Número de celular</span>
+      <input type="tel" id="phoneInput" inputmode="numeric" placeholder="Ej: 099123456" autocomplete="username">
+    </label>
+    <label class="campo">
+      <span>Contraseña</span>
+      <input type="password" id="passInput" placeholder="Contraseña" autocomplete="current-password">
+    </label>
+    <button class="btn-primario" id="btnLogin" type="button">Entrar</button>
+    <p class="nota" id="msgLogin"></p>
+    <p class="login-hint">Primera vez → celular: <strong>0000</strong> / contraseña: <strong>1234</strong></p>
+  </section>
+
+  <a class="btn-volver-bottom" href="../index.html">⬅ Volver al inicio</a>
+</main>
+
+<!-- ===== PANEL ADMIN ===== -->
+<main class="panel hidden" id="adminPanel">
+  <p style="text-align:center; font-size:12px; letter-spacing:2px; font-weight:800; color:#999; margin:0 0 20px;">
+    ADMINISTRACIÓN
+  </p>
+
+  <div class="admin-hero-grid">
+    <a class="hero-card personal-card" href="personal.html">
+      <div class="hero-icon">👥</div>
+      <div class="hero-title">PERSONAL</div>
+      <div class="hero-sub">Agregar y editar personal</div>
+    </a>
+    <a class="hero-card menu-card" href="menu_admin.html">
+      <div class="hero-icon">📋</div>
+      <div class="hero-title">MENÚ</div>
+      <div class="hero-sub">Cargar comidas por fecha</div>
+    </a>
+  </div>
+
+  <a class="otros-link" href="otros.html">
+    🧩 OTROS
+  </a>
+
+  <button class="btn-salir-admin" id="btnSalir" type="button">🚪 Salir</button>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+const loginPanel = document.getElementById("loginPanel");
+const adminPanel = document.getElementById("adminPanel");
+const phoneInput = document.getElementById("phoneInput");
+const passInput  = document.getElementById("passInput");
+const btnLogin   = document.getElementById("btnLogin");
+const msgLogin   = document.getElementById("msgLogin");
+const btnSalir   = document.getElementById("btnSalir");
+
+// Si ya estaba logueado en esta sesión
+if (sessionStorage.getItem("admin_logged") === "1") showAdmin();
+
+btnLogin.addEventListener("click", async () => {
+  const phone = phoneInput.value.trim();
+  const pass  = passInput.value.trim();
+
+  if (!phone || !pass) {
+    msgLogin.textContent = "Ingresa el número de celular y la contraseña.";
+    return;
+  }
+
+  btnLogin.disabled = true;
+  btnLogin.textContent = "Verificando...";
+  msgLogin.textContent = "";
+
+  try {
+    // Verificar si existen admins
+    let admins = await dbGet("config/admins");
+    if (!admins) {
+      // Si hay contraseña vieja, migrarla; si no, crear admin por defecto
+      const oldPass = await dbGet("config/admin_pass");
+      const defaultPass = oldPass || "1234";
+      await dbSet("config/admins/0000", { nombre: "Admin", password: defaultPass });
+      admins = { "0000": { nombre: "Admin", password: defaultPass } };
+    }
+
+    const admin = admins[phone];
+    if (admin && admin.password === pass) {
+      sessionStorage.setItem("admin_logged", "1");
+      sessionStorage.setItem("admin_phone", phone);
+      showAdmin();
+    } else {
+      msgLogin.textContent = "❌ Número o contraseña incorrectos.";
+      passInput.value = "";
+      passInput.focus();
+    }
+  } catch(e) {
+    msgLogin.textContent = "❌ Sin conexión. Verifica el WiFi.";
+  }
+
+  btnLogin.disabled = false;
+  btnLogin.textContent = "Entrar";
+});
+
+[phoneInput, passInput].forEach(el =>
+  el.addEventListener("keydown", e => { if (e.key === "Enter") btnLogin.click(); })
+);
+
+function showAdmin() {
+  loginPanel.classList.add("hidden");
+  adminPanel.classList.remove("hidden");
+}
+
+btnSalir.addEventListener("click", () => {
+  window.location.href = "../index.html";
+});
+</script>
+
+</body>
+</html>

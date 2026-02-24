@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Sistema de Comidas</title>
+  <link rel="stylesheet" href="estilo.css" />
+  <style>
+    body {
+      background: linear-gradient(160deg, #e8d5ff 0%, #d4f0e8 50%, #ffd6a5 100%);
+      min-height: 100vh;
+    }
+    /* Modal de login admin */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.activo { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: 22px;
+      padding: 28px 24px;
+      width: min(400px, 100%);
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+      animation: fadeIn .2s ease;
+    }
+    .modal-box h3 {
+      margin: 0 0 20px;
+      text-align: center;
+      font-size: 20px;
+      color: #4a2080;
+    }
+    /* Botón lock discreto abajo a la derecha */
+    .btn-lock {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(180,160,220,.35);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+    }
+    .btn-lock:active { background: rgba(180,160,220,.7); }
+    /* Barra admin cuando está logueado */
+    .admin-bar {
+      display: none;
+      background: #f0e6ff;
+      border: 1.5px solid #c9a8f0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 4px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #4a2080;
+      font-weight: 700;
+    }
+    .admin-bar.visible { display: flex; }
+    .btn-salir-index {
+      padding: 6px 14px;
+      border: 1.5px solid #e57373;
+      border-radius: 10px;
+      background: #ffebee;
+      color: #c62828;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modal de login admin -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <h3>🔐 Acceso administrador</h3>
+      <div class="form-card" style="margin:0; border:none; background:transparent; box-shadow:none; padding:0;">
+        <label class="campo">
+          <span>Número de celular</span>
+          <input type="tel" id="mPhone" inputmode="numeric" placeholder="Ej: 099123456">
+        </label>
+        <label class="campo">
+          <span>Contraseña</span>
+          <input type="password" id="mPass" placeholder="Contraseña">
+        </label>
+        <button class="btn-primario" id="mBtnEntrar" type="button">Entrar</button>
+        <p class="nota" id="mMsg"></p>
+      </div>
+      <button id="mBtnCerrar" type="button"
+              style="margin-top:14px; width:100%; padding:10px; border:1.5px solid #ddd;
+                     border-radius:12px; background:#f5f5f5; font-size:14px; cursor:pointer;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <main class="menu" style="margin-top:20px;">
+    <p class="menu-titulo">SISTEMA DE COMIDAS</p>
+
+    <!-- Barra visible solo cuando admin está logueado -->
+    <div class="admin-bar" id="adminBar">
+      <span id="adminBarNombre">👤 Administrador</span>
+      <button class="btn-salir-index" id="btnSalirIndex" type="button">Salir</button>
+    </div>
+
+    <!-- Botones de admin (ocultos por defecto) -->
+    <a class="card-btn admin hidden" id="btnAdmin" href="PAGES/admin.html">
+      <span class="icon">🔐</span>
+      <span class="text">ADMINISTRACIÓN</span>
+    </a>
+
+    <!-- Registro: siempre visible -->
+    <a class="card-btn registro" href="PAGES/registro.html">
+      <span class="icon">✏️</span>
+      <span class="text">REGISTRO</span>
+    </a>
+
+    <!-- Conteo: solo para admins -->
+    <a class="card-btn conteo hidden" id="btnConteo" href="PAGES/conteo.html">
+      <span class="icon">🧮</span>
+      <span class="text">CONTEO</span>
+    </a>
+  </main>
+
+  <!-- Botón lock discreto -->
+  <button class="btn-lock" id="btnLock" title="Administradores">🔒</button>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    const modalOverlay = document.getElementById("modalOverlay");
+    const mPhone       = document.getElementById("mPhone");
+    const mPass        = document.getElementById("mPass");
+    const mBtnEntrar   = document.getElementById("mBtnEntrar");
+    const mBtnCerrar   = document.getElementById("mBtnCerrar");
+    const mMsg         = document.getElementById("mMsg");
+    const adminBar     = document.getElementById("adminBar");
+    const adminBarNombre = document.getElementById("adminBarNombre");
+    const btnSalirIndex  = document.getElementById("btnSalirIndex");
+    const btnAdmin     = document.getElementById("btnAdmin");
+    const btnConteo    = document.getElementById("btnConteo");
+    const btnLock      = document.getElementById("btnLock");
+
+    // ===== REVISAR SI YA HAY SESIÓN ADMIN =====
+    if (sessionStorage.getItem("admin_logged") === "1") {
+      mostrarModoAdmin(sessionStorage.getItem("admin_nombre") || "Administrador");
+    }
+
+    // ===== ABRIR MODAL =====
+    btnLock.addEventListener("click", () => {
+      // Si ya es admin, solo abrir panel directamente
+      if (sessionStorage.getItem("admin_logged") === "1") {
+        window.location.href = "PAGES/admin.html";
+        return;
+      }
+      modalOverlay.classList.add("activo");
+      mPhone.focus();
+    });
+
+    // ===== CERRAR MODAL =====
+    mBtnCerrar.addEventListener("click", cerrarModal);
+    modalOverlay.addEventListener("click", e => {
+      if (e.target === modalOverlay) cerrarModal();
+    });
+
+    function cerrarModal() {
+      modalOverlay.classList.remove("activo");
+      mPhone.value = "";
+      mPass.value  = "";
+      mMsg.textContent = "";
+    }
+
+    // ===== LOGIN ADMIN =====
+    mBtnEntrar.addEventListener("click", async () => {
+      const phone = mPhone.value.trim();
+      const pass  = mPass.value.trim();
+
+      if (!phone || !pass) {
+        mMsg.textContent = "Ingresá celular y contraseña.";
+        return;
+      }
+
+      mBtnEntrar.disabled = true;
+      mBtnEntrar.textContent = "Verificando...";
+      mMsg.textContent = "";
+
+      try {
+        let admins = await dbGet("config/admins");
+        if (!admins) {
+          const oldPass = await dbGet("config/admin_pass");
+          const defaultPass = oldPass || "1234";
+          await dbSet("config/admins/0000", { nombre: "Admin", password: defaultPass });
+          admins = { "0000": { nombre: "Admin", password: defaultPass } };
+        }
+
+        const admin = admins[phone];
+        if (admin && admin.password === pass) {
+          sessionStorage.setItem("admin_logged", "1");
+          sessionStorage.setItem("admin_phone", phone);
+          sessionStorage.setItem("admin_nombre", admin.nombre || "Administrador");
+          cerrarModal();
+          mostrarModoAdmin(admin.nombre || "Administrador");
+        } else {
+          mMsg.textContent = "❌ Número o contraseña incorrectos.";
+          mPass.value = "";
+          mPass.focus();
+        }
+      } catch(e) {
+        mMsg.textContent = "❌ Sin conexión. Verifica el WiFi.";
+      }
+
+      mBtnEntrar.disabled = false;
+      mBtnEntrar.textContent = "Entrar";
+    });
+
+    [mPhone, mPass].forEach(el =>
+      el.addEventListener("keydown", e => { if (e.key === "Enter") mBtnEntrar.click(); })
+    );
+
+    // ===== MOSTRAR MODO ADMIN =====
+    function mostrarModoAdmin(nombre) {
+      btnAdmin.classList.remove("hidden");
+      btnConteo.classList.remove("hidden");
+      adminBarNombre.textContent = `👤 ${nombre}`;
+      adminBar.classList.add("visible");
+      btnLock.textContent = "⚙️";
+    }
+
+    // ===== SALIR DE MODO ADMIN =====
+    btnSalirIndex.addEventListener("click", () => {
+      sessionStorage.removeItem("admin_logged");
+      sessionStorage.removeItem("admin_phone");
+      sessionStorage.removeItem("admin_nombre");
+      btnAdmin.classList.add("hidden");
+      btnConteo.classList.add("hidden");
+      adminBar.classList.remove("visible");
+      btnLock.textContent = "🔒";
+    });
+  </script>
+
+  <!-- Registro del Service Worker (PWA) -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+          .catch((e) => console.warn("SW error:", e));
+      });
+    }
+  </script>
+</body>
+</html>

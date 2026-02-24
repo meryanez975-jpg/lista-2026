@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Personal</title>
+  <link rel="stylesheet" href="../estilo.css">
+  <style>
+    body { background: linear-gradient(160deg, #ffd6e7 0%, #fff0f6 40%, #fff8fb 100%); }
+    .pers-header {
+      background: linear-gradient(135deg, #ad1457, #c2185b, #e91e8c);
+      border-radius: 0 0 36px 36px;
+      padding: 32px 24px 28px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(173,20,87,.22);
+      position: relative; overflow: hidden;
+    }
+    .pers-header::before {
+      content:""; position:absolute; top:-30px; right:-30px;
+      width:120px; height:120px; background:rgba(255,255,255,.10); border-radius:50%;
+    }
+    .pers-header .icon-grande { font-size:52px; display:block; margin-bottom:8px; }
+    .pers-header h1 { margin:0 0 4px; color:#fff; font-size:26px; font-weight:900; text-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .pers-header p  { margin:0; color:rgba(255,255,255,.85); font-size:13px; }
+    .panel { padding-top: 0 !important; }
+    .form-card { border-color: #f48fb1; }
+    .btn-primario { background: linear-gradient(135deg,#c2185b,#e91e8c) !important; color:#fff !important; }
+  </style>
+</head>
+<body>
+
+<main class="panel" style="padding-top:0;">
+  <div class="pers-header no-print">
+    <span class="icon-grande">👥</span>
+    <h1>Personal</h1>
+    <p>Gestión de empleados y turnos</p>
+  </div>
+
+  <!-- ===== FORMULARIO AGREGAR / EDITAR ===== -->
+  <section class="form-card" id="secFormulario">
+    <h3 style="margin:0 0 18px; color:#4a2080;" id="formTitle">➕ Agregar persona</h3>
+
+    <label class="campo">
+      <span>Nombre completo</span>
+      <input type="text" id="inNombre" placeholder="Ej: María García">
+    </label>
+
+    <!-- SECTOR -->
+    <label class="campo">
+      <span>Sector</span>
+      <select id="inSector">
+        <option value="">— Seleccionar —</option>
+        <option value="bisutería">Bisutería</option>
+        <option value="librería">Librería</option>
+        <option value="cosméticos">Cosméticos</option>
+        <option value="lili">Lili</option>
+        <option value="otros">Otros (especificar)</option>
+      </select>
+    </label>
+    <label class="campo hidden" id="campoSectorTexto">
+      <span>Especificar sector</span>
+      <input type="text" id="inSectorTexto" placeholder="Escribir sector">
+    </label>
+
+    <!-- DÍA LIBRE -->
+    <label class="campo">
+      <span>Día libre</span>
+      <select id="inDiaLibre">
+        <option value="">— Seleccionar —</option>
+        <option value="lunes">Lunes</option>
+        <option value="martes">Martes</option>
+        <option value="miércoles">Miércoles</option>
+        <option value="jueves">Jueves</option>
+        <option value="viernes">Viernes</option>
+        <option value="sábado">Sábado</option>
+        <option value="domingo">Domingo</option>
+        <option value="otro">Otro (especificar)</option>
+      </select>
+    </label>
+    <label class="campo hidden" id="campoDiaLibreTexto">
+      <span>Especificar día libre</span>
+      <input type="text" id="inDiaLibreTexto" placeholder="Ej: Rotativo">
+    </label>
+
+    <!-- TURNO -->
+    <label class="campo">
+      <span>Turno</span>
+      <select id="inTurno">
+        <option value="mañana">Mañana (7am–7pm)</option>
+        <option value="diurno">Diurno (7am–4pm)</option>
+        <option value="tarde">Tarde (11am–11pm)</option>
+        <option value="noche">Noche (2pm–11pm)</option>
+        <option value="otro">Otro (especificar)</option>
+      </select>
+    </label>
+    <label class="campo hidden" id="campoTurnoTexto">
+      <span>Especificar turno</span>
+      <input type="text" id="inTurnoTexto" placeholder="Ej: 6am–2pm">
+    </label>
+
+    <button class="btn-primario" id="btnGuardar" type="button">💾 Guardar</button>
+    <button class="btn-secundario hidden" id="btnCancelar" type="button" style="margin-top:10px;">✖ Cancelar edición</button>
+    <p class="nota" id="msgForm"></p>
+  </section>
+
+  <!-- ===== BOTÓN LISTA SEMANAL ===== -->
+  <a class="btn-secundario no-print" href="lista_personal.html"
+     style="display:block; text-align:center; text-decoration:none; margin-bottom:14px;">
+    📋 Ver lista semanal
+  </a>
+
+  <button class="btn-volver-bottom no-print" id="btnVolver" type="button">⬅ Volver a Administración</button>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+if (sessionStorage.getItem("admin_logged") !== "1") window.location.href = "admin.html";
+
+// ===== REFERENCIAS =====
+const inNombre         = document.getElementById("inNombre");
+const inSector         = document.getElementById("inSector");
+const inSectorTexto    = document.getElementById("inSectorTexto");
+const campoSectorTexto = document.getElementById("campoSectorTexto");
+const inDiaLibre       = document.getElementById("inDiaLibre");
+const inDiaLibreTexto  = document.getElementById("inDiaLibreTexto");
+const campoDiaLibreTexto = document.getElementById("campoDiaLibreTexto");
+const inTurno          = document.getElementById("inTurno");
+const inTurnoTexto     = document.getElementById("inTurnoTexto");
+const campoTurnoTexto  = document.getElementById("campoTurnoTexto");
+const btnGuardar       = document.getElementById("btnGuardar");
+const btnCancelar      = document.getElementById("btnCancelar");
+const formTitle        = document.getElementById("formTitle");
+const msgForm          = document.getElementById("msgForm");
+
+let editandoKey = null;
+let formDirty   = false;
+
+// ===== DETECTAR CAMBIOS EN EL FORMULARIO =====
+[inNombre, inSectorTexto, inDiaLibreTexto, inTurnoTexto].forEach(el => {
+  el.addEventListener("input", () => { formDirty = true; });
+});
+[inSector, inDiaLibre, inTurno].forEach(el => {
+  el.addEventListener("change", () => { formDirty = true; });
+});
+
+// ===== MOSTRAR/OCULTAR CAMPOS CONDICIONALES =====
+inSector.addEventListener("change", () => {
+  campoSectorTexto.classList.toggle("hidden", inSector.value !== "otros");
+});
+inDiaLibre.addEventListener("change", () => {
+  campoDiaLibreTexto.classList.toggle("hidden", inDiaLibre.value !== "otro");
+});
+inTurno.addEventListener("change", () => {
+  campoTurnoTexto.classList.toggle("hidden", inTurno.value !== "otro");
+});
+
+// ===== GUARDAR =====
+btnGuardar.addEventListener("click", async () => {
+  const nombre   = inNombre.value.trim();
+  const sector   = inSector.value;
+  const diaLibre = inDiaLibre.value;
+  const turno    = inTurno.value;
+
+  if (!nombre)   { msgForm.textContent = "El nombre es requerido."; return; }
+  if (!sector)   { msgForm.textContent = "Selecciona un sector."; return; }
+  if (!diaLibre) { msgForm.textContent = "Selecciona un día libre."; return; }
+
+  const datos = { nombre, sector, diaLibre, turno, activo: true };
+  if (sector === "otros")   datos.sectorTexto    = inSectorTexto.value.trim();
+  if (diaLibre === "otro")  datos.diaLibreTexto  = inDiaLibreTexto.value.trim();
+  if (turno === "otro")     datos.turnoTexto     = inTurnoTexto.value.trim();
+
+  btnGuardar.disabled = true;
+  btnGuardar.textContent = "Guardando...";
+  msgForm.textContent = "";
+
+  try {
+    if (editandoKey) {
+      const prevActivo = (await dbGet(`personal/${editandoKey}`))?.activo ?? true;
+      datos.activo = prevActivo;
+      await dbSet(`personal/${editandoKey}`, datos);
+      msgForm.textContent = "✅ Actualizado correctamente.";
+    } else {
+      await dbPush("personal", datos);
+      msgForm.textContent = "✅ Persona agregada.";
+    }
+    resetForm();
+  } catch(e) {
+    msgForm.textContent = "❌ Error al guardar. Verifica el WiFi.";
+  }
+
+  btnGuardar.disabled = false;
+  btnGuardar.textContent = "💾 Guardar";
+});
+
+// ===== CANCELAR EDICIÓN =====
+btnCancelar.addEventListener("click", resetForm);
+
+function resetForm() {
+  editandoKey          = null;
+  formDirty            = false;
+  inNombre.value       = "";
+  inSector.value       = "";
+  inSectorTexto.value  = "";
+  inDiaLibre.value     = "";
+  inDiaLibreTexto.value= "";
+  inTurno.value        = "mañana";
+  inTurnoTexto.value   = "";
+  campoSectorTexto.classList.add("hidden");
+  campoDiaLibreTexto.classList.add("hidden");
+  campoTurnoTexto.classList.add("hidden");
+  formTitle.textContent = "➕ Agregar persona";
+  btnCancelar.classList.add("hidden");
+  msgForm.textContent = "";
+}
+
+// ===== BOTÓN VOLVER (confirmación si hay cambios sin guardar) =====
+document.getElementById("btnVolver").addEventListener("click", () => {
+  if (formDirty) {
+    if (!confirm("¿Salir sin guardar?\n\nTenés cambios en el formulario que todavía no fueron guardados.")) return;
+  }
+  window.location.href = "admin.html";
+});
+</script>
+
+</body>
+</html>

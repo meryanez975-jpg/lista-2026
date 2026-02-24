@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Menú</title>
+  <link rel="stylesheet" href="../estilo.css">
+  <style>
+    body { background: linear-gradient(160deg, #bbdefb 0%, #e3f2fd 40%, #f0f8ff 100%); }
+    .menu-header {
+      background: linear-gradient(135deg, #1565c0, #1976d2, #42a5f5);
+      border-radius: 0 0 36px 36px;
+      padding: 32px 24px 28px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(21,101,192,.22);
+      position: relative; overflow: hidden;
+    }
+    .menu-header::before {
+      content:""; position:absolute; top:-30px; right:-30px;
+      width:120px; height:120px; background:rgba(255,255,255,.10); border-radius:50%;
+    }
+    .menu-header .icon-grande { font-size:52px; display:block; margin-bottom:8px; }
+    .menu-header h1 { margin:0 0 4px; color:#fff; font-size:26px; font-weight:900; text-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .menu-header p  { margin:0; color:rgba(255,255,255,.85); font-size:13px; }
+    .panel { padding-top: 0 !important; }
+
+    /* Navegación de semana */
+    .semana-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fff; border: 2px solid #90caf9; border-radius: 14px;
+      padding: 10px 12px; margin-bottom: 12px;
+    }
+    .semana-nav-btn {
+      background: #e3f2fd; border: none; border-radius: 10px;
+      padding: 8px 14px; font-size: 16px; font-weight: 900; color: #1565c0; cursor: pointer;
+    }
+    .semana-nav-btn:active { opacity: .7; }
+    .semana-nav-label { font-size: 13px; font-weight: 800; color: #002c5c; text-align: center; }
+
+    /* Tarjetas de comida */
+    .comida-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .comida-tile {
+      background: #fff; border: 2px solid #90caf9; border-radius: 18px;
+      padding: 18px 10px; text-align: center; cursor: pointer; transition: transform .1s;
+    }
+    .comida-tile:active { transform: scale(0.97); }
+    .comida-tile.completa { border-color: #1976d2; background: #e8f4fd; }
+    .comida-tile.parcial  { border-color: #fbc02d; background: #fffde7; }
+    .tile-icon  { font-size: 36px; display: block; margin-bottom: 6px; }
+    .tile-name  { font-size: 14px; font-weight: 800; color: #002c5c; display: block; }
+    .tile-estado { font-size: 11px; color: #888; display: block; margin-top: 3px; }
+    .comida-tile.completa .tile-estado { color: #1565c0; font-weight: 700; }
+    .comida-tile.parcial  .tile-estado { color: #f57f17; font-weight: 700; }
+
+    /* Header de sub-vistas */
+    .sub-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+    }
+    .btn-volver-sub {
+      padding: 8px 14px; border: 1.5px solid #90caf9; border-radius: 12px;
+      background: #e3f2fd; color: #1565c0; font-size: 13px; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+    }
+    .sub-titulo { font-size: 20px; font-weight: 900; color: #002c5c; }
+
+    /* Filas de día (en vista semanal de una comida) */
+    .dia-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-bottom: 1px solid #e3f2fd; gap: 10px; cursor: pointer;
+    }
+    .dia-row:last-child { border-bottom: none; }
+    .dia-row:hover { background: #f0f8ff; }
+    .dia-row:active { background: #e3f2fd; }
+    .dia-row.hoy { background: #e8f4fd; }
+    .dia-info { flex: 1; }
+    .dia-nombre { font-size: 14px; font-weight: 800; color: #333; }
+    .dia-fecha  { font-size: 12px; color: #888; }
+    .dia-preview { font-size: 12px; color: #555; margin-top: 2px; }
+    .hoy-tag {
+      font-size: 10px; font-weight: 700; color: #fff; background: #1976d2;
+      border-radius: 6px; padding: 2px 6px; margin-left: 5px;
+    }
+    .dia-status {
+      font-size: 20px; flex-shrink: 0;
+    }
+
+    /* Formulario de edición de un día */
+    .input-label {
+      font-size: 12px; font-weight: 800; color: #555; letter-spacing: .5px;
+      text-transform: uppercase; margin-bottom: 4px; display: block;
+    }
+    .menu-input {
+      width: 100%; padding: 12px 14px; margin-bottom: 10px; border-radius: 12px;
+      border: 1.5px solid #90caf9; font-size: 15px; background: #fff;
+    }
+    .menu-input:focus { border-color: #1976d2; outline: none; box-shadow: 0 0 0 3px rgba(25,118,210,.1); }
+
+    #btnGuardarDia {
+      background: linear-gradient(135deg,#1565c0,#42a5f5) !important;
+      color:#fff !important; box-shadow:0 4px 14px rgba(21,101,192,.25);
+      width: 100%; margin-top: 4px;
+    }
+    #btnGuardarSalir {
+      width: 100%; margin-top: 8px; padding: 13px;
+      background: #fff; border: 2px solid #1976d2; color: #1565c0;
+      border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer;
+    }
+    #btnGuardarSalir:active { opacity: .7; }
+    #btnGuardarSalir:disabled { border-color: #ccc; color: #aaa; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<main class="panel" style="padding-top:0;">
+  <div class="menu-header">
+    <span class="icon-grande">📋</span>
+    <h1>Menú por fecha</h1>
+    <p>Editá las comidas de la semana</p>
+  </div>
+
+  <!-- ===== STEP 1: TILES DE COMIDA ===== -->
+  <div id="stepMeals">
+    <div class="semana-nav">
+      <button class="semana-nav-btn" id="btnSemAnterior" type="button">◀</button>
+      <span class="semana-nav-label" id="semanaLabel">Cargando...</span>
+      <button class="semana-nav-btn" id="btnSemSiguiente" type="button">▶</button>
+    </div>
+
+    <section class="form-card" style="border-color:#90caf9;">
+      <h4 style="margin:0 0 14px; color:#002c5c;">Seleccioná una comida para editar</h4>
+      <div class="comida-tiles" id="comidaTiles"></div>
+    </section>
+
+    <a class="btn-volver-bottom" href="admin.html">⬅ Volver a Administración</a>
+  </div>
+
+  <!-- ===== STEP 2: SEMANA DE UNA COMIDA ===== -->
+  <div id="stepMealWeek" class="hidden">
+    <div class="semana-nav">
+      <button class="semana-nav-btn" id="btnSemAnterior2" type="button">◀</button>
+      <span class="semana-nav-label" id="semanaLabel2">—</span>
+      <button class="semana-nav-btn" id="btnSemSiguiente2" type="button">▶</button>
+    </div>
+
+    <section class="form-card" style="border-color:#90caf9;">
+      <div class="sub-header">
+        <button class="btn-volver-sub" id="btnVolverMeals" type="button">← Comidas</button>
+        <span class="sub-titulo" id="mealWeekTitulo"></span>
+      </div>
+      <div id="diasRows"></div>
+    </section>
+  </div>
+
+  <!-- ===== STEP 3: EDITAR UN DÍA ===== -->
+  <div id="stepEdit" class="hidden">
+    <section class="form-card" style="border-color:#90caf9;">
+      <div class="sub-header">
+        <button class="btn-volver-sub" id="btnVolverWeek" type="button">← Semana</button>
+        <span class="sub-titulo" id="editTitulo"></span>
+      </div>
+      <p style="font-size:13px; color:#888; margin:-8px 0 16px;" id="editFechaLabel"></p>
+
+      <div id="camposEdit"></div>
+
+      <button class="btn-primario" id="btnGuardarDia" type="button">💾 Guardar</button>
+      <button id="btnGuardarSalir" type="button">📤 Guardar y salir</button>
+      <p class="nota" id="msgEdit"></p>
+    </section>
+  </div>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+if (sessionStorage.getItem("admin_logged") !== "1") window.location.href = "admin.html";
+
+const stepMeals    = document.getElementById("stepMeals");
+const stepMealWeek = document.getElementById("stepMealWeek");
+const stepEdit     = document.getElementById("stepEdit");
+const comidaTiles  = document.getElementById("comidaTiles");
+const diasRows     = document.getElementById("diasRows");
+const mealWeekTitulo = document.getElementById("mealWeekTitulo");
+const editTitulo   = document.getElementById("editTitulo");
+const editFechaLabel = document.getElementById("editFechaLabel");
+const camposEdit   = document.getElementById("camposEdit");
+const btnGuardarDia  = document.getElementById("btnGuardarDia");
+const btnGuardarSalir = document.getElementById("btnGuardarSalir");
+const msgEdit        = document.getElementById("msgEdit");
+
+let semanaOffset = 0;
+let weekFechas   = [];
+let weekMenuData = {};   // { fecha: { desayuno:{...}, almuerzo:{...}, ... } }
+let mealActual   = null;
+let fechaEditando = null;
+let hayUnsaved   = false;
+
+// ===== CAMPOS POR COMIDA =====
+const CONFIG_COMIDA = {
+  desayuno: { icon:"🍞", label:"DESAYUNO",
+    campos: [
+      { id:"plato",    label:"Plato principal",  placeholder:"Ej: Pan con mantequilla" },
+      { id:"frio",     label:"Bebida fría",       placeholder:"Ej: Jugo de naranja" },
+      { id:"caliente", label:"Bebida caliente",   placeholder:"Ej: Café" }
+    ]},
+  almuerzo: { icon:"🍛", label:"ALMUERZO",
+    campos: [
+      { id:"plato",    label:"Plato principal",  placeholder:"Ej: Pollo con arroz" },
+      { id:"sopa",     label:"Sopa",             placeholder:"Ej: Sopa de verduras" }
+    ]},
+  merienda: { icon:"🥐", label:"MERIENDA",
+    campos: [
+      { id:"plato",    label:"Plato",            placeholder:"Ej: Sándwich" },
+      { id:"frio",     label:"Bebida fría",       placeholder:"Ej: Agua con limón" },
+      { id:"caliente", label:"Bebida caliente",   placeholder:"Ej: Té" }
+    ]},
+  cena: { icon:"🍲", label:"CENA",
+    campos: [
+      { id:"plato",    label:"Plato principal",  placeholder:"Ej: Milanesa con puré" }
+    ]}
+};
+
+// ===== CALCULAR SEMANA =====
+function calcWeekFechas() {
+  const lunes = startOfWeekMonday(addDays(new Date(), semanaOffset * 7));
+  weekFechas = Array.from({ length: 7 }, (_, i) => iso(addDays(lunes, i)));
+}
+
+function actualizarLabel(id) {
+  const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const f0 = new Date(weekFechas[0] + "T00:00:00");
+  const f6 = new Date(weekFechas[6] + "T00:00:00");
+  document.getElementById(id).textContent =
+    `${f0.getDate()} ${meses[f0.getMonth()]} – ${f6.getDate()} ${meses[f6.getMonth()]} ${f6.getFullYear()}`;
+}
+
+// ===== CARGAR SEMANA =====
+async function cargarSemana() {
+  calcWeekFechas();
+  actualizarLabel("semanaLabel");
+  actualizarLabel("semanaLabel2");
+  comidaTiles.innerHTML = '<p class="loading" style="font-size:13px;">Cargando...</p>';
+  weekMenuData = {};
+
+  await Promise.all(weekFechas.map(async fecha => {
+    try { weekMenuData[fecha] = await dbGet(`menu/${fecha}`) || {}; }
+    catch { weekMenuData[fecha] = {}; }
+  }));
+
+  renderMealTiles();
+}
+
+// ===== RENDER TILES =====
+function renderMealTiles() {
+  comidaTiles.innerHTML = COMIDAS_ALL.map(meal => {
+    const cfg = CONFIG_COMIDA[meal];
+    let diasConDatos = 0;
+    weekFechas.forEach(f => { if (weekMenuData[f]?.[meal]?.plato) diasConDatos++; });
+
+    let cls = "", estado = "";
+    if (diasConDatos === 0)              { cls = "";         estado = "Sin cargar esta semana"; }
+    else if (diasConDatos < weekFechas.length) { cls = "parcial";  estado = `${diasConDatos}/7 días cargados`; }
+    else                                 { cls = "completa"; estado = "✅ Semana completa"; }
+
+    return `<div class="comida-tile ${cls}" data-meal="${meal}">
+      <span class="tile-icon">${cfg.icon}</span>
+      <span class="tile-name">${cfg.label}</span>
+      <span class="tile-estado">${estado}</span>
+    </div>`;
+  }).join("");
+
+  comidaTiles.querySelectorAll(".comida-tile").forEach(t => {
+    t.addEventListener("click", () => abrirMealSemana(t.dataset.meal));
+  });
+}
+
+// ===== ABRIR SEMANA DE COMIDA =====
+function abrirMealSemana(meal) {
+  mealActual = meal;
+  const cfg = CONFIG_COMIDA[meal];
+  mealWeekTitulo.textContent = `${cfg.icon} ${cfg.label}`;
+  actualizarLabel("semanaLabel2");
+  renderDiasRows();
+  stepMeals.classList.add("hidden");
+  stepMealWeek.classList.remove("hidden");
+}
+
+// ===== RENDER DÍAS =====
+function renderDiasRows() {
+  const hoyISO = iso(new Date());
+  diasRows.innerHTML = weekFechas.map((fecha, i) => {
+    const d = new Date(fecha + "T00:00:00");
+    const esHoy = fecha === hoyISO;
+    const datos = weekMenuData[fecha]?.[mealActual];
+    const tieneDatos = datos?.plato || datos?.sopa || datos?.frio || datos?.caliente;
+
+    // Preview: primer campo con contenido
+    let preview = "";
+    if (tieneDatos) {
+      const cfg = CONFIG_COMIDA[mealActual];
+      for (const c of cfg.campos) {
+        if (datos?.[c.id]) { preview = datos[c.id]; break; }
+      }
+    }
+
+    return `<div class="dia-row${esHoy ? " hoy" : ""}" data-fecha="${fecha}">
+      <div class="dia-info">
+        <div class="dia-nombre">${DIA_LUN_DOM[i]}${esHoy ? '<span class="hoy-tag">HOY</span>' : ""}</div>
+        <div class="dia-fecha">${formatDMY(fecha)}</div>
+        ${preview ? `<div class="dia-preview">📝 ${preview}</div>` : ""}
+      </div>
+      <span class="dia-status">${tieneDatos ? "✅" : "⬜"}</span>
+    </div>`;
+  }).join("");
+
+  diasRows.querySelectorAll(".dia-row").forEach(row => {
+    row.addEventListener("click", () => abrirEditDia(row.dataset.fecha));
+  });
+}
+
+// ===== ABRIR EDITAR DÍA =====
+async function abrirEditDia(fecha) {
+  fechaEditando = fecha;
+  hayUnsaved = false;
+  msgEdit.textContent = "";
+
+  const cfg = CONFIG_COMIDA[mealActual];
+  const d = new Date(fecha + "T00:00:00");
+  const idx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+
+  editTitulo.textContent = `${cfg.icon} ${cfg.label}`;
+  editFechaLabel.textContent = `${DIA_LUN_DOM[idx]} ${formatDMY(fecha)}`;
+
+  camposEdit.innerHTML = cfg.campos.map(c => `
+    <div style="margin-bottom:4px;">
+      <label class="input-label" for="campo_${c.id}">${c.label}</label>
+      <input class="menu-input" type="text" id="campo_${c.id}" placeholder="${c.placeholder}" autocomplete="off">
+    </div>`).join("");
+
+  // Pre-cargar datos existentes
+  const datos = weekMenuData[fecha]?.[mealActual] || {};
+  cfg.campos.forEach(c => {
+    const el = document.getElementById(`campo_${c.id}`);
+    if (el) el.value = datos[c.id] || "";
+  });
+
+  camposEdit.querySelectorAll(".menu-input").forEach(el => {
+    el.addEventListener("input", () => { hayUnsaved = true; msgEdit.textContent = ""; });
+  });
+
+  stepMealWeek.classList.add("hidden");
+  stepEdit.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ===== FUNCIÓN GUARDAR DÍA (reutilizable) =====
+async function guardarDiaActual() {
+  if (!fechaEditando || !mealActual) return true;
+  const cfg = CONFIG_COMIDA[mealActual];
+  const mealData = {};
+  cfg.campos.forEach(c => {
+    const el = document.getElementById(`campo_${c.id}`);
+    if (el) mealData[c.id] = el.value.trim();
+  });
+  await dbSet(`menu/${fechaEditando}/${mealActual}`, mealData);
+  if (!weekMenuData[fechaEditando]) weekMenuData[fechaEditando] = {};
+  weekMenuData[fechaEditando][mealActual] = mealData;
+  hayUnsaved = false;
+}
+
+// ===== GUARDAR Y VOLVER A SEMANA =====
+btnGuardarDia.addEventListener("click", async () => {
+  btnGuardarDia.disabled = true;
+  btnGuardarSalir.disabled = true;
+  btnGuardarDia.textContent = "Guardando...";
+  msgEdit.textContent = "";
+  try {
+    await guardarDiaActual();
+    msgEdit.textContent = "✅ Guardado.";
+    setTimeout(() => {
+      stepEdit.classList.add("hidden");
+      stepMealWeek.classList.remove("hidden");
+      renderDiasRows();
+      renderMealTiles();
+    }, 700);
+  } catch {
+    msgEdit.textContent = "❌ Error al guardar. Verifica el WiFi.";
+  }
+  btnGuardarDia.disabled = false;
+  btnGuardarSalir.disabled = false;
+  btnGuardarDia.textContent = "💾 Guardar";
+});
+
+// ===== GUARDAR Y SALIR A ADMIN =====
+btnGuardarSalir.addEventListener("click", async () => {
+  btnGuardarDia.disabled = true;
+  btnGuardarSalir.disabled = true;
+  btnGuardarSalir.textContent = "Guardando...";
+  msgEdit.textContent = "";
+  try {
+    await guardarDiaActual();
+    window.location.href = "admin.html";
+  } catch {
+    msgEdit.textContent = "❌ Error al guardar. Verifica el WiFi.";
+    btnGuardarDia.disabled = false;
+    btnGuardarSalir.disabled = false;
+    btnGuardarSalir.textContent = "📤 Guardar y salir";
+  }
+});
+
+// ===== VOLVER atrás con confirmación si hay cambios =====
+document.getElementById("btnVolverWeek").addEventListener("click", () => {
+  if (hayUnsaved && !confirm("¿Salir sin guardar? Los cambios se perderán.")) return;
+  hayUnsaved = false;
+  stepEdit.classList.add("hidden");
+  stepMealWeek.classList.remove("hidden");
+});
+
+document.getElementById("btnVolverMeals").addEventListener("click", () => {
+  stepMealWeek.classList.add("hidden");
+  stepMeals.classList.remove("hidden");
+  renderMealTiles();
+});
+
+// ===== NAVEGACIÓN SEMANA =====
+document.getElementById("btnSemAnterior").addEventListener("click", () => {
+  semanaOffset--; cargarSemana();
+});
+document.getElementById("btnSemSiguiente").addEventListener("click", () => {
+  semanaOffset++; cargarSemana();
+});
+document.getElementById("btnSemAnterior2").addEventListener("click", () => {
+  semanaOffset--;
+  cargarSemana().then(() => { if (mealActual) abrirMealSemana(mealActual); });
+});
+document.getElementById("btnSemSiguiente2").addEventListener("click", () => {
+  semanaOffset++;
+  cargarSemana().then(() => { if (mealActual) abrirMealSemana(mealActual); });
+});
+
+// ===== INICIAR =====
+cargarSemana();
+</script>
+
+</body>
+</html>

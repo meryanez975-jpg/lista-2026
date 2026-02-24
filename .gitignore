@@ -1,0 +1,17 @@
+# Sistema operativo Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Sistema operativo Mac
+.DS_Store
+
+# Editores
+*.swp
+*~
+.vscode/
+
+# Documentos internos (no son parte de la app)
+COMO_USAR_CLAUDE_CODE.md
+RESUMEN_PROYECTO.md
+TECNOLOGIAS.md

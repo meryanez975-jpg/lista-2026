@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Otros</title>
+  <link rel="stylesheet" href="../estilo.css">
+  <style>
+    body { background: linear-gradient(160deg, #c8e6c9 0%, #e8f5e9 40%, #f5fff5 100%); }
+    .otros-header {
+      background: linear-gradient(135deg, #2e7d32, #388e3c, #66bb6a);
+      border-radius: 0 0 36px 36px;
+      padding: 32px 24px 28px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(46,125,50,.22);
+      position: relative; overflow: hidden;
+    }
+    .otros-header::before {
+      content:""; position:absolute; top:-30px; right:-30px;
+      width:120px; height:120px; background:rgba(255,255,255,.10); border-radius:50%;
+    }
+    .otros-header .icon-grande { font-size:52px; display:block; margin-bottom:8px; }
+    .otros-header h1 { margin:0 0 4px; color:#fff; font-size:26px; font-weight:900; text-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .otros-header p  { margin:0; color:rgba(255,255,255,.85); font-size:13px; }
+    .panel { padding-top: 0 !important; }
+    .tile { border-color: #a5d6a7; }
+  </style>
+</head>
+<body>
+
+<main class="panel" style="padding-top:0;">
+  <div class="otros-header">
+    <span class="icon-grande">🧩</span>
+    <h1>Otros</h1>
+    <p>Ajustes y configuración</p>
+  </div>
+
+  <!-- ===== MENÚ PRINCIPAL DE OTROS ===== -->
+  <div id="menuOtros">
+    <section class="grid" style="margin-bottom:14px;">
+      <button class="tile" id="btnAdmins" type="button">
+        <div class="tile-icon">👤</div>
+        <div class="tile-title">ADMINISTRADORES</div>
+        <div class="tile-sub">Agregar o gestionar admins</div>
+      </button>
+
+      <button class="tile" id="btnEliminar" type="button">
+        <div class="tile-icon">🗑️</div>
+        <div class="tile-title">ELIMINAR</div>
+        <div class="tile-sub">Eliminar admin o comidas</div>
+      </button>
+    </section>
+
+    <section style="margin-bottom:14px;">
+      <button class="tile" id="btnGraficos" type="button" style="width:100%;">
+        <div class="tile-icon">📊</div>
+        <div class="tile-title">VER GRÁFICOS</div>
+        <div class="tile-sub">Cuántas personas no quisieron las comidas</div>
+      </button>
+    </section>
+
+    <p class="nota" id="msgOtros"></p>
+    <a class="btn-volver-bottom" href="admin.html">⬅ Volver a Administración</a>
+  </div>
+
+  <!-- ===== PANEL: AGREGAR ADMINISTRADORES ===== -->
+  <div class="hidden sub-panel" id="panelAdmins">
+    <h2 style="color:#4a2080; margin:0 0 16px;">👤 Administradores</h2>
+
+    <section class="form-card">
+      <h3 style="margin:0 0 14px;">➕ Agregar administrador</h3>
+      <label class="campo">
+        <span>Nombre</span>
+        <input type="text" id="admNombre" placeholder="Ej: Ana Pérez">
+      </label>
+      <label class="campo">
+        <span>Número de celular</span>
+        <input type="tel" id="admCelular" inputmode="numeric" placeholder="Ej: 099123456">
+      </label>
+      <label class="campo">
+        <span>Contraseña</span>
+        <input type="password" id="admPass" placeholder="Mínimo 4 caracteres">
+      </label>
+      <label class="campo">
+        <span>Repetir contraseña</span>
+        <input type="password" id="admPassRep" placeholder="Repetir contraseña">
+      </label>
+      <button class="btn-primario" id="btnGuardarAdmin" type="button">💾 Guardar administrador</button>
+      <p class="nota" id="msgAdmins"></p>
+    </section>
+
+    <section class="form-card">
+      <h3 style="margin:0 0 14px;">Lista de administradores</h3>
+      <div id="listaAdmins"><p class="loading">Cargando...</p></div>
+    </section>
+
+    <button class="btn-secundario" id="btnVolverAdmins" type="button" style="margin-top:6px;">
+      ← Volver a Otros
+    </button>
+  </div>
+
+  <!-- ===== PANEL: ELIMINAR ===== -->
+  <div class="hidden sub-panel" id="panelEliminar">
+    <h2 style="color:#c62828; margin:0 0 16px;">🗑️ Eliminar</h2>
+
+    <section class="form-card" style="border-color:#f9a8a8; background:#fff5f5;">
+      <h3 style="margin:0 0 14px; color:#c62828;">Eliminar administrador</h3>
+      <p style="font-size:14px; color:#666; margin:0 0 12px;">
+        Seleccioná el administrador que deseas eliminar. No se puede eliminar el único administrador restante.
+      </p>
+      <div id="listaAdminsElim"><p class="loading">Cargando...</p></div>
+    </section>
+
+    <section class="form-card" style="border-color:#f9a8a8; background:#fff5f5;">
+      <h3 style="margin:0 0 10px; color:#c62828;">Eliminar registros de comidas</h3>
+      <p style="font-size:14px; color:#666; margin:0 0 12px;">
+        Borra todos los SI/NO guardados de todos los empleados. Esta acción no se puede deshacer.
+      </p>
+      <button class="btn-primario" id="btnLimpiarComidas" type="button"
+              style="background:#f48fb1; color:#880e4f;">
+        🗑️ Eliminar todos los registros de comidas
+      </button>
+      <p class="nota" id="msgEliminar"></p>
+    </section>
+
+    <button class="btn-secundario" id="btnVolverEliminar" type="button" style="margin-top:6px;">
+      ← Volver a Otros
+    </button>
+  </div>
+
+  <!-- ===== PANEL: GRÁFICOS ===== -->
+  <div class="hidden sub-panel" id="panelGraficos">
+    <h2 style="color:#002c5c; margin:0 0 16px;">📊 Gráficos por semana</h2>
+
+    <section class="form-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+        <div>
+          <strong id="rangoGraf">—</strong>
+          <div style="font-size:12px; color:#888; margin-top:2px;">Semana seleccionada</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-mini" id="prevGraf">◀</button>
+          <button class="btn-mini" id="nextGraf">▶</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-primario" id="btnCalcularGraf" type="button"
+                style="flex:1; background:#90caf9; color:#002c5c;">
+          📊 Calcular gráficos
+        </button>
+        <button class="btn-mini" id="btnImprimirGraf" type="button">🖨️ Imprimir</button>
+      </div>
+      <p class="nota" id="msgGraf"></p>
+    </section>
+
+    <div id="contenidoGraf"></div>
+
+    <button class="btn-secundario" id="btnVolverGraf" type="button" style="margin-top:6px;">
+      ← Volver a Otros
+    </button>
+  </div>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+if (sessionStorage.getItem("admin_logged") !== "1") window.location.href = "admin.html";
+
+const menuOtros      = document.getElementById("menuOtros");
+const panelAdmins    = document.getElementById("panelAdmins");
+const panelEliminar  = document.getElementById("panelEliminar");
+const panelGraficos  = document.getElementById("panelGraficos");
+
+function mostrarPanel(panel) {
+  [menuOtros, panelAdmins, panelEliminar, panelGraficos].forEach(p => p.classList.add("hidden"));
+  panel.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ===========================
+// SECCIÓN ADMINISTRADORES
+// ===========================
+document.getElementById("btnAdmins").addEventListener("click", () => {
+  mostrarPanel(panelAdmins);
+  cargarListaAdmins();
+});
+document.getElementById("btnVolverAdmins").addEventListener("click", () => mostrarPanel(menuOtros));
+
+document.getElementById("btnGuardarAdmin").addEventListener("click", async () => {
+  const nombre  = document.getElementById("admNombre").value.trim();
+  const celular = document.getElementById("admCelular").value.trim();
+  const pass    = document.getElementById("admPass").value.trim();
+  const passRep = document.getElementById("admPassRep").value.trim();
+  const msg     = document.getElementById("msgAdmins");
+
+  if (!nombre)  { msg.textContent = "El nombre es requerido."; return; }
+  if (!celular) { msg.textContent = "El número de celular es requerido."; return; }
+  if (pass.length < 4) { msg.textContent = "La contraseña debe tener al menos 4 caracteres."; return; }
+  if (pass !== passRep) { msg.textContent = "❌ Las contraseñas no coinciden."; return; }
+
+  try {
+    const existe = await dbGet(`config/admins/${celular}`);
+    if (existe) {
+      if (!confirm(`El número ${celular} ya existe como administrador. ¿Actualizar sus datos?`)) return;
+    }
+    await dbSet(`config/admins/${celular}`, { nombre, password: pass });
+    msg.textContent = "✅ Administrador guardado correctamente.";
+    document.getElementById("admNombre").value   = "";
+    document.getElementById("admCelular").value  = "";
+    document.getElementById("admPass").value     = "";
+    document.getElementById("admPassRep").value  = "";
+    cargarListaAdmins();
+  } catch(e) {
+    msg.textContent = "❌ Error al guardar. Verifica el WiFi.";
+  }
+});
+
+async function cargarListaAdmins() {
+  const el = document.getElementById("listaAdmins");
+  el.innerHTML = '<p class="loading">Cargando...</p>';
+  try {
+    const admins = await dbGet("config/admins");
+    if (!admins) {
+      el.innerHTML = '<p class="nota">No hay administradores registrados.</p>';
+      return;
+    }
+    const lista = Object.entries(admins);
+    el.innerHTML = lista.map(([cel, a]) => `
+      <div class="admin-fila">
+        <div>
+          <strong>${a.nombre || "Admin"}</strong>
+          <div style="font-size:13px; color:#888;">📱 ${cel}</div>
+        </div>
+        ${lista.length > 1
+          ? `<button class="btn-sm danger btn-del-admin" data-cel="${cel}" data-nombre="${(a.nombre||"Admin")}">🗑️ Eliminar</button>`
+          : `<span style="font-size:12px; color:#aaa;">Único admin</span>`
+        }
+      </div>
+    `).join("");
+    // Event listeners seguros (evita problemas con caracteres especiales en nombres)
+    el.querySelectorAll(".btn-del-admin").forEach(btn => {
+      btn.addEventListener("click", () => eliminarAdmin(btn.dataset.cel, btn.dataset.nombre));
+    });
+  } catch(e) {
+    el.innerHTML = '<p class="nota">❌ Error al cargar.</p>';
+  }
+}
+
+async function eliminarAdmin(cel, nombre) {
+  const myPhone = sessionStorage.getItem("admin_phone");
+  if (cel === myPhone) {
+    alert("❌ No puedes eliminar tu propio administrador mientras estás conectado.");
+    return;
+  }
+  if (!confirm(`¿Eliminar al administrador "${nombre}" (${cel})?`)) return;
+  try {
+    await dbRemove(`config/admins/${cel}`);
+    cargarListaAdmins();
+  } catch(e) {
+    alert("❌ Error al eliminar.");
+  }
+}
+
+// ===========================
+// SECCIÓN ELIMINAR
+// ===========================
+document.getElementById("btnEliminar").addEventListener("click", () => {
+  mostrarPanel(panelEliminar);
+  cargarListaAdminsElim();
+});
+document.getElementById("btnVolverEliminar").addEventListener("click", () => mostrarPanel(menuOtros));
+
+async function cargarListaAdminsElim() {
+  const el = document.getElementById("listaAdminsElim");
+  el.innerHTML = '<p class="loading">Cargando...</p>';
+  try {
+    const admins = await dbGet("config/admins");
+    if (!admins) { el.innerHTML = '<p class="nota">No hay administradores.</p>'; return; }
+    const lista = Object.entries(admins);
+    el.innerHTML = lista.map(([cel, a]) => `
+      <div class="admin-fila">
+        <div>
+          <strong>${a.nombre || "Admin"}</strong>
+          <div style="font-size:13px; color:#888;">📱 ${cel}</div>
+        </div>
+        ${lista.length > 1
+          ? `<button class="btn-sm danger btn-del-admin-elim" data-cel="${cel}" data-nombre="${a.nombre||"Admin"}">🗑️ Eliminar</button>`
+          : `<span style="font-size:12px; color:#aaa;">Único admin</span>`
+        }
+      </div>
+    `).join("");
+    el.querySelectorAll(".btn-del-admin-elim").forEach(btn => {
+      btn.addEventListener("click", () => eliminarAdminElim(btn.dataset.cel, btn.dataset.nombre));
+    });
+  } catch(e) {
+    el.innerHTML = '<p class="nota">❌ Error al cargar.</p>';
+  }
+}
+
+async function eliminarAdminElim(cel, nombre) {
+  const myPhone = sessionStorage.getItem("admin_phone");
+  if (cel === myPhone) {
+    alert("❌ No puedes eliminarte a ti mismo mientras estás conectado.");
+    return;
+  }
+  if (!confirm(`¿Eliminar al administrador "${nombre}" (${cel})?`)) return;
+  try {
+    await dbRemove(`config/admins/${cel}`);
+    cargarListaAdminsElim();
+    document.getElementById("msgEliminar").textContent = `✅ Administrador eliminado.`;
+  } catch(e) {
+    document.getElementById("msgEliminar").textContent = "❌ Error al eliminar.";
+  }
+}
+
+document.getElementById("btnLimpiarComidas").addEventListener("click", async () => {
+  const msg = document.getElementById("msgEliminar");
+  if (!confirm("¿Seguro? Esto borrará TODOS los registros de comidas (SI/NO) de todos los empleados. Esta acción no se puede deshacer.")) return;
+  try {
+    await dbRemove("registros");
+    msg.textContent = "✅ Registros de comidas eliminados.";
+  } catch(e) {
+    msg.textContent = "❌ Error al eliminar registros.";
+  }
+});
+
+// ===========================
+// SECCIÓN GRÁFICOS
+// ===========================
+let weekGraf = startOfWeekMonday(new Date());
+
+function actualizarRangoGraf() {
+  const fin = addDays(weekGraf, 6);
+  document.getElementById("rangoGraf").textContent =
+    `${formatDMY(iso(weekGraf))} → ${formatDMY(iso(fin))}`;
+}
+actualizarRangoGraf();
+
+document.getElementById("prevGraf").addEventListener("click", () => {
+  weekGraf = addDays(weekGraf, -7);
+  actualizarRangoGraf();
+});
+document.getElementById("nextGraf").addEventListener("click", () => {
+  weekGraf = addDays(weekGraf, 7);
+  actualizarRangoGraf();
+});
+
+document.getElementById("btnGraficos").addEventListener("click", () => {
+  mostrarPanel(panelGraficos);
+  actualizarRangoGraf();
+});
+document.getElementById("btnVolverGraf").addEventListener("click", () => mostrarPanel(menuOtros));
+
+document.getElementById("btnCalcularGraf").addEventListener("click", calcularGraficos);
+
+document.getElementById("btnImprimirGraf").addEventListener("click", () => {
+  const contenido = document.getElementById("contenidoGraf");
+  if (!contenido.innerHTML.trim()) {
+    document.getElementById("msgGraf").textContent = "Primero calculá los gráficos.";
+    return;
+  }
+  window.print();
+});
+
+async function calcularGraficos() {
+  const msg = document.getElementById("msgGraf");
+  const contenido = document.getElementById("contenidoGraf");
+  msg.textContent = "Calculando...";
+  contenido.innerHTML = "";
+
+  try {
+    const [personalData, registrosData] = await Promise.all([
+      dbGet("personal"),
+      dbGet("registros")
+    ]);
+
+    if (!personalData) {
+      msg.textContent = "No hay personal registrado.";
+      return;
+    }
+
+    const personas = Object.entries(personalData)
+      .filter(([, p]) => p.activo)
+      .map(([key, p]) => ({ key, ...p }));
+
+    const total = personas.length;
+    if (!total) { msg.textContent = "No hay personal activo."; return; }
+
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(weekGraf, i);
+      dates.push({ d, iso: iso(d), corto: DIA_CORTO[i], nombre: DIA_LUN_DOM[i], idx: i });
+    }
+
+    let html = "";
+    COMIDAS_ALL.forEach(meal => {
+      // Calcular totales SI y NO por día
+      const datosDia = dates.map(({ iso: dateISO, nombre, idx }) => {
+        let siCount = 0, noCount = 0, libreCount = 0;
+        personas.forEach(p => {
+          if (esDiaLibre(p, idx)) { libreCount++; return; }
+          const val = registrosData?.[p.key]?.[dateISO]?.[meal];
+          if (val === "SI") siCount++;
+          else noCount++;
+        });
+        const activos = total - libreCount;
+        const pctNo = activos > 0 ? Math.round((noCount / activos) * 100) : 0;
+        return { nombre, siCount, noCount, libreCount, activos, pctNo };
+      });
+
+      html += `<section class="form-card" style="margin-bottom:14px;">
+        <h3 style="margin:0 0 10px;">${COMIDA_ICON[meal]} ${COMIDA_LABEL[meal]}</h3>
+
+        <!-- Tabla de totales -->
+        <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
+          <thead>
+            <tr style="background:#e3f2fd;">
+              <th style="text-align:left; padding:7px 8px; border-bottom:2px solid #90caf9;">Día</th>
+              <th style="text-align:center; padding:7px 8px; border-bottom:2px solid #90caf9; color:#2e7d32;">✅ SI</th>
+              <th style="text-align:center; padding:7px 8px; border-bottom:2px solid #90caf9; color:#c62828;">❌ NO</th>
+              <th style="text-align:center; padding:7px 8px; border-bottom:2px solid #90caf9; color:#888;">🏖️ Libres</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${datosDia.map(({ nombre, siCount, noCount, libreCount }) => `
+              <tr style="border-bottom:1px solid #f0f0f0;">
+                <td style="padding:7px 8px; font-weight:700;">${nombre}</td>
+                <td style="padding:7px 8px; text-align:center; color:#2e7d32; font-weight:700;">${siCount}</td>
+                <td style="padding:7px 8px; text-align:center; color:#c62828; font-weight:700;">${noCount}</td>
+                <td style="padding:7px 8px; text-align:center; color:#888;">${libreCount}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <!-- Barras para NO -->
+        <div class="grafico-wrap">
+          ${datosDia.map(({ nombre, noCount, activos, pctNo }) => `
+            <div class="grafico-fila">
+              <div class="grafico-label">${nombre}: <strong style="color:#c62828;">${noCount}</strong> NO · <strong style="color:#2e7d32;">${activos - noCount}</strong> SI (de ${activos} activos)</div>
+              <div class="grafico-barra-bg">
+                <div class="grafico-barra" style="width:${pctNo}%;">${pctNo > 10 ? pctNo + '%' : ''}</div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </section>`;
+    });
+
+    contenido.innerHTML = html;
+    msg.textContent = "✅ Gráficos listos.";
+  } catch {
+    msg.textContent = "❌ Error al calcular. Verifica el WiFi.";
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Agregar personal</title>
+  <link rel="stylesheet" href="../estilo.css">
+</head>
+<body>
+
+  <main class="panel">
+    <header class="panel-header">
+      <h1>Agregar personal</h1>
+    </header>
+
+    <form class="form-card" id="formPersonal">
+
+      <label class="campo">
+        <span>Nombre</span>
+        <input type="text" id="nombre" placeholder="Ej: Lily" required>
+      </label>
+
+      <label class="campo">
+        <span>Número de carnet</span>
+        <input type="text" id="carnet" placeholder="Ej: 1234567" inputmode="numeric" required>
+      </label>
+
+      <label class="campo">
+        <span>Turno</span>
+        <select id="turno" required>
+          <option value="">Seleccionar...</option>
+          <option value="mañana">Mañana (7am a 7pm)</option>
+          <option value="tarde">Tarde (11am a 11pm)</option>
+          <option value="noche">Noche (2pm a 11pm)</option>
+          <option value="otro">Otro (escribir)</option>
+        </select>
+      </label>
+
+      <!-- Solo aparece si eligen "Otro" -->
+      <label class="campo hidden" id="turnoOtroBox">
+        <span>Especificar turno</span>
+        <input type="text" id="turnoOtro" placeholder="Ej: 9am a 6pm">
+      </label>
+
+      <label class="campo">
+        <span>Color (según turno)</span>
+        <select id="color" required>
+          <option value="">Seleccionar...</option>
+          <option value="rosado">Rosado</option>
+          <option value="amarillo">Amarillo</option>
+          <option value="azul">Azul</option>
+          <option value="rojo">Rojo</option>
+          <option value="verde">Verde</option>
+        </select>
+      </label>
+
+      <label class="campo">
+        <span>Observación (opcional)</span>
+        <textarea id="obs" rows="3" placeholder="Ej: turno mañana, apoyo en caja..."></textarea>
+      </label>
+
+      <button class="btn-primario" type="submit">✅ Guardar</button>
+
+      <p class="nota" id="msgPersonal">Aquí luego lo conectamos a Google Sheets.</p>
+    </form>
+
+    <a class="tile salir-bottom" href="personal.html">⬅ VOLVER</a>
+  </main>
+
+  <script>
+    const form = document.getElementById("formPersonal");
+    const msg = document.getElementById("msgPersonal");
+
+    const turno = document.getElementById("turno");
+    const color = document.getElementById("color");
+    const turnoOtroBox = document.getElementById("turnoOtroBox");
+    const turnoOtro = document.getElementById("turnoOtro");
+
+    // Mapa: turno -> color
+    const turnoColor = {
+      "mañana": "rosado",
+      "tarde": "amarillo",
+      "noche": "azul",
+      "otro": "rojo"
+    };
+
+    function aplicarColorPorTurno() {
+      const t = turno.value;
+
+      // Mostrar/ocultar "Otro"
+      if (t === "otro") {
+        turnoOtroBox.classList.remove("hidden");
+        turnoOtro.required = true;
+      } else {
+        turnoOtroBox.classList.add("hidden");
+        turnoOtro.required = false;
+        turnoOtro.value = "";
+      }
+
+      // Autoseleccionar color según turno (si aplica)
+      if (turnoColor[t]) {
+        color.value = turnoColor[t];
+      }
+    }
+
+    turno.addEventListener("change", aplicarColorPorTurno);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      // Validación extra: si es "otro", que escriba el turno
+      if (turno.value === "otro" && !turnoOtro.value.trim()) {
+        msg.textContent = "❌ Por favor escribe el turno en 'Especificar turno'.";
+        return;
+      }
+
+      msg.textContent = "✅ Personal agregado (modo diseño). Luego lo conectamos a Sheets.";
+      form.reset();
+      turnoOtroBox.classList.add("hidden");
+    });
+  </script>
+
+</body>
+</html>
