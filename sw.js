@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 // Service Worker — Sistema de Comidas
 const CACHE_NAME = "comidas-v1";
 
@@ -7,8 +8,8 @@ const ARCHIVOS_CACHE = [
   "/estilo.css",
   "/firebase-config.js",
   "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
+  "/icons/icon-192.svg",
+  "/icons/icon-512.svg",
   "/PAGES/registro.html",
   "/PAGES/conteo.html",
   "/PAGES/admin.html",
