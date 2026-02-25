@@ -313,8 +313,8 @@ nombreInput.addEventListener("input", () => {
 
   if (!res.length) { autoList.classList.add("hidden"); return; }
   autoList.innerHTML = res.map(([key, p]) => `
-    <div class="autocomplete-item" data-key="${key}" data-nombre="${p.nombre || ""}">
-      <strong>${p.nombre || ""}</strong>
+    <div class="autocomplete-item" data-key="${key}" data-nombre="${primerNombre(p.nombre) || ""}">
+      <strong>${primerNombre(p.nombre) || ""}</strong>
     </div>`).join("");
   autoList.classList.remove("hidden");
 
