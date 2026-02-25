@@ -420,7 +420,7 @@ function renderHorario() {
   vistaHorario.innerHTML = html || '<p class="nota">Sin personal.</p>';
 }
 
-// ===== VISTA 3: DÍAS LIBRES — Tabla única con todos =====
+// ===== VISTA 3: DÍAS LIBRES — Separado por turno =====
 function renderLibres() {
   const personas = personasActivas();
   const contenedor = document.getElementById("libresContenido");
@@ -430,37 +430,53 @@ function renderLibres() {
     return;
   }
 
-  // Ordenar por día libre (Lun→Dom), sin turno agrupado
-  const lista = [...personas].sort((a, b) => {
-    const ia = idxDiaLibre(a[1]);
-    const ib = idxDiaLibre(b[1]);
-    if (ia !== ib) return ia - ib;
-    return (a[1].nombre || "").localeCompare(b[1].nombre || "", "es");
+  const grupos = [
+    { label: "☀️ Turno Mañana",     cls: "tb-manana", turnos: ["mañana","diurno"] },
+    { label: "🌙 Turno Tarde / Noche", cls: "tb-noche",  turnos: ["tarde","noche"] },
+    { label: "⚙️ Otros turnos",       cls: "tb-otro",  turnos: ["otro"] }
+  ];
+
+  function tablaGrupo(lista) {
+    // Ordenar por día libre
+    const sorted = [...lista].sort((a, b) => {
+      const ia = idxDiaLibre(a[1]);
+      const ib = idxDiaLibre(b[1]);
+      if (ia !== ib) return ia - ib;
+      return (a[1].nombre || "").localeCompare(b[1].nombre || "", "es");
+    });
+    return sorted.map(([, p]) => {
+      const diaIdx = idxDiaLibre(p);
+      const celdas = [0,1,2,3,4,5,6].map(i =>
+        i === diaIdx
+          ? `<td><span class="celda-libre">LIBRE</span></td>`
+          : `<td></td>`
+      ).join("");
+      return `<tr><td>${p.nombre}</td>${celdas}</tr>`;
+    }).join("");
+  }
+
+  let html = "";
+  grupos.forEach(grupo => {
+    const lista = personas.filter(([, p]) => grupo.turnos.includes(p.turno || "otro"));
+    if (!lista.length) return;
+
+    html += `
+      <div class="turno-bloque form-card" style="padding:0; overflow:hidden; margin-bottom:14px;">
+        <span class="turno-bloque-titulo ${grupo.cls}">${grupo.label} (${lista.length})</span>
+        <div style="overflow-x:auto;">
+          <table class="tabla-libres">
+            <thead><tr>
+              <th>Nombre</th>
+              <th>Lun</th><th>Mar</th><th>Mié</th>
+              <th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th>
+            </tr></thead>
+            <tbody>${tablaGrupo(lista)}</tbody>
+          </table>
+        </div>
+      </div>`;
   });
 
-  const filas = lista.map(([, p]) => {
-    const diaIdx = idxDiaLibre(p);
-    const celdas = [0,1,2,3,4,5,6].map(i =>
-      i === diaIdx
-        ? `<td><span class="celda-libre">LIBRE</span></td>`
-        : `<td></td>`
-    ).join("");
-    return `<tr><td>${p.nombre}</td>${celdas}</tr>`;
-  }).join("");
-
-  contenedor.innerHTML = `
-    <div class="form-card" style="padding:0; overflow:hidden;">
-      <div style="overflow-x:auto;">
-        <table class="tabla-libres">
-          <thead><tr>
-            <th>Nombre</th>
-            <th>Lun</th><th>Mar</th><th>Mié</th>
-            <th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th>
-          </tr></thead>
-          <tbody>${filas}</tbody>
-        </table>
-      </div>
-    </div>`;
+  contenedor.innerHTML = html;
 }
 
 // ===== MODAL EDITAR =====
