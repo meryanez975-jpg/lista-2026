@@ -108,8 +108,6 @@ function idxDiaLibre(p) {
 }
 
 // ¿Es este índice de semana el día libre de la persona?
-// (excepto si sector es "otros" → sin restricción)
 function esDiaLibre(p, weekIdx) {
-  if (p.sector === "otros") return false; // sin restricción para sector "otros"
   return idxDiaLibre(p) === weekIdx;
 }

@@ -93,14 +93,26 @@
 
     /* Formulario de edición de un día */
     .input-label {
-      font-size: 12px; font-weight: 800; color: #555; letter-spacing: .5px;
-      text-transform: uppercase; margin-bottom: 4px; display: block;
+      font-size: 15px; font-weight: 900; color: #1565c0; letter-spacing: .3px;
+      text-transform: uppercase; margin-bottom: 6px; display: block;
     }
     .menu-input {
-      width: 100%; padding: 12px 14px; margin-bottom: 10px; border-radius: 12px;
-      border: 1.5px solid #90caf9; font-size: 15px; background: #fff;
+      width: 100%; padding: 14px 16px; margin-bottom: 12px; border-radius: 12px;
+      border: 2px solid #90caf9; font-size: 18px; background: #fff;
     }
     .menu-input:focus { border-color: #1976d2; outline: none; box-shadow: 0 0 0 3px rgba(25,118,210,.1); }
+    .ult-mod {
+      font-size: 12px; color: #666; text-align: center; margin-top: 6px;
+      background: #e3f2fd; border-radius: 8px; padding: 6px 10px;
+    }
+    /* Historial */
+    .hist-item {
+      padding: 12px 14px; border-bottom: 1px solid #e3f2fd;
+    }
+    .hist-item:last-child { border-bottom: none; }
+    .hist-fecha { font-size: 14px; font-weight: 800; color: #002c5c; }
+    .hist-campo { font-size: 13px; color: #444; margin-top: 3px; }
+    .hist-vacio { font-size: 13px; color: #aaa; text-align: center; padding: 24px; }
 
     #btnGuardarDia {
       background: linear-gradient(135deg,#1565c0,#42a5f5) !important;
@@ -153,8 +165,21 @@
       <div class="sub-header">
         <button class="btn-volver-sub" id="btnVolverMeals" type="button">← Comidas</button>
         <span class="sub-titulo" id="mealWeekTitulo"></span>
+        <button class="btn-volver-sub" id="btnHistorial" type="button" style="background:#e8f4fd;border-color:#64b5f6;color:#0d47a1;margin-left:auto;">📖 Historial</button>
       </div>
       <div id="diasRows"></div>
+    </section>
+  </div>
+
+  <!-- ===== STEP HISTORIAL ===== -->
+  <div id="stepHistorial" class="hidden">
+    <section class="form-card" style="border-color:#90caf9;">
+      <div class="sub-header">
+        <button class="btn-volver-sub" id="btnVolverHistorial" type="button">← Semana</button>
+        <span class="sub-titulo" id="historialTitulo">Historial</span>
+      </div>
+      <p style="font-size:12px;color:#888;margin:-8px 0 12px;">Últimas comidas guardadas (máximo 1 mes)</p>
+      <div id="historialLista"></div>
     </section>
   </div>
 
@@ -172,6 +197,7 @@
       <button class="btn-primario" id="btnGuardarDia" type="button">💾 Guardar</button>
       <button id="btnGuardarSalir" type="button">📤 Guardar y salir</button>
       <p class="nota" id="msgEdit"></p>
+      <p class="ult-mod hidden" id="ultMod"></p>
     </section>
   </div>
 
@@ -311,11 +337,15 @@ function renderDiasRows() {
       }
     }
 
+    const modStr = datos?._guardado
+      ? `<div style="font-size:11px;color:#999;">🕐 ${datos._guardadoFecha || ""} ${datos._guardado}</div>`
+      : "";
     return `<div class="dia-row${esHoy ? " hoy" : ""}" data-fecha="${fecha}">
       <div class="dia-info">
         <div class="dia-nombre">${DIA_LUN_DOM[i]}${esHoy ? '<span class="hoy-tag">HOY</span>' : ""}</div>
         <div class="dia-fecha">${formatDMY(fecha)}</div>
         ${preview ? `<div class="dia-preview">📝 ${preview}</div>` : ""}
+        ${modStr}
       </div>
       <span class="dia-status">${tieneDatos ? "✅" : "⬜"}</span>
     </div>`;
@@ -370,27 +400,39 @@ async function guardarDiaActual() {
     const el = document.getElementById(`campo_${c.id}`);
     if (el) mealData[c.id] = el.value.trim();
   });
+  // Guardar timestamp de modificación
+  const ahora = new Date();
+  mealData._guardado = ahora.toLocaleTimeString("es", { hour:"2-digit", minute:"2-digit" });
+  mealData._guardadoFecha = ahora.toLocaleDateString("es", { day:"2-digit", month:"2-digit", year:"numeric" });
   await dbSet(`menu/${fechaEditando}/${mealActual}`, mealData);
   if (!weekMenuData[fechaEditando]) weekMenuData[fechaEditando] = {};
   weekMenuData[fechaEditando][mealActual] = mealData;
   hayUnsaved = false;
+  return mealData;
 }
 
-// ===== GUARDAR Y VOLVER A SEMANA =====
+// ===== GUARDAR Y LIMPIAR (queda en el formulario) =====
 btnGuardarDia.addEventListener("click", async () => {
   btnGuardarDia.disabled = true;
   btnGuardarSalir.disabled = true;
   btnGuardarDia.textContent = "Guardando...";
   msgEdit.textContent = "";
+  const ultModEl = document.getElementById("ultMod");
+  ultModEl.classList.add("hidden");
   try {
-    await guardarDiaActual();
-    msgEdit.textContent = "✅ Guardado.";
-    setTimeout(() => {
-      stepEdit.classList.add("hidden");
-      stepMealWeek.classList.remove("hidden");
-      renderDiasRows();
-      renderMealTiles();
-    }, 700);
+    const saved = await guardarDiaActual();
+    msgEdit.textContent = "✅ Guardado correctamente.";
+    // Mostrar última modificación
+    ultModEl.textContent = `🕐 Última modificación: ${saved._guardadoFecha} a las ${saved._guardado}`;
+    ultModEl.classList.remove("hidden");
+    // Limpiar campos para nueva entrada
+    const cfg = CONFIG_COMIDA[mealActual];
+    cfg.campos.forEach(c => {
+      const el = document.getElementById(`campo_${c.id}`);
+      if (el) el.value = "";
+    });
+    renderDiasRows();
+    renderMealTiles();
   } catch {
     msgEdit.textContent = "❌ Error al guardar. Verifica el WiFi.";
   }
@@ -415,6 +457,63 @@ btnGuardarSalir.addEventListener("click", async () => {
     btnGuardarSalir.textContent = "📤 Guardar y salir";
   }
 });
+
+// ===== HISTORIAL DEL MES =====
+const stepHistorial = document.getElementById("stepHistorial");
+
+document.getElementById("btnHistorial").addEventListener("click", () => {
+  if (!mealActual) return;
+  abrirHistorial();
+});
+
+document.getElementById("btnVolverHistorial").addEventListener("click", () => {
+  stepHistorial.classList.add("hidden");
+  stepMealWeek.classList.remove("hidden");
+});
+
+async function abrirHistorial() {
+  const cfg = CONFIG_COMIDA[mealActual];
+  document.getElementById("historialTitulo").textContent = `${cfg.icon} ${cfg.label} — Último mes`;
+  const lista = document.getElementById("historialLista");
+  lista.innerHTML = '<p class="hist-vacio">Cargando...</p>';
+
+  stepMealWeek.classList.add("hidden");
+  stepHistorial.classList.remove("hidden");
+
+  // Últimos 30 días (del más reciente al más antiguo)
+  const dias = Array.from({ length: 30 }, (_, i) => iso(addDays(new Date(), -i)));
+
+  const resultados = await Promise.all(dias.map(async fecha => {
+    try {
+      const d = await dbGet(`menu/${fecha}/${mealActual}`);
+      return { fecha, datos: d };
+    } catch { return { fecha, datos: null }; }
+  }));
+
+  const conDatos = resultados.filter(({ datos: d }) =>
+    d && (d.plato || d.sopa || d.frio || d.caliente)
+  );
+
+  if (!conDatos.length) {
+    lista.innerHTML = '<p class="hist-vacio">No hay comidas guardadas en el último mes.</p>';
+    return;
+  }
+
+  lista.innerHTML = conDatos.map(({ fecha, datos: d }) => {
+    const dt = new Date(fecha + "T00:00:00");
+    const idx = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
+    const modStr = d._guardado
+      ? `<span style="font-size:11px;color:#aaa;font-weight:400;"> · Guardado: ${d._guardadoFecha || ""} ${d._guardado}</span>`
+      : "";
+    const campos = cfg.campos.map(c =>
+      d[c.id] ? `<div class="hist-campo">• <strong>${c.label}:</strong> ${d[c.id]}</div>` : ""
+    ).join("");
+    return `<div class="hist-item">
+      <div class="hist-fecha">${DIA_LUN_DOM[idx]} ${formatDMY(fecha)}${modStr}</div>
+      ${campos}
+    </div>`;
+  }).join("");
+}
 
 // ===== VOLVER atrás con confirmación si hay cambios =====
 document.getElementById("btnVolverWeek").addEventListener("click", () => {

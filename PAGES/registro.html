@@ -115,8 +115,8 @@
       font-size: 10px; color: #8d6e00; font-weight: 700;
     }
     .dia-menu {
-      font-size: 11px; color: #3d7a55; margin-top: 4px;
-      font-style: italic; line-height: 1.4;
+      font-size: 14px; color: #2e7d32; margin-top: 5px;
+      font-weight: 600; line-height: 1.5;
     }
     .dia-row.libre .dia-menu { color: #a08020; }
     .hoy-tag {
@@ -310,7 +310,6 @@ nombreInput.addEventListener("input", () => {
   autoList.innerHTML = res.map(([key, p]) => `
     <div class="autocomplete-item" data-key="${key}" data-nombre="${p.nombre || ""}">
       <strong>${p.nombre || ""}</strong>
-      <span style="font-size:12px;color:#888;margin-left:8px;">🕐 ${labelTurno(p)}</span>
     </div>`).join("");
   autoList.classList.remove("hidden");
 

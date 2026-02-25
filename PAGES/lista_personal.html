@@ -67,10 +67,20 @@
     .persona-fila-info .mini-info { font-size: 12px; color: #888; font-weight: 400; margin-top: 1px; }
     .btn-editar-mini {
       padding: 5px 10px; border: 1.5px solid #f48fb1; border-radius: 8px;
-      background: #fff0f6; color: #c2185b; font-size: 12px; font-weight: 700;
+      background: #fff0f6; color: #c2185b; font-size: 13px; font-weight: 700;
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
     }
     .btn-editar-mini:active { opacity: .7; }
+    .btn-eliminar-mini {
+      padding: 5px 10px; border: 1.5px solid #f44336; border-radius: 8px;
+      background: #fff3f3; color: #c62828; font-size: 13px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-eliminar-mini:active { opacity: .7; }
+    .badge-libre {
+      display: inline-block; background: #fff9c4; color: #7a5900;
+      border-radius: 6px; padding: 1px 7px; font-size: 11px; font-weight: 800;
+    }
 
     /* Colores por turno (horario) */
     .h-manana .grupo-btn { background: linear-gradient(135deg, #fce4ec, #fff); color: #880e4f; }
@@ -335,9 +345,12 @@ function renderSector() {
       <div class="persona-fila">
         <div class="persona-fila-info">
           <div>${p.nombre}</div>
-          <div class="mini-info">${labelDiaLibre(p)} libre · ${labelTurno(p)}</div>
+          <div class="mini-info"><span class="badge-libre">📅 ${labelDiaLibre(p)}</span> · ${labelTurno(p)}</div>
         </div>
-        <button class="btn-editar-mini" data-key="${p.key}" type="button">✏️ Editar</button>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="btn-editar-mini" data-key="${p.key}" type="button">✏️</button>
+          <button class="btn-eliminar-mini" data-key="${p.key}" type="button">🗑️</button>
+        </div>
       </div>`).join("");
 
     html += `
@@ -352,9 +365,12 @@ function renderSector() {
 
   vistaSector.innerHTML = html || '<p class="nota">Sin personal.</p>';
 
-  // Eventos de editar
+  // Eventos de editar y eliminar
   vistaSector.querySelectorAll(".btn-editar-mini").forEach(btn => {
     btn.addEventListener("click", () => abrirModalEditar(btn.dataset.key));
+  });
+  vistaSector.querySelectorAll(".btn-eliminar-mini").forEach(btn => {
+    btn.addEventListener("click", () => eliminarPersonaDirecto(btn.dataset.key));
   });
 }
 
@@ -394,7 +410,7 @@ function renderHorario() {
             <div class="persona-fila">
               <div class="persona-fila-info">
                 <div>${p.nombre}</div>
-                <div class="mini-info">${labelSector(p)} · ${labelDiaLibre(p)} libre</div>
+                <div class="mini-info">${labelSector(p)} · <span class="badge-libre">📅 ${labelDiaLibre(p)} libre</span></div>
               </div>
             </div>`).join("")}
         </div>
@@ -404,7 +420,7 @@ function renderHorario() {
   vistaHorario.innerHTML = html || '<p class="nota">Sin personal.</p>';
 }
 
-// ===== VISTA 3: DÍAS LIBRES — Mañana y Noche =====
+// ===== VISTA 3: DÍAS LIBRES — Tabla única con todos =====
 function renderLibres() {
   const personas = personasActivas();
   const contenedor = document.getElementById("libresContenido");
@@ -414,46 +430,37 @@ function renderLibres() {
     return;
   }
 
-  // Dos grupos: Mañana (mañana+diurno) y Noche (tarde+noche), más Otros
-  const grupos = [
-    { key: "manana", label: "☀️ Mañana",  cls: "tb-manana", turnos: ["mañana","diurno"] },
-    { key: "noche",  label: "🌙 Tarde / Noche", cls: "tb-noche",  turnos: ["tarde","noche"] },
-    { key: "otro",   label: "⚙️ Otros",   cls: "tb-otro",  turnos: ["otro"] }
-  ];
-
-  let html = "";
-
-  grupos.forEach(grupo => {
-    const lista = personas.filter(([, p]) => grupo.turnos.includes(p.turno || "otro"));
-    if (!lista.length) return;
-
-    const filas = lista.map(([, p]) => {
-      const diaIdx = idxDiaLibre(p);
-      const celdas = [0,1,2,3,4,5,6].map(i =>
-        i === diaIdx
-          ? `<td><span class="celda-libre">LIBRE</span></td>`
-          : `<td></td>`
-      ).join("");
-      return `<tr><td>${primerNombre(p.nombre)}</td>${celdas}</tr>`;
-    }).join("");
-
-    html += `
-      <div class="turno-bloque form-card" style="padding:0; overflow:hidden; margin-bottom:14px;">
-        <span class="turno-bloque-titulo ${grupo.cls}">${grupo.label}</span>
-        <div style="overflow-x:auto;">
-          <table class="tabla-libres">
-            <thead><tr>
-              <th>Nombre</th>
-              <th>Lun</th><th>Mar</th><th>Mié</th>
-              <th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th>
-            </tr></thead>
-            <tbody>${filas}</tbody>
-          </table>
-        </div>
-      </div>`;
+  // Ordenar por día libre (Lun→Dom), sin turno agrupado
+  const lista = [...personas].sort((a, b) => {
+    const ia = idxDiaLibre(a[1]);
+    const ib = idxDiaLibre(b[1]);
+    if (ia !== ib) return ia - ib;
+    return (a[1].nombre || "").localeCompare(b[1].nombre || "", "es");
   });
 
-  contenedor.innerHTML = html;
+  const filas = lista.map(([, p]) => {
+    const diaIdx = idxDiaLibre(p);
+    const celdas = [0,1,2,3,4,5,6].map(i =>
+      i === diaIdx
+        ? `<td><span class="celda-libre">LIBRE</span></td>`
+        : `<td></td>`
+    ).join("");
+    return `<tr><td>${p.nombre}</td>${celdas}</tr>`;
+  }).join("");
+
+  contenedor.innerHTML = `
+    <div class="form-card" style="padding:0; overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table class="tabla-libres">
+          <thead><tr>
+            <th>Nombre</th>
+            <th>Lun</th><th>Mar</th><th>Mié</th>
+            <th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>
+    </div>`;
 }
 
 // ===== MODAL EDITAR =====
@@ -556,6 +563,20 @@ document.getElementById("btnModalEliminar").addEventListener("click", async () =
 
 // Imprimir
 document.getElementById("btnImprimir").addEventListener("click", () => window.print());
+
+// ===== ELIMINAR DIRECTO (desde vista sector) =====
+async function eliminarPersonaDirecto(key) {
+  const nombre = todosPersonal[key]?.nombre || "esta persona";
+  if (!confirm(`¿Eliminar a "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
+  try {
+    await dbRemove(`personal/${key}`);
+    await dbRemove(`registros/${key}`);
+    delete todosPersonal[key];
+    renderVista();
+  } catch {
+    alert("❌ Error al eliminar. Verifica el WiFi.");
+  }
+}
 
 // Helper
 function personasActivas() {

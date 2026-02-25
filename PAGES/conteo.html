@@ -180,8 +180,7 @@
 
       <!-- Botones de acción -->
       <div class="action-btns no-print">
-        <button class="btn-mini" id="btnExportCSV" type="button">📊 Exportar Excel</button>
-        <button class="btn-mini" id="btnImprimir"  type="button">🖨️ Imprimir</button>
+        <button class="btn-mini" id="btnExportWord" type="button">📄 Descargar Word</button>
       </div>
 
       <p class="nota" id="msgConteo"></p>
@@ -267,7 +266,7 @@ async function calcular() {
     if (!personalData) { msgConteo.textContent = "No hay personal registrado."; return; }
 
     const personas = Object.entries(personalData)
-      .filter(([, p]) => p.activo)
+      .filter(([, p]) => p.activo && comidasDeTurno(p.turno).includes(comidaActual))
       .map(([key, p]) => ({ key, ...p }))
       .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
 
@@ -365,48 +364,49 @@ async function calcular() {
   }
 }
 
-// ===== EXPORTAR CSV =====
-document.getElementById("btnExportCSV").addEventListener("click", () => {
+// ===== DESCARGAR WORD =====
+document.getElementById("btnExportWord").addEventListener("click", () => {
   if (!ultimosDatos) { msgConteo.textContent = "Esperá que cargue primero."; return; }
-  const { personas, registrosData, fechas, meal } = ultimosDatos;
+  const { meal } = ultimosDatos;
+  const fin = addDays(weekStart, 6);
+  const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const rango = `${weekStart.getDate()} ${meses[weekStart.getMonth()]} – ${fin.getDate()} ${meses[fin.getMonth()]} ${fin.getFullYear()}`;
+  const titulo = `Conteo ${COMIDA_LABEL[meal]} — Semana ${rango}`;
 
-  const cabecera = ["Sector", "Nombre", ...fechas.map((f, i) => `${DIA_CORTO[i]} ${formatDM(f)}`)];
-  const filas = [cabecera];
+  const contenido = sectoresTablas.innerHTML;
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+    xmlns:w='urn:schemas-microsoft-com:office:word'
+    xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; }
+    h2 { color: #5a2d00; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 18px; }
+    th { background: #ffd6a5; padding: 8px; border: 1px solid #666; font-weight: bold; text-align: center; }
+    th:first-child { text-align: left; }
+    td { padding: 6px; border: 1px solid #ddd; text-align: center; }
+    td:first-child { text-align: left; }
+    .sector-titulo-card { background: #ef6c00; color: white; padding: 8px 14px;
+      font-weight: bold; font-size: 13px; display: block; }
+    .celda-libre { background: #fff9c4; padding: 2px 5px; font-weight: bold; font-size: 11px; }
+    .celda-nombre { color: #1b5e20; font-weight: bold; }
+    .total-row td { background: #fff3e0; font-weight: bold; }
+    .gran-total-row td { background: #ffd6a5; font-weight: bold; }
+    .th-hoy { background: #ef6c00 !important; color: white !important; }
+  </style>
+  </head>
+  <body>
+    <h2>${titulo}</h2>
+    ${contenido}
+  </body></html>`;
 
-  SECTORES.forEach(s => {
-    const lista = personas.filter(p => (p.sector || "otros") === s);
-    if (!lista.length) return;
-    const sLabel = s.charAt(0).toUpperCase() + s.slice(1);
-    const totalDia = Array(7).fill(0);
-
-    lista.forEach(p => {
-      const vals = fechas.map((fecha, i) => {
-        const dt = new Date(fecha + "T00:00:00");
-        const weekIdx = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
-        if (esDiaLibre(p, weekIdx)) return "LIBRE";
-        const v = registrosData?.[p.key]?.[fecha]?.[meal];
-        if (v === "SI") { totalDia[i]++; return primerNombre(p.nombre); }
-        return "";
-      });
-      filas.push([sLabel, p.nombre || "—", ...vals]);
-    });
-    filas.push([sLabel, "TOTAL", ...totalDia.map(t => t || "")]);
-  });
-
-  const csv = filas.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\r\n");
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob(["\uFEFF" + html], { type: "application/msword" });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
   a.href = url;
-  a.download = `conteo_${COMIDA_LABEL[meal]}_semana_${iso(weekStart)}.csv`;
+  a.download = `conteo_${meal}_semana_${iso(weekStart)}.doc`;
   a.click();
   URL.revokeObjectURL(url);
-});
-
-// ===== IMPRIMIR =====
-document.getElementById("btnImprimir").addEventListener("click", () => {
-  if (!ultimosDatos) { msgConteo.textContent = "Esperá que cargue primero."; return; }
-  window.print();
 });
 </script>
 
