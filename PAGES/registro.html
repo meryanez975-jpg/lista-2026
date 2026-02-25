@@ -307,8 +307,8 @@ nombreInput.addEventListener("input", () => {
   if (!query) { autoList.classList.add("hidden"); return; }
 
   const res = Object.entries(todosPersonal)
-    .filter(([, p]) => p.activo && (p.nombre || "").toLowerCase().includes(query))
-    .sort((a, b) => (a[1].nombre || "").localeCompare(b[1].nombre || "", "es"))
+    .filter(([, p]) => p.activo && primerNombre(p.nombre).toLowerCase().includes(query))
+    .sort((a, b) => primerNombre(a[1].nombre).localeCompare(primerNombre(b[1].nombre), "es"))
     .slice(0, 8);
 
   if (!res.length) { autoList.classList.add("hidden"); return; }
@@ -347,7 +347,7 @@ btnEntrar.addEventListener("click", async () => {
       foundData = todosPersonal[foundKey];
     } else {
       const match = Object.entries(todosPersonal).find(([, p]) =>
-        p.activo && (p.nombre || "").toLowerCase() === query.toLowerCase()
+        p.activo && primerNombre(p.nombre).toLowerCase() === query.toLowerCase()
       );
       if (match) { foundKey = match[0]; foundData = match[1]; }
     }
