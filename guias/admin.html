@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guía de Administración</title>
+  <link rel="stylesheet" href="../estilo.css">
+  <style>
+    body { background: linear-gradient(160deg, #e8d5ff 0%, #f5f0ff 60%, #fff 100%); min-height: 100vh; }
+
+    .guia-header {
+      background: linear-gradient(135deg, #4a2080, #7c3aed, #9c5aff);
+      border-radius: 0 0 36px 36px;
+      padding: 28px 20px 22px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(74,32,128,.25);
+    }
+    .guia-header h1 { margin: 0 0 4px; color: #fff; font-size: 22px; font-weight: 900; }
+    .guia-header p  { margin: 0; color: rgba(255,255,255,.85); font-size: 13px; }
+
+    /* Sección */
+    .seccion {
+      background: #fff; border-radius: 20px; padding: 20px;
+      margin-bottom: 16px; border: 2px solid #e8d5ff;
+      box-shadow: 0 4px 14px rgba(124,58,237,.07);
+    }
+    .seccion-titulo {
+      font-size: 17px; font-weight: 900; color: #4a2080;
+      margin: 0 0 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .seccion-titulo .s-icon { font-size: 24px; }
+
+    /* Paso */
+    .paso {
+      display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
+    }
+    .paso:last-child { margin-bottom: 0; }
+    .paso-num {
+      min-width: 30px; height: 30px; background: #7c3aed; color: #fff;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900; flex-shrink: 0; margin-top: 1px;
+    }
+    .paso-txt { font-size: 14px; color: #333; line-height: 1.55; }
+    .paso-txt strong { color: #4a2080; }
+
+    /* Nota / tip */
+    .tip {
+      background: #f0e6ff; border-left: 4px solid #7c3aed;
+      border-radius: 0 10px 10px 0; padding: 10px 14px;
+      font-size: 13px; color: #4a2080; margin-top: 10px; line-height: 1.5;
+    }
+    .tip-verde {
+      background: #e8f5e9; border-left-color: #43a047; color: #1b5e20;
+    }
+    .tip-azul {
+      background: #e3f2fd; border-left-color: #1976d2; color: #0d47a1;
+    }
+    .tip-naranja {
+      background: #fff3e0; border-left-color: #ef6c00; color: #7a3900;
+    }
+
+    /* Badge inline */
+    .badge-inline {
+      display: inline-block; padding: 2px 8px; border-radius: 8px;
+      font-size: 12px; font-weight: 800;
+    }
+    .b-purple { background: #e8d5ff; color: #4a2080; }
+    .b-green  { background: #b5ead7; color: #1a5c40; }
+    .b-blue   { background: #c8e6ff; color: #002c5c; }
+    .b-orange { background: #ffd6a5; color: #7a3900; }
+
+    /* Tabla de turnos */
+    .tabla-info { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    .tabla-info th { background: #f0e6ff; padding: 8px 10px; text-align: left; font-weight: 800; color: #4a2080; }
+    .tabla-info td { padding: 8px 10px; border-bottom: 1px solid #f0e8f8; }
+    .tabla-info tr:last-child td { border-bottom: none; }
+
+    /* Flujo de datos */
+    .flujo { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .flujo-item {
+      display: flex; align-items: center; gap: 10px;
+      background: #fafafa; border: 1.5px solid #e8d5ff;
+      border-radius: 12px; padding: 10px 14px; font-size: 13px;
+    }
+    .flujo-item .f-icon { font-size: 20px; flex-shrink: 0; }
+    .flujo-flecha { text-align: center; color: #c9a8f0; font-size: 18px; font-weight: 900; }
+  </style>
+</head>
+<body>
+<main class="panel">
+
+  <div class="guia-header">
+    <h1>🔐 Guía de Administración</h1>
+    <p>Todo lo que necesitás saber para gestionar el sistema</p>
+  </div>
+
+  <!-- ===== ACCESO ===== -->
+  <div class="seccion">
+    <p class="seccion-titulo"><span class="s-icon">🔑</span> Cómo entrar como admin</p>
+    <div class="paso">
+      <div class="paso-num">1</div>
+      <div class="paso-txt">Abrí la app y tocá el botón <strong>🔒</strong> que aparece en la esquina inferior derecha.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">2</div>
+      <div class="paso-txt">Ingresá tu <strong>número de celular</strong> y tu <strong>contraseña</strong>.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">3</div>
+      <div class="paso-txt">Aparecen los botones <span class="badge-inline b-purple">ADMINISTRACIÓN</span> y <span class="badge-inline b-orange">CONTEO</span> en el menú principal.</div>
+    </div>
+    <div class="tip">💡 La cuenta por defecto es celular <strong>0000</strong> y contraseña <strong>1234</strong>. Se puede cambiar desde Administración → Otros.</div>
+  </div>
+
+  <!-- ===== PERSONAL ===== -->
+  <div class="seccion">
+    <p class="seccion-titulo"><span class="s-icon">👥</span> Registrar y gestionar personal</p>
+    <div class="paso">
+      <div class="paso-num">1</div>
+      <div class="paso-txt">Entrá a <strong>Administración → Personal → Agregar persona</strong>.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">2</div>
+      <div class="paso-txt">Completá: <strong>nombre completo</strong>, <strong>sector</strong>, <strong>turno</strong> y <strong>día libre</strong>.<br>Si el sector o el día no están en la lista, elegí "Otros" y escribí el nombre.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">3</div>
+      <div class="paso-txt">La persona queda guardada y aparece automáticamente en la lista, en el registro y en el conteo.</div>
+    </div>
+
+    <div class="tip-verde tip">
+      ✅ <strong>¿Qué hace el sistema con estos datos?</strong><br>
+      Usa el <strong>turno</strong> para saber qué comidas le corresponden a cada persona.<br>
+      Usa el <strong>día libre</strong> para marcar automáticamente ese día como "no trabaja".<br>
+      Usa el <strong>sector</strong> para agrupar a las personas en los reportes.
+    </div>
+
+    <div style="margin-top:14px;">
+      <strong style="font-size:13px;color:#4a2080;">Turnos y comidas que les corresponden:</strong>
+      <table class="tabla-info">
+        <tr><th>Turno</th><th>Horario</th><th>Comidas</th></tr>
+        <tr><td>☀️ Mañana</td><td>7am – 7pm</td><td>Desayuno · Almuerzo · Merienda</td></tr>
+        <tr><td>🌤️ Diurno</td><td>7am – 4pm</td><td>Desayuno · Almuerzo</td></tr>
+        <tr><td>🌆 Tarde</td><td>11am – 11pm</td><td>Almuerzo · Merienda · Cena</td></tr>
+        <tr><td>🌙 Noche</td><td>2pm – 11pm</td><td>Merienda · Cena</td></tr>
+      </table>
+    </div>
+
+    <div class="tip-naranja tip" style="margin-top:12px;">
+      📋 Desde <strong>Lista del personal</strong> podés ver tres vistas:<br>
+      • <strong>Sector</strong> — grupos por área, con botón editar y eliminar<br>
+      • <strong>Horario</strong> — agrupado por turno<br>
+      • <strong>Días libres</strong> — tabla con el día libre de cada uno
+    </div>
+  </div>
+
+  <!-- ===== MENÚ ===== -->
+  <div class="seccion">
+    <p class="seccion-titulo"><span class="s-icon">📋</span> Cargar el menú semanal</p>
+    <div class="paso">
+      <div class="paso-num">1</div>
+      <div class="paso-txt">Entrá a <strong>Administración → Menú por fecha</strong>.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">2</div>
+      <div class="paso-txt">Elegí la comida (Desayuno, Almuerzo, Merienda o Cena).</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">3</div>
+      <div class="paso-txt">Tocá el día que querés cargar y escribí los platos en los campos grandes.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">4</div>
+      <div class="paso-txt">Tocá <strong>💾 Guardar</strong>. Aparece la hora de la última modificación y los campos se limpian para el próximo ingreso.</div>
+    </div>
+    <div class="tip-azul tip">
+      📖 El botón <strong>Historial</strong> te muestra las comidas cargadas en el último mes, con fecha y hora de cada guardado.
+    </div>
+    <div class="tip">
+      💡 El menú que cargues acá aparece automáticamente en la pantalla de Registro cuando el personal marca sus comidas.
+    </div>
+  </div>
+
+  <!-- ===== CONTEO ===== -->
+  <div class="seccion">
+    <p class="seccion-titulo"><span class="s-icon">🧮</span> Ver el conteo semanal</p>
+    <div class="paso">
+      <div class="paso-num">1</div>
+      <div class="paso-txt">Desde el inicio entrá a <strong>Conteo</strong> (visible solo para admins).</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">2</div>
+      <div class="paso-txt">Elegí la comida que querés revisar.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">3</div>
+      <div class="paso-txt">Usá las flechas ◀ ▶ para ver semanas anteriores o futuras.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">4</div>
+      <div class="paso-txt">Tocá <strong>📄 Descargar Word</strong> para guardar el reporte como archivo que abre en Word.</div>
+    </div>
+    <div class="tip-verde tip">
+      ✅ <strong>¿Qué muestra el conteo?</strong><br>
+      • Solo aparecen las personas cuyo turno incluye esa comida.<br>
+      • Los días libres aparecen marcados como <strong>LIBRE</strong>.<br>
+      • Abajo hay un <strong>Total general</strong> por día de la semana.
+    </div>
+  </div>
+
+  <!-- ===== FLUJO DE DATOS ===== -->
+  <div class="seccion">
+    <p class="seccion-titulo"><span class="s-icon">🔄</span> ¿Qué hace el sistema con los datos?</p>
+    <div class="flujo">
+      <div class="flujo-item">
+        <span class="f-icon">👤</span>
+        <span>Admin registra a una persona con su <strong>nombre, sector, turno y día libre</strong></span>
+      </div>
+      <div class="flujo-flecha">↓</div>
+      <div class="flujo-item">
+        <span class="f-icon">✏️</span>
+        <span>El personal busca su nombre en <strong>Registro</strong> y marca SI/NO para cada comida de la semana</span>
+      </div>
+      <div class="flujo-flecha">↓</div>
+      <div class="flujo-item">
+        <span class="f-icon">🍽️</span>
+        <span>Quien sirve usa <strong>Servicio</strong> para marcar si cada persona ya recibió su comida</span>
+      </div>
+      <div class="flujo-flecha">↓</div>
+      <div class="flujo-item">
+        <span class="f-icon">🧮</span>
+        <span>El admin ve el <strong>Conteo</strong> con el total de comidas por día y puede descargarlo en Word</span>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:12px;">
+      🗄️ Todos los datos se guardan en <strong>Firebase</strong> en tiempo real. Cualquier cambio se refleja inmediatamente en todos los dispositivos.
+    </div>
+  </div>
+
+  <a class="btn-volver-bottom" href="index.html">⬅ Volver a las guías</a>
+</main>
+</body>
+</html>
