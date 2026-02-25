@@ -311,12 +311,12 @@ async function calcular() {
           if (val === "SI") {
             totalSectorDia[i]++;
             granTotalPorDia[i]++;
-            return `<td class="celda-nombre">${primerNombre(p.nombre)}</td>`;
+            return `<td class="celda-nombre">${p.nombre}</td>`;
           }
           return `<td></td>`;
         }).join("");
 
-        return `<tr><td>${primerNombre(p.nombre)}</td>${celdas}</tr>`;
+        return `<tr><td>${p.nombre}</td>${celdas}</tr>`;
       }).join("");
 
       const filaTotalSector = `<tr class="total-row">
