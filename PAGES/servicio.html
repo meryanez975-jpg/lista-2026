@@ -217,6 +217,12 @@
         </div>
       </div>
 
+      <!-- Buscador -->
+      <input type="text" id="buscadorSrv" placeholder="🔍 Buscar nombre..."
+        style="width:100%;padding:11px 14px;border:2px solid #ffcc80;border-radius:12px;
+               font-size:15px;background:#fff;margin-bottom:10px;display:none;"
+        autocomplete="off">
+
       <p class="loading" id="msgLista">Cargando...</p>
 
       <!-- Lista de personas -->
@@ -270,12 +276,13 @@ const msgLista    = document.getElementById("msgLista");
 const modalEstado = document.getElementById("modalEstado");
 const modalNombre = document.getElementById("modalNombre");
 
-let mealActual   = null;
-let fechaActual  = iso(new Date());
-let personal     = {};
-let registros    = {};
-let servicioData = {};  // { personKey: estado }
-let personaModal = null;  // key de persona cuyo modal está abierto
+let mealActual      = null;
+let fechaActual     = iso(new Date());
+let personal        = {};
+let personalListo   = false;   // se carga solo una vez
+let servicioData    = {};
+let listaCompleta   = [];      // lista sin filtrar, para el buscador
+let personaModal    = null;
 
 // ===== Mostrar fecha de hoy en el header =====
 const hoy = new Date();
@@ -331,32 +338,44 @@ async function cargarLista() {
   listaPersonas.innerHTML = "";
   servicioData = {};
 
+  const buscador = document.getElementById("buscadorSrv");
+  buscador.style.display = "none";
+  buscador.value = "";
+
   try {
-    const [pers, regs, srv] = await Promise.all([
-      dbGet("personal"),
-      dbGet(`registros`),
+    // Cargar personal solo la primera vez
+    if (!personalListo) {
+      personal = (await dbGet("personal")) || {};
+      personalListo = true;
+    }
+
+    const activos = Object.entries(personal).filter(([, p]) => p.activo);
+
+    // Cargar SOLO los registros del día y comida actuales (no todo el árbol)
+    const [regsResult, srv] = await Promise.all([
+      Promise.all(activos.map(([key]) =>
+        dbGet(`registros/${key}/${fechaActual}/${mealActual}`)
+          .catch(() => null)
+          .then(val => ({ key, val }))
+      )),
       dbGet(`servicio/${fechaActual}/${mealActual}`)
     ]);
 
-    personal  = pers  || {};
-    registros = regs  || {};
+    const regHoy = {};
+    regsResult.forEach(({ key, val }) => { regHoy[key] = val; });
     servicioData = srv || {};
 
-    // Personas que dijeron SI para esta comida en esta fecha
-    const lista = Object.entries(personal)
+    listaCompleta = activos
       .filter(([key, p]) => {
-        if (!p.activo) return false;
-        // Verificar que su turno incluya esta comida
         if (!comidasDeTurno(p.turno).includes(mealActual)) return false;
-        // Verificar que registró SI
-        return registros[key]?.[fechaActual]?.[mealActual] === "SI";
+        return regHoy[key] === "SI";
       })
       .map(([key, p]) => ({ key, ...p }))
       .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
 
     msgLista.classList.add("hidden");
 
-    if (!lista.length) {
+    if (!listaCompleta.length) {
       listaPersonas.innerHTML = `<div class="sin-datos">
         Sin registros de <strong>${COMIDA_LABEL[mealActual]}</strong> para este día.<br>
         <span style="font-size:13px;">Verificá que el personal haya marcado SI.</span>
@@ -365,12 +384,22 @@ async function cargarLista() {
       return;
     }
 
-    renderLista(lista);
+    buscador.style.display = "block";
+    renderLista(listaCompleta);
 
   } catch (err) {
     msgLista.textContent = "❌ Error al cargar. Verifica el WiFi.";
   }
 }
+
+// ===== BUSCADOR =====
+document.getElementById("buscadorSrv").addEventListener("input", function () {
+  const q = this.value.trim().toLowerCase();
+  const filtrada = q
+    ? listaCompleta.filter(p => primerNombre(p.nombre).toLowerCase().includes(q))
+    : listaCompleta;
+  renderLista(filtrada);
+});
 
 // ===== RENDER LISTA =====
 function renderLista(lista) {
