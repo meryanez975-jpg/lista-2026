@@ -379,7 +379,7 @@ function renderLista(lista) {
     const est = ESTADOS[estado];
     return `<div class="persona-srv" data-key="${p.key}">
       <div>
-        <div class="persona-srv-nombre">${p.nombre}</div>
+        <div class="persona-srv-nombre">${primerNombre(p.nombre)}</div>
         <div class="persona-srv-sub">${labelSector(p)} · ${labelTurno(p)}</div>
       </div>
       <button class="estado-badge ${est.cls}" data-key="${p.key}" type="button">
