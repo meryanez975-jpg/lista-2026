@@ -99,12 +99,16 @@ function labelTurno(p) {
 }
 
 // Índice de día libre (0=Lun, 6=Dom), -1 si no aplica
-// Normaliza tildes y mayúsculas para compatibilidad con datos existentes
+// Si diaLibre="otro" intenta leer diaLibreTexto (ej: "Lunes")
 function idxDiaLibre(p) {
-  if (!p || !p.diaLibre || p.diaLibre === "otro") return -1;
-  const norm = p.diaLibre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (!p || !p.diaLibre) return -1;
   const mapa = { lunes:0, martes:1, miercoles:2, jueves:3, viernes:4, sabado:5, domingo:6 };
-  return mapa[norm] ?? -1;
+  const normalizar = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  if (p.diaLibre !== "otro") {
+    return mapa[normalizar(p.diaLibre)] ?? -1;
+  }
+  // diaLibre="otro": intentar parsear el texto personalizado
+  return mapa[normalizar(p.diaLibreTexto)] ?? -1;
 }
 
 // ¿Es este índice de semana el día libre de la persona?

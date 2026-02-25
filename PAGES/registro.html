@@ -280,11 +280,16 @@ let weekMenu      = {};  // { fecha: menuData }
 let mealActual    = null;
 let pendingMarks  = {};  // { fecha: "SI"|"NO" } — marcas en la vista actual antes de confirmar
 
-// Calcula el índice del día libre (0=Lun…6=Dom) sin depender de esDiaLibre
+// Calcula el índice del día libre (0=Lun…6=Dom)
+// Si diaLibre="otro" intenta leer diaLibreTexto (ej: "Lunes")
 function calcDiaLibreIdx(p) {
-  if (!p || !p.diaLibre || p.diaLibre === "otro") return -1;
-  const norm = p.diaLibre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  return ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"].indexOf(norm);
+  if (!p || !p.diaLibre) return -1;
+  const mapa = { lunes:0, martes:1, miercoles:2, jueves:3, viernes:4, sabado:5, domingo:6 };
+  const normalizar = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  if (p.diaLibre !== "otro") {
+    return mapa[normalizar(p.diaLibre)] ?? -1;
+  }
+  return mapa[normalizar(p.diaLibreTexto)] ?? -1;
 }
 
 // ¿Es el índice de semana el día libre? (0=Lun…6=Dom)

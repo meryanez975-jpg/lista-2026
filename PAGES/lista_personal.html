@@ -437,20 +437,31 @@ function renderLibres() {
   ];
 
   function tablaGrupo(lista) {
-    // Ordenar por día libre
+    // Ordenar por día libre (desconocidos al final)
     const sorted = [...lista].sort((a, b) => {
       const ia = idxDiaLibre(a[1]);
       const ib = idxDiaLibre(b[1]);
-      if (ia !== ib) return ia - ib;
+      const sa = ia === -1 ? 7 : ia;
+      const sb = ib === -1 ? 7 : ib;
+      if (sa !== sb) return sa - sb;
       return (a[1].nombre || "").localeCompare(b[1].nombre || "", "es");
     });
     return sorted.map(([, p]) => {
       const diaIdx = idxDiaLibre(p);
-      const celdas = [0,1,2,3,4,5,6].map(i =>
-        i === diaIdx
-          ? `<td><span class="celda-libre">LIBRE</span></td>`
-          : `<td></td>`
-      ).join("");
+      let celdas;
+      if (diaIdx === -1) {
+        // Día libre no determinado (rotativo u otro texto no reconocido)
+        const txt = labelDiaLibre(p);
+        celdas = `<td colspan="7" style="text-align:left;color:#888;font-size:12px;padding-left:8px;">
+          <span class="celda-libre" style="background:#e0e0e0;color:#555;">📅 ${txt}</span>
+        </td>`;
+      } else {
+        celdas = [0,1,2,3,4,5,6].map(i =>
+          i === diaIdx
+            ? `<td><span class="celda-libre">LIBRE</span></td>`
+            : `<td></td>`
+        ).join("");
+      }
       return `<tr><td>${p.nombre}</td>${celdas}</tr>`;
     }).join("");
   }
