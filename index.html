@@ -30,17 +30,7 @@
       background: rgba(255,255,255,.50);
       border-bottom: 2px solid rgba(255,255,255,.65);
     }
-    /* Ícono: zona oculta de 5 toques */
-    .top-icon-tap {
-      font-size: 28px;
-      cursor: pointer;
-      user-select: none;
-      line-height: 1;
-      padding: 4px;
-      border-radius: 10px;
-      transition: background .1s;
-    }
-    .top-icon-tap.flash { background: rgba(124,58,237,.18); }
+    .top-icon { font-size: 28px; line-height: 1; padding: 4px; }
     .top-bar-titulo {
       flex: 1;
       font-size: 15px;
@@ -185,7 +175,7 @@
   ══════════════════════════════════════ -->
   <div class="screen" id="screenPublico">
     <div class="top-bar">
-      <span class="top-icon-tap" id="tapPublico">🍽️</span>
+      <span class="top-icon">🍽️</span>
       <div class="top-bar-titulo">
         Sistema de Comidas
         <div class="tb-sub">Acceso público</div>
@@ -218,7 +208,7 @@
   ══════════════════════════════════════ -->
   <div class="screen" id="screenSupervisor">
     <div class="top-bar">
-      <span class="top-icon-tap" id="tapSuper">🍽️</span>
+      <span class="top-icon">🍽️</span>
       <div class="top-bar-titulo">
         👁️ Supervisor
         <div class="tb-sub" id="superNombre"></div>
@@ -260,7 +250,7 @@
   ══════════════════════════════════════ -->
   <div class="screen" id="screenAdmin">
     <div class="top-bar">
-      <span class="top-icon-tap" id="tapAdmin">🍽️</span>
+      <span class="top-icon">🍽️</span>
       <div class="top-bar-titulo">
         🔐 Administrador
         <div class="tb-sub" id="adminNombre"></div>
@@ -336,6 +326,13 @@
 
 
   <!-- ══════════════════════════════════════
+       ZONAS INVISIBLES DE ACCESO
+  ══════════════════════════════════════ -->
+  <!-- Esquina inferior izquierda: 3 toques → supervisor -->
+  <div id="zonaSupervisor"
+       style="position:fixed;bottom:0;left:0;width:72px;height:72px;z-index:500;"></div>
+
+  <!-- ══════════════════════════════════════
        MODAL — CAMBIAR MODO
   ══════════════════════════════════════ -->
   <div class="modal-overlay" id="modalOverlay">
@@ -377,7 +374,7 @@
     const mBtnPublico  = document.getElementById("mBtnPublico");
     const mMsg         = document.getElementById("mMsg");
 
-    // ── Cargar modo guardado (localStorage persiste al cerrar la app) ──
+    // ── Cargar modo guardado ──
     function aplicarModoGuardado() {
       const modo   = localStorage.getItem("modo_actual") || "publico";
       const nombre = localStorage.getItem("modo_nombre") || "";
@@ -387,9 +384,7 @@
     function activarModo(modo, nombre) {
       localStorage.setItem("modo_actual", modo);
       localStorage.setItem("modo_nombre", nombre);
-
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("activa"));
-
       if (modo === "supervisor") {
         document.getElementById("superNombre").textContent = nombre;
         document.getElementById("screenSupervisor").classList.add("activa");
@@ -402,49 +397,44 @@
       window.scrollTo(0, 0);
     }
 
-    function irPublico() {
-      activarModo("publico", "");
-    }
+    function irPublico() { activarModo("publico", ""); }
 
-    // ── Toque oculto: 5 veces rápido en el ícono 🍽️ ──
-    let tapCount = 0;
-    let tapTimer = null;
-
-    function registrarTap(el) {
-      tapCount++;
-      el.classList.add("flash");
-      setTimeout(() => el.classList.remove("flash"), 150);
-
-      clearTimeout(tapTimer);
-      tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
-
-      if (tapCount >= 5) {
-        tapCount = 0;
-        clearTimeout(tapTimer);
+    // ── TRIGGER 1: 3 toques en esquina inferior izquierda → supervisor ──
+    let cornerTaps = 0, cornerTimer = null;
+    document.getElementById("zonaSupervisor").addEventListener("click", () => {
+      cornerTaps++;
+      clearTimeout(cornerTimer);
+      cornerTimer = setTimeout(() => { cornerTaps = 0; }, 2000);
+      if (cornerTaps >= 3) {
+        cornerTaps = 0;
+        clearTimeout(cornerTimer);
         abrirModal();
       }
-    }
+    });
 
-    document.getElementById("tapPublico").addEventListener("click",  () => registrarTap(document.getElementById("tapPublico")));
-    document.getElementById("tapSuper").addEventListener("click",    () => registrarTap(document.getElementById("tapSuper")));
-    document.getElementById("tapAdmin").addEventListener("click",    () => registrarTap(document.getElementById("tapAdmin")));
+    // ── TRIGGER 2: deslizar desde borde derecho → admin ──
+    let swipeStartX = 0;
+    document.addEventListener("touchstart", e => {
+      swipeStartX = e.touches[0].clientX >= window.innerWidth - 30
+        ? e.touches[0].clientX : 0;
+    }, { passive: true });
+    document.addEventListener("touchend", e => {
+      if (!swipeStartX) return;
+      const dx = swipeStartX - e.changedTouches[0].clientX;
+      swipeStartX = 0;
+      if (dx > 60) abrirModal();
+    }, { passive: true });
 
     // ── Modal: abrir / cerrar ──
     function abrirModal() {
-      mPhone.value = "";
-      mPass.value  = "";
-      mMsg.textContent = "";
+      mPhone.value = ""; mPass.value = ""; mMsg.textContent = "";
       modalOverlay.classList.add("activo");
       mPhone.focus();
     }
-
     function cerrarModal() {
       modalOverlay.classList.remove("activo");
-      mPhone.value = "";
-      mPass.value  = "";
-      mMsg.textContent = "";
+      mPhone.value = ""; mPass.value = ""; mMsg.textContent = "";
     }
-
     mBtnCerrar.addEventListener("click", cerrarModal);
     mBtnPublico.addEventListener("click", () => { cerrarModal(); irPublico(); });
     modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
@@ -453,11 +443,7 @@
     mBtnEntrar.addEventListener("click", async () => {
       const phone = mPhone.value.trim();
       const pass  = mPass.value.trim();
-
-      if (!phone || !pass) {
-        mMsg.textContent = "Ingresá celular y contraseña.";
-        return;
-      }
+      if (!phone || !pass) { mMsg.textContent = "Ingresá celular y contraseña."; return; }
 
       mBtnEntrar.disabled = true;
       mBtnEntrar.textContent = "Verificando...";
@@ -466,22 +452,17 @@
       try {
         let admins = await dbGet("config/admins");
         if (!admins) {
-          const oldPass = await dbGet("config/admin_pass");
-          const dp = oldPass || "1234";
+          const dp = (await dbGet("config/admin_pass")) || "1234";
           await dbSet("config/admins/0000", { nombre: "Admin", password: dp, rol: "admin" });
           admins = { "0000": { nombre: "Admin", password: dp, rol: "admin" } };
         }
-
         const admin = admins[phone];
         if (admin && admin.password === pass) {
-          const rol    = admin.rol || "admin";
-          const nombre = admin.nombre || "Administrador";
           cerrarModal();
-          activarModo(rol, nombre);
+          activarModo(admin.rol || "admin", admin.nombre || "Administrador");
         } else {
           mMsg.textContent = "❌ Número o contraseña incorrectos.";
-          mPass.value = "";
-          mPass.focus();
+          mPass.value = ""; mPass.focus();
         }
       } catch(e) {
         mMsg.textContent = "❌ Sin conexión. Verificá el WiFi.";
