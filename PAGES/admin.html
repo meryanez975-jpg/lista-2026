@@ -88,7 +88,13 @@ const msgLogin   = document.getElementById("msgLogin");
 const btnSalir   = document.getElementById("btnSalir");
 
 // Si ya estaba logueado en esta sesión
-if (sessionStorage.getItem("admin_logged") === "1") showAdmin();
+if (sessionStorage.getItem("admin_logged") === "1") {
+  if ((sessionStorage.getItem("admin_rol") || "admin") === "supervisor") {
+    window.location.href = "../index.html"; // supervisor no puede entrar aquí
+  } else {
+    showAdmin();
+  }
+}
 
 btnLogin.addEventListener("click", async () => {
   const phone = phoneInput.value.trim();

@@ -92,7 +92,14 @@
         <span>Repetir contraseña</span>
         <input type="password" id="admPassRep" placeholder="Repetir contraseña">
       </label>
-      <button class="btn-primario" id="btnGuardarAdmin" type="button">💾 Guardar administrador</button>
+      <label class="campo">
+        <span>Rol</span>
+        <select id="admRol" style="padding:10px 12px; border:1.5px solid #ddd; border-radius:10px; font-size:15px; width:100%;">
+          <option value="admin">👤 Administrador — acceso total</option>
+          <option value="supervisor">👁️ Supervisor — solo ver conteo y lista</option>
+        </select>
+      </label>
+      <button class="btn-primario" id="btnGuardarAdmin" type="button">💾 Guardar</button>
       <p class="nota" id="msgAdmins"></p>
     </section>
 
@@ -212,8 +219,9 @@ document.getElementById("btnGuardarAdmin").addEventListener("click", async () =>
     if (existe) {
       if (!confirm(`El número ${celular} ya existe como administrador. ¿Actualizar sus datos?`)) return;
     }
-    await dbSet(`config/admins/${celular}`, { nombre, password: pass });
-    msg.textContent = "✅ Administrador guardado correctamente.";
+    const rol = document.getElementById("admRol").value || "admin";
+    await dbSet(`config/admins/${celular}`, { nombre, password: pass, rol });
+    msg.textContent = "✅ Usuario guardado correctamente.";
     document.getElementById("admNombre").value   = "";
     document.getElementById("admCelular").value  = "";
     document.getElementById("admPass").value     = "";
@@ -234,18 +242,22 @@ async function cargarListaAdmins() {
       return;
     }
     const lista = Object.entries(admins);
-    el.innerHTML = lista.map(([cel, a]) => `
+    el.innerHTML = lista.map(([cel, a]) => {
+      const rolLabel = (a.rol === "supervisor")
+        ? `<span style="font-size:12px; color:#7e57c2; font-weight:700;">👁️ Supervisor</span>`
+        : `<span style="font-size:12px; color:#2e7d32; font-weight:700;">👤 Admin</span>`;
+      return `
       <div class="admin-fila">
         <div>
           <strong>${a.nombre || "Admin"}</strong>
-          <div style="font-size:13px; color:#888;">📱 ${cel}</div>
+          <div style="font-size:13px; color:#888; margin-top:2px;">📱 ${cel} &nbsp; ${rolLabel}</div>
         </div>
         ${lista.length > 1
           ? `<button class="btn-sm danger btn-del-admin" data-cel="${cel}" data-nombre="${(a.nombre||"Admin")}">🗑️ Eliminar</button>`
           : `<span style="font-size:12px; color:#aaa;">Único admin</span>`
         }
-      </div>
-    `).join("");
+      </div>`;
+    }).join("");
     // Event listeners seguros (evita problemas con caracteres especiales en nombres)
     el.querySelectorAll(".btn-del-admin").forEach(btn => {
       btn.addEventListener("click", () => eliminarAdmin(btn.dataset.cel, btn.dataset.nombre));

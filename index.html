@@ -16,7 +16,7 @@
       background: linear-gradient(160deg, #e8d5ff 0%, #d4f0e8 50%, #ffd6a5 100%);
       min-height: 100vh;
     }
-    /* Modal de login admin */
+    /* Modal de login */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -60,14 +60,14 @@
       transition: background .2s;
     }
     .btn-lock:active { background: rgba(180,160,220,.7); }
-    /* Barra admin cuando está logueado */
+    /* Barra de usuario logueado */
     .admin-bar {
       display: none;
       background: #f0e6ff;
       border: 1.5px solid #c9a8f0;
       border-radius: 14px;
       padding: 10px 14px;
-      margin-bottom: 4px;
+      margin-bottom: 16px;
       align-items: center;
       justify-content: space-between;
       font-size: 13px;
@@ -85,6 +85,69 @@
       font-weight: 700;
       cursor: pointer;
     }
+    /* ===== MENÚ HAMBURGUESA ===== */
+    .hamb-container {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin: 12px 0 8px;
+    }
+    .hamb-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 130px;
+      max-width: 200px;
+    }
+    .btn-hamb {
+      width: 100%;
+      padding: 20px 12px;
+      border: none;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+      transition: transform .15s, box-shadow .15s;
+      letter-spacing: .5px;
+    }
+    .btn-hamb:active { transform: scale(.97); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+    .btn-hamb .hamb-icon { font-size: 28px; }
+    .btn-hamb .hamb-lineas { font-size: 18px; letter-spacing: 1px; opacity: .85; }
+    .btn-hamb.registro-color { background: linear-gradient(135deg, #b39ddb, #7e57c2); color: #fff; }
+    .btn-hamb.servicio-color { background: linear-gradient(135deg, #80cbc4, #26a69a); color: #fff; }
+    .hamb-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.18);
+      z-index: 100;
+      overflow: hidden;
+      animation: fadeIn .15s ease;
+    }
+    .hamb-menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 16px;
+      text-decoration: none;
+      color: #333;
+      font-size: 15px;
+      font-weight: 600;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background .15s;
+    }
+    .hamb-menu a:last-child { border-bottom: none; }
+    .hamb-menu a:hover, .hamb-menu a:active { background: #f5f5f5; }
+    /* Ítems solo visibles para supervisor/admin */
+    .solo-super { display: none; }
+    .solo-super.visible { display: flex; }
   </style>
 </head>
 <body>
@@ -116,35 +179,48 @@
   <main class="menu" style="margin-top:20px;">
     <p class="menu-titulo">SISTEMA DE COMIDAS</p>
 
-    <!-- Barra visible solo cuando admin está logueado -->
+    <!-- Barra visible solo cuando está logueado -->
     <div class="admin-bar" id="adminBar">
       <span id="adminBarNombre">👤 Administrador</span>
       <button class="btn-salir-index" id="btnSalirIndex" type="button">Salir</button>
     </div>
 
-    <!-- Botones de admin (ocultos por defecto) -->
+    <!-- Botón ADMINISTRACIÓN: solo para rol admin -->
     <a class="card-btn admin hidden" id="btnAdmin" href="PAGES/admin.html">
       <span class="icon">🔐</span>
       <span class="text">ADMINISTRACIÓN</span>
     </a>
 
-    <!-- Registro: siempre visible -->
-    <a class="card-btn registro" href="PAGES/registro.html">
-      <span class="icon">✏️</span>
-      <span class="text">REGISTRO</span>
-    </a>
+    <!-- Dos menús hamburguesa -->
+    <div class="hamb-container">
 
-    <!-- Servicio: siempre visible -->
-    <a class="card-btn servicio" href="PAGES/servicio.html">
-      <span class="icon">🍽️</span>
-      <span class="text">SERVICIO</span>
-    </a>
+      <!-- ☰ REGISTRO -->
+      <div class="hamb-wrap">
+        <button class="btn-hamb registro-color" id="hambRegistro" type="button">
+          <span class="hamb-icon">✏️</span>
+          <span class="hamb-lineas">☰</span>
+          <span>REGISTRO</span>
+        </button>
+        <div class="hamb-menu hidden" id="menuRegistro">
+          <a href="PAGES/registro.html">✏️ Registro</a>
+          <a href="PAGES/lista_personal.html" class="solo-super" id="linkListaPersonal">👥 Lista Personal</a>
+        </div>
+      </div>
 
-    <!-- Conteo: solo para admins -->
-    <a class="card-btn conteo hidden" id="btnConteo" href="PAGES/conteo.html">
-      <span class="icon">🧮</span>
-      <span class="text">CONTEO</span>
-    </a>
+      <!-- ☰ SERVICIO -->
+      <div class="hamb-wrap">
+        <button class="btn-hamb servicio-color" id="hambServicio" type="button">
+          <span class="hamb-icon">🍽️</span>
+          <span class="hamb-lineas">☰</span>
+          <span>SERVICIO</span>
+        </button>
+        <div class="hamb-menu hidden" id="menuServicio">
+          <a href="PAGES/servicio.html">🍽️ Servicio</a>
+          <a href="PAGES/conteo.html" class="solo-super" id="linkConteo">🧮 Conteo</a>
+        </div>
+      </div>
+
+    </div>
   </main>
 
   <!-- Botón lock discreto -->
@@ -154,29 +230,54 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>
-    const modalOverlay = document.getElementById("modalOverlay");
-    const mPhone       = document.getElementById("mPhone");
-    const mPass        = document.getElementById("mPass");
-    const mBtnEntrar   = document.getElementById("mBtnEntrar");
-    const mBtnCerrar   = document.getElementById("mBtnCerrar");
-    const mMsg         = document.getElementById("mMsg");
-    const adminBar     = document.getElementById("adminBar");
-    const adminBarNombre = document.getElementById("adminBarNombre");
-    const btnSalirIndex  = document.getElementById("btnSalirIndex");
-    const btnAdmin     = document.getElementById("btnAdmin");
-    const btnConteo    = document.getElementById("btnConteo");
-    const btnLock      = document.getElementById("btnLock");
+    const modalOverlay      = document.getElementById("modalOverlay");
+    const mPhone            = document.getElementById("mPhone");
+    const mPass             = document.getElementById("mPass");
+    const mBtnEntrar        = document.getElementById("mBtnEntrar");
+    const mBtnCerrar        = document.getElementById("mBtnCerrar");
+    const mMsg              = document.getElementById("mMsg");
+    const adminBar          = document.getElementById("adminBar");
+    const adminBarNombre    = document.getElementById("adminBarNombre");
+    const btnSalirIndex     = document.getElementById("btnSalirIndex");
+    const btnAdmin          = document.getElementById("btnAdmin");
+    const btnLock           = document.getElementById("btnLock");
+    const hambRegistro      = document.getElementById("hambRegistro");
+    const hambServicio      = document.getElementById("hambServicio");
+    const menuRegistro      = document.getElementById("menuRegistro");
+    const menuServicio      = document.getElementById("menuServicio");
+    const linkListaPersonal = document.getElementById("linkListaPersonal");
+    const linkConteo        = document.getElementById("linkConteo");
 
-    // ===== REVISAR SI YA HAY SESIÓN ADMIN =====
+    // ===== REVISAR SI YA HAY SESIÓN =====
     if (sessionStorage.getItem("admin_logged") === "1") {
-      mostrarModoAdmin(sessionStorage.getItem("admin_nombre") || "Administrador");
+      const rol = sessionStorage.getItem("admin_rol") || "admin";
+      mostrarModoLogueado(sessionStorage.getItem("admin_nombre") || "Administrador", rol);
     }
+
+    // ===== HAMBURGUESAS: abrir/cerrar =====
+    hambRegistro.addEventListener("click", e => {
+      e.stopPropagation();
+      menuServicio.classList.add("hidden");
+      menuRegistro.classList.toggle("hidden");
+    });
+
+    hambServicio.addEventListener("click", e => {
+      e.stopPropagation();
+      menuRegistro.classList.add("hidden");
+      menuServicio.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", () => {
+      menuRegistro.classList.add("hidden");
+      menuServicio.classList.add("hidden");
+    });
 
     // ===== ABRIR MODAL =====
     btnLock.addEventListener("click", () => {
-      // Si ya es admin, solo abrir panel directamente
       if (sessionStorage.getItem("admin_logged") === "1") {
-        window.location.href = "PAGES/admin.html";
+        if ((sessionStorage.getItem("admin_rol") || "admin") === "admin") {
+          window.location.href = "PAGES/admin.html";
+        }
         return;
       }
       modalOverlay.classList.add("activo");
@@ -196,7 +297,7 @@
       mMsg.textContent = "";
     }
 
-    // ===== LOGIN ADMIN =====
+    // ===== LOGIN =====
     mBtnEntrar.addEventListener("click", async () => {
       const phone = mPhone.value.trim();
       const pass  = mPass.value.trim();
@@ -215,17 +316,19 @@
         if (!admins) {
           const oldPass = await dbGet("config/admin_pass");
           const defaultPass = oldPass || "1234";
-          await dbSet("config/admins/0000", { nombre: "Admin", password: defaultPass });
-          admins = { "0000": { nombre: "Admin", password: defaultPass } };
+          await dbSet("config/admins/0000", { nombre: "Admin", password: defaultPass, rol: "admin" });
+          admins = { "0000": { nombre: "Admin", password: defaultPass, rol: "admin" } };
         }
 
         const admin = admins[phone];
         if (admin && admin.password === pass) {
+          const rol = admin.rol || "admin"; // sin campo rol = admin (compatibilidad)
           sessionStorage.setItem("admin_logged", "1");
           sessionStorage.setItem("admin_phone", phone);
           sessionStorage.setItem("admin_nombre", admin.nombre || "Administrador");
+          sessionStorage.setItem("admin_rol", rol);
           cerrarModal();
-          mostrarModoAdmin(admin.nombre || "Administrador");
+          mostrarModoLogueado(admin.nombre || "Administrador", rol);
         } else {
           mMsg.textContent = "❌ Número o contraseña incorrectos.";
           mPass.value = "";
@@ -243,22 +346,32 @@
       el.addEventListener("keydown", e => { if (e.key === "Enter") mBtnEntrar.click(); })
     );
 
-    // ===== MOSTRAR MODO ADMIN =====
-    function mostrarModoAdmin(nombre) {
-      btnAdmin.classList.remove("hidden");
-      btnConteo.classList.remove("hidden");
-      adminBarNombre.textContent = `👤 ${nombre}`;
+    // ===== MOSTRAR SEGÚN ROL =====
+    function mostrarModoLogueado(nombre, rol) {
+      const etiqueta = rol === "supervisor" ? "👁️ Supervisor" : "👤 Admin";
+      adminBarNombre.textContent = `${etiqueta}: ${nombre}`;
       adminBar.classList.add("visible");
       btnLock.textContent = "⚙️";
+
+      // Admin: ve botón Administración + ⚙️ va a admin.html
+      if (rol === "admin") {
+        btnAdmin.classList.remove("hidden");
+      }
+
+      // Supervisor y admin: ven Lista Personal y Conteo en los hamburguesas
+      linkListaPersonal.classList.add("visible");
+      linkConteo.classList.add("visible");
     }
 
-    // ===== SALIR DE MODO ADMIN =====
+    // ===== SALIR =====
     btnSalirIndex.addEventListener("click", () => {
       sessionStorage.removeItem("admin_logged");
       sessionStorage.removeItem("admin_phone");
       sessionStorage.removeItem("admin_nombre");
+      sessionStorage.removeItem("admin_rol");
       btnAdmin.classList.add("hidden");
-      btnConteo.classList.add("hidden");
+      linkListaPersonal.classList.remove("visible");
+      linkConteo.classList.remove("visible");
       adminBar.classList.remove("visible");
       btnLock.textContent = "🔒";
     });
