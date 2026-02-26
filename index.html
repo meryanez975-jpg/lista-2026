@@ -9,127 +9,209 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Sistema de Comidas</title>
-  <link rel="stylesheet" href="estilo.css" />
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: linear-gradient(160deg, #e8d5ff 0%, #d4f0e8 50%, #ffd6a5 100%);
-      min-height: 100vh;
       font-family: Arial, sans-serif;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
+      background: #f5f0ff;
     }
-    .top-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      background: rgba(255,255,255,.50);
-      border-bottom: 2px solid rgba(255,255,255,.65);
-    }
-    .top-icon { font-size: 28px; line-height: 1; padding: 4px; }
-    .top-bar-titulo {
-      flex: 1;
-      font-size: 15px;
-      font-weight: 800;
-      color: #4a2080;
-    }
-    .top-bar-titulo .tb-sub { font-size: 11px; color: #888; font-weight: 400; margin-top: 1px; }
-    .panel-body {
-      flex: 1;
-      padding: 20px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 440px;
-      width: 100%;
-      margin: 0 auto;
-    }
-    .panel-btn {
-      display: flex; align-items: center; gap: 14px;
-      padding: 18px 20px; text-decoration: none;
-      border-radius: 20px; border: 2.5px solid transparent;
-      font-size: 16px; font-weight: 800;
-      box-shadow: 0 4px 14px rgba(0,0,0,.09);
-      transition: transform .1s, box-shadow .1s;
-      font-family: Arial, sans-serif; color: inherit;
-    }
-    .panel-btn:active { transform: scale(0.97); box-shadow: 0 2px 7px rgba(0,0,0,.09); }
-    .panel-btn .pb-icon { font-size: 30px; line-height: 1; }
-    .panel-btn .pb-sub { font-size: 12px; font-weight: 400; opacity: .7; margin-top: 2px; }
-    .pb-registro { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
-    .pb-servicio { background: #ffe0b2; color: #7a3900; border-color: #ffb74d; }
 
-    /* Modal */
+    /* ── 2 botones que ocupan toda la pantalla ── */
+    .home-grid {
+      flex: 1;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+    }
+    .home-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-decoration: none;
+      transition: filter .1s;
+    }
+    .home-btn:active { filter: brightness(.93); }
+    .home-btn .hb-icon { font-size: 64px; line-height: 1; }
+    .home-btn .hb-label {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+    .home-btn .hb-sub {
+      font-size: 13px;
+      font-weight: 400;
+      opacity: .65;
+      margin-top: -6px;
+    }
+
+    /* Colores de los 2 botones */
+    .btn-registro {
+      background: #b5ead7;
+      color: #1a5c40;
+      border-bottom: 3px solid #8dd4b8;
+    }
+    .btn-servicio {
+      background: #ffd6a5;
+      color: #7a3900;
+    }
+
+    /* ── Modal PIN ── */
     .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.50); z-index: 999;
-      justify-content: center; align-items: center; padding: 20px;
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
     .modal-overlay.activo { display: flex; }
     .modal-box {
-      background: #fff; border-radius: 24px; padding: 28px 24px;
-      width: min(360px, 100%); box-shadow: 0 14px 44px rgba(0,0,0,.28);
-      animation: fadeIn .18s ease;
+      background: #fff;
+      border-radius: 26px;
+      padding: 28px 24px 20px;
+      width: min(320px, 100%);
+      box-shadow: 0 16px 48px rgba(0,0,0,.28);
+      animation: up .18s ease;
+      text-align: center;
     }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
-    .modal-box h3 { margin: 0 0 6px; text-align: center; font-size: 19px; font-weight: 900; color: #4a2080; font-family: Arial, sans-serif; }
-    .modal-box .modal-sub { text-align: center; font-size: 13px; color: #888; margin: 0 0 22px; }
-    .btn-cancelar-modal {
-      width: 100%; padding: 10px; margin-top: 8px;
+    @keyframes up { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+
+    .modal-titulo {
+      font-size: 18px;
+      font-weight: 900;
+      color: #4a2080;
+      margin-bottom: 6px;
+    }
+    .modal-sub {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 20px;
+    }
+
+    /* Indicadores del PIN */
+    .pin-dots {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .pin-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid #c9a8f0;
+      background: #fff;
+      transition: background .1s, border-color .1s;
+    }
+    .pin-dot.lleno {
+      background: #7c3aed;
+      border-color: #7c3aed;
+    }
+    .pin-dot.error {
+      background: #e57373;
+      border-color: #e57373;
+    }
+
+    /* Teclado numérico */
+    .pin-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .pin-key {
+      padding: 14px 0;
+      font-size: 20px;
+      font-weight: 700;
+      border: 2px solid #e8d5ff;
+      border-radius: 14px;
+      background: #faf7ff;
+      color: #4a2080;
+      cursor: pointer;
+      transition: background .08s;
+      font-family: Arial, sans-serif;
+    }
+    .pin-key:active { background: #e8d5ff; }
+    .pin-key.key-del { font-size: 18px; color: #888; border-color: #eee; background: #f5f5f5; }
+    .pin-key.key-ok  {
+      background: #7c3aed; color: #fff;
+      border-color: #7c3aed; font-size: 18px;
+    }
+    .pin-key.key-ok:active { background: #5b21b6; }
+
+    .pin-msg {
+      font-size: 13px;
+      color: #e53935;
+      min-height: 18px;
+      margin-bottom: 10px;
+    }
+    .btn-cancelar {
+      width: 100%; padding: 10px;
       border: 1.5px solid #ddd; border-radius: 12px;
-      background: #f5f5f5; font-size: 13px; cursor: pointer; font-family: Arial, sans-serif;
+      background: #f5f5f5; font-size: 13px;
+      cursor: pointer; font-family: Arial, sans-serif;
     }
+    .btn-cancelar:active { opacity: .8; }
   </style>
 </head>
 <body>
 
-  <div class="top-bar">
-    <span class="top-icon">🍽️</span>
-    <div class="top-bar-titulo">
-      Sistema de Comidas
-      <div class="tb-sub">Acceso público</div>
-    </div>
+  <!-- ── PANTALLA PÚBLICA: 2 botones que llenan la pantalla ── -->
+  <div class="home-grid">
+
+    <a href="PAGES/registro.html" class="home-btn btn-registro">
+      <span class="hb-icon">📝</span>
+      <span class="hb-label">Registrar comidas</span>
+      <span class="hb-sub">Seleccioná tu nombre y marcá</span>
+    </a>
+
+    <a href="PAGES/servicio.html" class="home-btn btn-servicio">
+      <span class="hb-icon">🍽️</span>
+      <span class="hb-label">Ir a Servicio</span>
+      <span class="hb-sub">Marcar platos entregados</span>
+    </a>
+
   </div>
 
-  <div class="panel-body">
-    <a href="PAGES/registro.html" class="panel-btn pb-registro">
-      <span class="pb-icon">📝</span>
-      <div>
-        <div>Registrar comidas</div>
-        <div class="pb-sub">Seleccioná tu nombre y marcá</div>
-      </div>
-    </a>
-    <a href="PAGES/servicio.html" class="panel-btn pb-servicio">
-      <span class="pb-icon">🍽️</span>
-      <div>
-        <div>Ir a Servicio</div>
-        <div class="pb-sub">Marcar platos entregados</div>
-      </div>
-    </a>
-  </div>
-
-  <!-- Zona invisible: esquina inferior izquierda (supervisor) -->
-  <div id="zonaSupervisor"
+  <!-- ── ZONAS INVISIBLES ── -->
+  <!-- 3 toques esquina inferior izquierda -->
+  <div id="zonaTrigger"
        style="position:fixed;bottom:0;left:0;width:72px;height:72px;z-index:500;"></div>
 
-  <!-- Modal de acceso -->
+  <!-- ── MODAL PIN ── -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-      <h3>🔑 Acceso</h3>
-      <p class="modal-sub">Ingresá tus datos para continuar</p>
-      <div class="form-card" style="margin:0;border:none;background:transparent;box-shadow:none;padding:0;">
-        <label class="campo">
-          <span>Número de celular</span>
-          <input type="tel" id="mPhone" inputmode="numeric" placeholder="Ej: 099123456">
-        </label>
-        <label class="campo">
-          <span>Contraseña</span>
-          <input type="password" id="mPass" placeholder="Contraseña">
-        </label>
-        <button class="btn-primario" id="mBtnEntrar" type="button">Entrar</button>
-        <p class="nota" id="mMsg"></p>
+      <div class="modal-titulo">🔑 Acceso</div>
+      <div class="modal-sub">Ingresá tu PIN de 4 dígitos</div>
+
+      <div class="pin-dots">
+        <div class="pin-dot" id="d0"></div>
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
       </div>
-      <button class="btn-cancelar-modal" id="mBtnCerrar" type="button">Cancelar</button>
+
+      <div class="pin-pad">
+        <button class="pin-key" onclick="tecla('1')">1</button>
+        <button class="pin-key" onclick="tecla('2')">2</button>
+        <button class="pin-key" onclick="tecla('3')">3</button>
+        <button class="pin-key" onclick="tecla('4')">4</button>
+        <button class="pin-key" onclick="tecla('5')">5</button>
+        <button class="pin-key" onclick="tecla('6')">6</button>
+        <button class="pin-key" onclick="tecla('7')">7</button>
+        <button class="pin-key" onclick="tecla('8')">8</button>
+        <button class="pin-key" onclick="tecla('9')">9</button>
+        <button class="pin-key key-del" onclick="borrar()">⌫</button>
+        <button class="pin-key" onclick="tecla('0')">0</button>
+        <button class="pin-key key-ok" id="keyOk" onclick="verificar()">→</button>
+      </div>
+
+      <div class="pin-msg" id="pinMsg"></div>
+      <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
     </div>
   </div>
 
@@ -137,16 +219,35 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>
-    const modalOverlay = document.getElementById("modalOverlay");
-    const mPhone       = document.getElementById("mPhone");
-    const mPass        = document.getElementById("mPass");
-    const mBtnEntrar   = document.getElementById("mBtnEntrar");
-    const mBtnCerrar   = document.getElementById("mBtnCerrar");
-    const mMsg         = document.getElementById("mMsg");
+    let pin = "";
 
-    // ── TRIGGER 1: 3 toques esquina inferior izquierda → supervisor ──
+    // ── Actualizar puntos visuales ──
+    function actualizarDots(error = false) {
+      for (let i = 0; i < 4; i++) {
+        const d = document.getElementById("d" + i);
+        d.className = "pin-dot";
+        if (error) d.classList.add("error");
+        else if (i < pin.length) d.classList.add("lleno");
+      }
+    }
+
+    function tecla(n) {
+      if (pin.length >= 4) return;
+      pin += n;
+      actualizarDots();
+      document.getElementById("pinMsg").textContent = "";
+      if (pin.length === 4) verificar();
+    }
+
+    function borrar() {
+      pin = pin.slice(0, -1);
+      actualizarDots();
+      document.getElementById("pinMsg").textContent = "";
+    }
+
+    // ── TRIGGER: 3 toques esquina inferior izquierda ──
     let cornerTaps = 0, cornerTimer = null;
-    document.getElementById("zonaSupervisor").addEventListener("click", () => {
+    document.getElementById("zonaTrigger").addEventListener("click", () => {
       cornerTaps++;
       clearTimeout(cornerTimer);
       cornerTimer = setTimeout(() => { cornerTaps = 0; }, 2000);
@@ -157,7 +258,7 @@
       }
     });
 
-    // ── TRIGGER 2: deslizar desde borde derecho → admin ──
+    // ── TRIGGER: deslizar desde borde derecho ──
     let swipeStartX = 0;
     document.addEventListener("touchstart", e => {
       swipeStartX = e.touches[0].clientX >= window.innerWidth - 30
@@ -172,26 +273,24 @@
 
     // ── Modal ──
     function abrirModal() {
-      mPhone.value = ""; mPass.value = ""; mMsg.textContent = "";
-      modalOverlay.classList.add("activo");
-      mPhone.focus();
+      pin = "";
+      actualizarDots();
+      document.getElementById("pinMsg").textContent = "";
+      document.getElementById("modalOverlay").classList.add("activo");
     }
     function cerrarModal() {
-      modalOverlay.classList.remove("activo");
-      mPhone.value = ""; mPass.value = ""; mMsg.textContent = "";
+      document.getElementById("modalOverlay").classList.remove("activo");
+      pin = "";
+      actualizarDots();
     }
-    mBtnCerrar.addEventListener("click", cerrarModal);
-    modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
+    document.getElementById("modalOverlay").addEventListener("click", e => {
+      if (e.target === document.getElementById("modalOverlay")) cerrarModal();
+    });
 
-    // ── Login → redirige a la página del rol ──
-    mBtnEntrar.addEventListener("click", async () => {
-      const phone = mPhone.value.trim();
-      const pass  = mPass.value.trim();
-      if (!phone || !pass) { mMsg.textContent = "Ingresá celular y contraseña."; return; }
-
-      mBtnEntrar.disabled = true;
-      mBtnEntrar.textContent = "Verificando...";
-      mMsg.textContent = "";
+    // ── Verificar PIN contra Firebase ──
+    async function verificar() {
+      if (pin.length < 4) return;
+      document.getElementById("pinMsg").textContent = "Verificando...";
 
       try {
         let admins = await dbGet("config/admins");
@@ -200,40 +299,38 @@
           await dbSet("config/admins/0000", { nombre: "Admin", password: dp, rol: "admin" });
           admins = { "0000": { nombre: "Admin", password: dp, rol: "admin" } };
         }
-        const admin = admins[phone];
-        if (admin && admin.password === pass) {
-          const rol    = admin.rol || "admin";
-          const nombre = admin.nombre || "Administrador";
-          sessionStorage.setItem("rol_activo",    rol);
-          sessionStorage.setItem("rol_nombre",    nombre);
-          sessionStorage.setItem("rol_phone",     phone);
+
+        // Buscar cualquier admin cuya contraseña coincida con el PIN
+        let encontrado = null;
+        for (const [, admin] of Object.entries(admins)) {
+          if (admin.password === pin) { encontrado = admin; break; }
+        }
+
+        if (encontrado) {
+          sessionStorage.setItem("rol_activo", encontrado.rol || "admin");
+          sessionStorage.setItem("rol_nombre", encontrado.nombre || "");
           cerrarModal();
-          if (rol === "supervisor") {
+          if ((encontrado.rol || "admin") === "supervisor") {
             window.location.href = "PAGES/panel_supervisor.html";
           } else {
             window.location.href = "PAGES/panel_admin.html";
           }
         } else {
-          mMsg.textContent = "❌ Número o contraseña incorrectos.";
-          mPass.value = ""; mPass.focus();
+          actualizarDots(true);
+          document.getElementById("pinMsg").textContent = "PIN incorrecto";
+          setTimeout(() => { pin = ""; actualizarDots(); document.getElementById("pinMsg").textContent = ""; }, 1000);
         }
       } catch(e) {
-        mMsg.textContent = "❌ Sin conexión. Verificá el WiFi.";
+        document.getElementById("pinMsg").textContent = "Sin conexión";
+        setTimeout(() => { pin = ""; actualizarDots(); document.getElementById("pinMsg").textContent = ""; }, 1500);
       }
-
-      mBtnEntrar.disabled = false;
-      mBtnEntrar.textContent = "Entrar";
-    });
-
-    [mPhone, mPass].forEach(el =>
-      el.addEventListener("keydown", e => { if (e.key === "Enter") mBtnEntrar.click(); })
-    );
+    }
   </script>
 
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js").catch(e => console.warn("SW error:", e));
+        navigator.serviceWorker.register("/sw.js").catch(e => console.warn(e));
       });
     }
   </script>
