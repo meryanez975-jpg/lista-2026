@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#7c3aed">
   <meta name="mobile-web-app-capable" content="yes">
@@ -22,92 +21,39 @@
     .screen { display: none; min-height: 100vh; flex-direction: column; }
     .screen.activa { display: flex; }
 
-    /* ===== SELECTOR (pantalla 1) ===== */
-    .selector-wrap {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 24px;
-      text-align: center;
-    }
-    .selector-icon { font-size: 72px; margin-bottom: 12px; }
-    .selector-titulo {
-      font-size: 24px;
-      font-weight: 900;
-      color: #4a2080;
-      margin-bottom: 6px;
-      letter-spacing: .5px;
-    }
-    .selector-sub {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 36px;
-    }
-    .selector-cards { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 14px; }
-
-    .rol-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px 22px;
-      border-radius: 22px;
-      border: 2.5px solid transparent;
-      font-size: 18px;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(0,0,0,.10);
-      transition: transform .1s, box-shadow .1s;
-      text-align: left;
-      font-family: Arial, sans-serif;
-      background: none;
-      width: 100%;
-    }
-    .rol-card:active { transform: scale(0.97); box-shadow: 0 3px 10px rgba(0,0,0,.10); }
-    .rol-card .rc-icon { font-size: 36px; line-height: 1; }
-    .rol-card .rc-sub { font-size: 12px; font-weight: 400; opacity: .7; margin-top: 3px; }
-
-    .card-publico  { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
-    .card-super    { background: #c7dcff; color: #1a3080; border-color: #90b4f8; }
-    .card-admin    { background: #e8d5ff; color: #4a2080; border-color: #c9a8f0; }
-
-    /* ===== PANTALLAS INTERNAS (2, 3, 4) ===== */
-    .panel-header {
+    /* ===== BARRA SUPERIOR (todas las pantallas) ===== */
+    .top-bar {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 14px 16px;
-      background: rgba(255,255,255,.55);
-      border-bottom: 2px solid rgba(255,255,255,.7);
-      backdrop-filter: blur(4px);
+      padding: 12px 16px;
+      background: rgba(255,255,255,.50);
+      border-bottom: 2px solid rgba(255,255,255,.65);
     }
-    .btn-volver {
-      width: 40px; height: 40px;
-      border: 2px solid #c9a8f0;
-      background: #fff;
-      color: #4a2080;
-      font-size: 18px;
-      border-radius: 12px;
+    /* Ícono: zona oculta de 5 toques */
+    .top-icon-tap {
+      font-size: 28px;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-family: Arial, sans-serif;
-      flex-shrink: 0;
+      user-select: none;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 10px;
+      transition: background .1s;
     }
-    .btn-volver:active { background: #f0e6ff; }
-    .panel-header-titulo {
+    .top-icon-tap.flash { background: rgba(124,58,237,.18); }
+    .top-bar-titulo {
       flex: 1;
       font-size: 15px;
       font-weight: 800;
       color: #4a2080;
     }
-    .panel-header-titulo .ph-sub {
+    .top-bar-titulo .tb-sub {
       font-size: 11px;
       color: #888;
       font-weight: 400;
       margin-top: 1px;
     }
-    .btn-salir-panel {
+    .btn-salir-top {
       padding: 6px 14px;
       border: 1.5px solid #e57373;
       border-radius: 10px;
@@ -119,8 +65,9 @@
       font-family: Arial, sans-serif;
       white-space: nowrap;
     }
-    .btn-salir-panel:active { opacity: .8; }
+    .btn-salir-top:active { opacity: .8; }
 
+    /* ===== CUERPO DEL PANEL ===== */
     .panel-body {
       flex: 1;
       padding: 20px 18px;
@@ -131,7 +78,6 @@
       width: 100%;
       margin: 0 auto;
     }
-
     .panel-section-label {
       font-size: 11px;
       font-weight: 800;
@@ -141,7 +87,7 @@
       padding: 4px 2px 0;
     }
 
-    /* Botones del panel */
+    /* ===== BOTONES DE NAVEGACIÓN ===== */
     .panel-btn {
       display: flex;
       align-items: center;
@@ -169,12 +115,12 @@
     .pb-lista     { background: #fce4ec; color: #880e4f; border-color: #f48fb1; }
     .pb-admin     { background: #e8d5ff; color: #4a2080; border-color: #c9a8f0; }
 
-    /* ===== MODAL DE LOGIN ===== */
+    /* ===== MODAL DE CÓDIGO ===== */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.5);
+      background: rgba(0,0,0,.50);
       z-index: 999;
       justify-content: center;
       align-items: center;
@@ -185,13 +131,15 @@
       background: #fff;
       border-radius: 24px;
       padding: 28px 24px;
-      width: min(380px, 100%);
+      width: min(360px, 100%);
       box-shadow: 0 14px 44px rgba(0,0,0,.28);
+      animation: fadeIn .18s ease;
     }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
     .modal-box h3 {
       margin: 0 0 6px;
       text-align: center;
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 900;
       color: #4a2080;
       font-family: Arial, sans-serif;
@@ -202,61 +150,45 @@
       color: #888;
       margin: 0 0 22px;
     }
-    @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }
-    .modal-box { animation: fadeIn .18s ease; }
+    .btn-publico-modal {
+      width: 100%;
+      padding: 11px;
+      margin-top: 10px;
+      border: 1.5px solid #8dd4b8;
+      border-radius: 12px;
+      background: #b5ead7;
+      color: #1a5c40;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+    .btn-publico-modal:active { opacity: .8; }
+    .btn-cancelar-modal {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1.5px solid #ddd;
+      border-radius: 12px;
+      background: #f5f5f5;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+    }
+    .btn-cancelar-modal:active { opacity: .8; }
   </style>
 </head>
 <body>
 
   <!-- ══════════════════════════════════════
-       PANTALLA 1 — SELECTOR DE ROL
-  ══════════════════════════════════════ -->
-  <div class="screen activa" id="screenSelector">
-    <div class="selector-wrap">
-      <div class="selector-icon">🍽️</div>
-      <h1 class="selector-titulo">Sistema de Comidas</h1>
-      <p class="selector-sub">¿Cómo querés entrar?</p>
-
-      <div class="selector-cards">
-
-        <button class="rol-card card-publico" onclick="irPublico()">
-          <span class="rc-icon">🌐</span>
-          <div>
-            <div>Público</div>
-            <div class="rc-sub">Registrar comidas · Ir a Servicio</div>
-          </div>
-        </button>
-
-        <button class="rol-card card-super" onclick="pedirAcceso('supervisor')">
-          <span class="rc-icon">👁️</span>
-          <div>
-            <div>Supervisor</div>
-            <div class="rc-sub">Gestionar personal y menú</div>
-          </div>
-        </button>
-
-        <button class="rol-card card-admin" onclick="pedirAcceso('admin')">
-          <span class="rc-icon">🔐</span>
-          <div>
-            <div>Administrador</div>
-            <div class="rc-sub">Acceso completo al sistema</div>
-          </div>
-        </button>
-
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ══════════════════════════════════════
-       PANTALLA 2 — PÚBLICO
+       PANTALLA — PÚBLICO
   ══════════════════════════════════════ -->
   <div class="screen" id="screenPublico">
-    <div class="panel-header">
-      <button class="btn-volver" onclick="volverSelector()">←</button>
-      <div class="panel-header-titulo">
-        🌐 Acceso Público
-        <div class="ph-sub">Sin contraseña</div>
+    <div class="top-bar">
+      <span class="top-icon-tap" id="tapPublico">🍽️</span>
+      <div class="top-bar-titulo">
+        Sistema de Comidas
+        <div class="tb-sub">Acceso público</div>
       </div>
     </div>
     <div class="panel-body">
@@ -282,16 +214,16 @@
 
 
   <!-- ══════════════════════════════════════
-       PANTALLA 3 — SUPERVISOR
+       PANTALLA — SUPERVISOR
   ══════════════════════════════════════ -->
   <div class="screen" id="screenSupervisor">
-    <div class="panel-header">
-      <button class="btn-volver" onclick="salirYVolver()">←</button>
-      <div class="panel-header-titulo">
+    <div class="top-bar">
+      <span class="top-icon-tap" id="tapSuper">🍽️</span>
+      <div class="top-bar-titulo">
         👁️ Supervisor
-        <div class="ph-sub" id="superNombreHeader"></div>
+        <div class="tb-sub" id="superNombre"></div>
       </div>
-      <button class="btn-salir-panel" onclick="salirYVolver()">Salir</button>
+      <button class="btn-salir-top" onclick="irPublico()">Salir</button>
     </div>
     <div class="panel-body">
 
@@ -324,16 +256,16 @@
 
 
   <!-- ══════════════════════════════════════
-       PANTALLA 4 — ADMIN
+       PANTALLA — ADMIN
   ══════════════════════════════════════ -->
   <div class="screen" id="screenAdmin">
-    <div class="panel-header">
-      <button class="btn-volver" onclick="salirYVolver()">←</button>
-      <div class="panel-header-titulo">
+    <div class="top-bar">
+      <span class="top-icon-tap" id="tapAdmin">🍽️</span>
+      <div class="top-bar-titulo">
         🔐 Administrador
-        <div class="ph-sub" id="adminNombreHeader"></div>
+        <div class="tb-sub" id="adminNombre"></div>
       </div>
-      <button class="btn-salir-panel" onclick="salirYVolver()">Salir</button>
+      <button class="btn-salir-top" onclick="irPublico()">Salir</button>
     </div>
     <div class="panel-body">
 
@@ -404,12 +336,12 @@
 
 
   <!-- ══════════════════════════════════════
-       MODAL DE CONTRASEÑA
+       MODAL — CAMBIAR MODO
   ══════════════════════════════════════ -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-      <h3 id="mTitulo">🔐 Acceso</h3>
-      <p class="modal-sub" id="mSub">Ingresá tus datos para continuar</p>
+      <h3>🔑 Cambiar modo</h3>
+      <p class="modal-sub">Ingresá el código para cambiar</p>
       <div class="form-card" style="margin:0; border:none; background:transparent; box-shadow:none; padding:0;">
         <label class="campo">
           <span>Número de celular</span>
@@ -419,12 +351,13 @@
           <span>Contraseña</span>
           <input type="password" id="mPass" placeholder="Contraseña">
         </label>
-        <button class="btn-primario" id="mBtnEntrar" type="button">Entrar</button>
+        <button class="btn-primario" id="mBtnEntrar" type="button">Cambiar modo</button>
         <p class="nota" id="mMsg"></p>
       </div>
-      <button id="mBtnCerrar" type="button"
-              style="margin-top:14px; width:100%; padding:10px; border:1.5px solid #ddd;
-                     border-radius:12px; background:#f5f5f5; font-size:14px; cursor:pointer; font-family:Arial,sans-serif;">
+      <button class="btn-publico-modal" id="mBtnPublico" type="button">
+        🌐 Volver a modo público
+      </button>
+      <button class="btn-cancelar-modal" id="mBtnCerrar" type="button">
         Cancelar
       </button>
     </div>
@@ -441,60 +374,63 @@
     const mPass        = document.getElementById("mPass");
     const mBtnEntrar   = document.getElementById("mBtnEntrar");
     const mBtnCerrar   = document.getElementById("mBtnCerrar");
+    const mBtnPublico  = document.getElementById("mBtnPublico");
     const mMsg         = document.getElementById("mMsg");
-    const mTitulo      = document.getElementById("mTitulo");
-    const mSub         = document.getElementById("mSub");
 
-    let rolPendiente = ""; // "supervisor" o "admin"
+    // ── Cargar modo guardado (localStorage persiste al cerrar la app) ──
+    function aplicarModoGuardado() {
+      const modo   = localStorage.getItem("modo_actual") || "publico";
+      const nombre = localStorage.getItem("modo_nombre") || "";
+      activarModo(modo, nombre);
+    }
 
-    // ── Al cargar: si había sesión activa, retomar pantalla ──
-    (function retomar() {
-      const logged = sessionStorage.getItem("admin_logged");
-      if (logged !== "1") return;
-      const rol    = sessionStorage.getItem("admin_rol") || "admin";
-      const nombre = sessionStorage.getItem("admin_nombre") || "";
-      if (rol === "supervisor") mostrarPantallaSuper(nombre);
-      else mostrarPantallaAdmin(nombre);
-    })();
+    function activarModo(modo, nombre) {
+      localStorage.setItem("modo_actual", modo);
+      localStorage.setItem("modo_nombre", nombre);
 
-    // ── NAVEGAR A PANTALLAS ──
-    function mostrarSolo(id) {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("activa"));
-      document.getElementById(id).classList.add("activa");
+
+      if (modo === "supervisor") {
+        document.getElementById("superNombre").textContent = nombre;
+        document.getElementById("screenSupervisor").classList.add("activa");
+      } else if (modo === "admin") {
+        document.getElementById("adminNombre").textContent = nombre;
+        document.getElementById("screenAdmin").classList.add("activa");
+      } else {
+        document.getElementById("screenPublico").classList.add("activa");
+      }
       window.scrollTo(0, 0);
     }
 
     function irPublico() {
-      mostrarSolo("screenPublico");
+      activarModo("publico", "");
     }
 
-    function mostrarPantallaSuper(nombre) {
-      document.getElementById("superNombreHeader").textContent = nombre;
-      mostrarSolo("screenSupervisor");
+    // ── Toque oculto: 5 veces rápido en el ícono 🍽️ ──
+    let tapCount = 0;
+    let tapTimer = null;
+
+    function registrarTap(el) {
+      tapCount++;
+      el.classList.add("flash");
+      setTimeout(() => el.classList.remove("flash"), 150);
+
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
+
+      if (tapCount >= 5) {
+        tapCount = 0;
+        clearTimeout(tapTimer);
+        abrirModal();
+      }
     }
 
-    function mostrarPantallaAdmin(nombre) {
-      document.getElementById("adminNombreHeader").textContent = nombre;
-      mostrarSolo("screenAdmin");
-    }
+    document.getElementById("tapPublico").addEventListener("click",  () => registrarTap(document.getElementById("tapPublico")));
+    document.getElementById("tapSuper").addEventListener("click",    () => registrarTap(document.getElementById("tapSuper")));
+    document.getElementById("tapAdmin").addEventListener("click",    () => registrarTap(document.getElementById("tapAdmin")));
 
-    function volverSelector() {
-      mostrarSolo("screenSelector");
-    }
-
-    function salirYVolver() {
-      sessionStorage.removeItem("admin_logged");
-      sessionStorage.removeItem("admin_phone");
-      sessionStorage.removeItem("admin_nombre");
-      sessionStorage.removeItem("admin_rol");
-      volverSelector();
-    }
-
-    // ── PEDIR ACCESO (abre modal) ──
-    function pedirAcceso(rol) {
-      rolPendiente = rol;
-      mTitulo.textContent = rol === "supervisor" ? "👁️ Supervisor" : "🔐 Administrador";
-      mSub.textContent    = "Ingresá tu celular y contraseña";
+    // ── Modal: abrir / cerrar ──
+    function abrirModal() {
       mPhone.value = "";
       mPass.value  = "";
       mMsg.textContent = "";
@@ -502,18 +438,18 @@
       mPhone.focus();
     }
 
-    // ── CERRAR MODAL ──
     function cerrarModal() {
       modalOverlay.classList.remove("activo");
       mPhone.value = "";
       mPass.value  = "";
       mMsg.textContent = "";
-      rolPendiente = "";
     }
+
     mBtnCerrar.addEventListener("click", cerrarModal);
+    mBtnPublico.addEventListener("click", () => { cerrarModal(); irPublico(); });
     modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
 
-    // ── LOGIN ──
+    // ── Login / cambio de modo ──
     mBtnEntrar.addEventListener("click", async () => {
       const phone = mPhone.value.trim();
       const pass  = mPass.value.trim();
@@ -540,21 +476,8 @@
         if (admin && admin.password === pass) {
           const rol    = admin.rol || "admin";
           const nombre = admin.nombre || "Administrador";
-
-          // Solo dejar entrar si el rol coincide con lo que pidió
-          if (rol !== rolPendiente && !(rol === "admin" && rolPendiente === "admin")) {
-            mMsg.textContent = "❌ Tu cuenta no tiene acceso a esta sección.";
-            mPass.value = "";
-            mPass.focus();
-          } else {
-            sessionStorage.setItem("admin_logged", "1");
-            sessionStorage.setItem("admin_phone",  phone);
-            sessionStorage.setItem("admin_nombre", nombre);
-            sessionStorage.setItem("admin_rol",    rol);
-            cerrarModal();
-            if (rol === "supervisor") mostrarPantallaSuper(nombre);
-            else mostrarPantallaAdmin(nombre);
-          }
+          cerrarModal();
+          activarModo(rol, nombre);
         } else {
           mMsg.textContent = "❌ Número o contraseña incorrectos.";
           mPass.value = "";
@@ -565,12 +488,15 @@
       }
 
       mBtnEntrar.disabled = false;
-      mBtnEntrar.textContent = "Entrar";
+      mBtnEntrar.textContent = "Cambiar modo";
     });
 
     [mPhone, mPass].forEach(el =>
       el.addEventListener("keydown", e => { if (e.key === "Enter") mBtnEntrar.click(); })
     );
+
+    // ── Iniciar ──
+    aplicarModoGuardado();
   </script>
 
   <!-- Service Worker (PWA) -->
