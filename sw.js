@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 // Service Worker — Sistema de Comidas
-const CACHE_NAME = "comidas-v1";
+const CACHE_NAME = "comidas-v2";
 
 const ARCHIVOS_CACHE = [
   "/",
@@ -16,7 +16,10 @@ const ARCHIVOS_CACHE = [
   "/PAGES/menu_admin.html",
   "/PAGES/personal.html",
   "/PAGES/lista_personal.html",
-  "/PAGES/otros.html"
+  "/PAGES/otros.html",
+  "/PAGES/panel_supervisor.html",
+  "/PAGES/panel_admin.html",
+  "/PAGES/extras.html"
 ];
 
 // Instalar: guardar archivos en caché
