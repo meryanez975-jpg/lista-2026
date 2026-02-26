@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#5e35b1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Personal Extra</title>
+  <link rel="stylesheet" href="../estilo.css" />
+  <style>
+    body { background: linear-gradient(160deg, #ede7f6 0%, #f3e5f5 40%, #fdf5ff 100%); }
+    .ext-header {
+      background: linear-gradient(135deg, #4527a0, #5e35b1, #7c3aed);
+      border-radius: 0 0 36px 36px;
+      padding: 32px 24px 28px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 6px 20px rgba(94,53,177,.28);
+      position: relative; overflow: hidden;
+    }
+    .ext-header::before {
+      content:""; position:absolute; top:-30px; right:-30px;
+      width:120px; height:120px; background:rgba(255,255,255,.10); border-radius:50%;
+    }
+    .ext-header .icon-grande { font-size:52px; display:block; margin-bottom:8px; }
+    .ext-header h1 { margin:0 0 4px; color:#fff; font-size:26px; font-weight:900; text-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .ext-header p  { margin:0; color:rgba(255,255,255,.85); font-size:13px; }
+    .panel { padding-top: 0 !important; }
+    .form-card { border-color: #ce93d8; }
+
+    /* Checkboxes de comidas */
+    .comidas-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px;
+    }
+    .comida-check {
+      display: flex; align-items: center; gap: 8px;
+      background: #f3e5f5; border: 1.5px solid #ce93d8;
+      border-radius: 12px; padding: 10px 12px; cursor: pointer;
+      font-size: 14px; font-weight: 700; color: #4a148c;
+      transition: background .1s, border-color .1s;
+      user-select: none;
+    }
+    .comida-check input { display: none; }
+    .comida-check.sel {
+      background: #7c3aed; color: #fff; border-color: #7c3aed;
+    }
+    .comida-check .ck-icon { font-size: 20px; }
+
+    /* Duración */
+    .duracion-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .dur-opcion {
+      display: flex; align-items: center; gap: 10px;
+      background: #f3e5f5; border: 1.5px solid #ce93d8;
+      border-radius: 12px; padding: 10px 14px; cursor: pointer;
+      font-size: 14px; font-weight: 700; color: #4a148c;
+      transition: background .1s; user-select: none;
+    }
+    .dur-opcion input { display: none; }
+    .dur-opcion.sel { background: #5e35b1; color: #fff; border-color: #5e35b1; }
+    .dur-opcion .dur-icon { font-size: 20px; }
+    .dur-opcion .dur-sub { font-size: 11px; font-weight: 400; opacity: .75; margin-top: 1px; }
+
+    /* Botón agregar */
+    #btnAgregar {
+      width: 100%; padding: 15px; border: none; border-radius: 16px;
+      background: linear-gradient(135deg, #5e35b1, #7c3aed);
+      color: #fff; font-size: 16px; font-weight: 900; cursor: pointer;
+      margin-top: 14px; box-shadow: 0 4px 14px rgba(94,53,177,.30);
+    }
+    #btnAgregar:disabled { background: #ccc; color: #999; box-shadow: none; cursor: not-allowed; }
+    #btnAgregar:not(:disabled):active { transform: scale(0.98); }
+
+    /* Lista de extras */
+    .extra-card {
+      background: #fff; border: 2px solid #ce93d8; border-radius: 18px;
+      padding: 14px 16px; margin-bottom: 10px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .extra-info { flex: 1; }
+    .extra-nombre { font-size: 16px; font-weight: 900; color: #4a148c; margin-bottom: 4px; }
+    .extra-comidas { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+    .extra-comida-tag {
+      background: #ede7f6; color: #5e35b1; border-radius: 8px;
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+    }
+    .extra-meta { font-size: 12px; color: #888; }
+    .extra-dur {
+      display: inline-block; border-radius: 8px; padding: 2px 8px;
+      font-size: 11px; font-weight: 800; margin-right: 4px;
+    }
+    .dur-dia       { background: #fff3e0; color: #e65100; }
+    .dur-semana    { background: #e8f5e9; color: #1b5e20; }
+    .dur-permanente { background: #e3f2fd; color: #0d47a1; }
+
+    .btn-eliminar {
+      background: #ffebee; border: 1.5px solid #ef9a9a; border-radius: 10px;
+      padding: 7px 12px; font-size: 13px; color: #c62828; cursor: pointer; font-weight: 700;
+      white-space: nowrap; align-self: center;
+    }
+    .btn-eliminar:active { opacity: .8; }
+
+    #msgForm { font-size: 13px; margin-top: 6px; min-height: 18px; }
+  </style>
+</head>
+<body>
+
+<main class="panel" style="padding-top:0;">
+  <div class="ext-header">
+    <span class="icon-grande">⭐</span>
+    <h1>Personal Extra</h1>
+    <p>Registrá personas ocasionales para el conteo</p>
+  </div>
+
+  <!-- ===== FORMULARIO ===== -->
+  <section class="form-card">
+    <h3 style="margin:0 0 14px; color:#4a148c;">➕ Agregar persona extra</h3>
+
+    <label class="campo" style="margin-bottom:12px;">
+      <span>Nombre</span>
+      <input type="text" id="inpNombre" placeholder="Nombre completo..." autocomplete="off">
+    </label>
+
+    <label class="campo" style="margin-bottom:4px;"><span>¿Qué comidas va a comer?</span></label>
+    <div class="comidas-grid" id="comidasGrid">
+      <label class="comida-check" data-comida="desayuno">
+        <input type="checkbox" value="desayuno">
+        <span class="ck-icon">🍞</span> Desayuno
+      </label>
+      <label class="comida-check" data-comida="almuerzo">
+        <input type="checkbox" value="almuerzo">
+        <span class="ck-icon">🍛</span> Almuerzo
+      </label>
+      <label class="comida-check" data-comida="merienda">
+        <input type="checkbox" value="merienda">
+        <span class="ck-icon">🥐</span> Merienda
+      </label>
+      <label class="comida-check" data-comida="cena">
+        <input type="checkbox" value="cena">
+        <span class="ck-icon">🍲</span> Cena
+      </label>
+    </div>
+
+    <label class="campo" style="margin:12px 0 4px;"><span>¿Por cuánto tiempo?</span></label>
+    <div class="duracion-opts" id="duracionOpts">
+      <label class="dur-opcion sel" data-dur="dia">
+        <input type="radio" name="duracion" value="dia" checked>
+        <span class="dur-icon">📅</span>
+        <div>
+          <div>Solo hoy</div>
+          <div class="dur-sub">Solo para la fecha elegida</div>
+        </div>
+      </label>
+      <label class="dur-opcion" data-dur="semana">
+        <input type="radio" name="duracion" value="semana">
+        <span class="dur-icon">📆</span>
+        <div>
+          <div>Esta semana</div>
+          <div class="dur-sub">Todos los días de esa semana</div>
+        </div>
+      </label>
+      <label class="dur-opcion" data-dur="permanente">
+        <input type="radio" name="duracion" value="permanente">
+        <span class="dur-icon">♾️</span>
+        <div>
+          <div>Permanente</div>
+          <div class="dur-sub">Hasta que lo elimines manualmente</div>
+        </div>
+      </label>
+    </div>
+
+    <label class="campo" style="margin-top:12px;">
+      <span>Fecha de referencia</span>
+      <input type="date" id="inpFecha">
+    </label>
+
+    <button id="btnAgregar" type="button">⭐ Agregar extra</button>
+    <p class="nota" id="msgForm"></p>
+  </section>
+
+  <!-- ===== LISTA DE EXTRAS ===== -->
+  <section class="form-card" style="border-color:#ce93d8;">
+    <h3 style="margin:0 0 12px; color:#4a148c;">👥 Extras activos</h3>
+    <div id="listaExtras">
+      <p class="nota">Cargando...</p>
+    </div>
+  </section>
+
+  <div style="margin-top:8px;">
+    <a class="btn-volver-bottom" href="panel_supervisor.html">⬅ Volver al panel</a>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+// Verificar sesión
+const rol = sessionStorage.getItem("rol_activo");
+if (rol !== "supervisor" && rol !== "admin") {
+  window.location.replace("/index.html");
+}
+
+// ===== FECHA DEFAULT = HOY =====
+const hoyISO = iso(new Date());
+document.getElementById("inpFecha").value = hoyISO;
+
+// ===== COMIDAS: toggle visual =====
+document.querySelectorAll(".comida-check").forEach(label => {
+  label.addEventListener("click", () => {
+    const cb = label.querySelector("input");
+    cb.checked = !cb.checked;
+    label.classList.toggle("sel", cb.checked);
+  });
+});
+
+// ===== DURACIÓN: toggle visual =====
+document.querySelectorAll(".dur-opcion").forEach(label => {
+  label.addEventListener("click", () => {
+    document.querySelectorAll(".dur-opcion").forEach(l => l.classList.remove("sel"));
+    label.classList.add("sel");
+    label.querySelector("input").checked = true;
+  });
+});
+
+// ===== AGREGAR EXTRA =====
+document.getElementById("btnAgregar").addEventListener("click", async () => {
+  const nombre = document.getElementById("inpNombre").value.trim();
+  if (!nombre) { mostrarMsg("❌ Escribí el nombre.", "red"); return; }
+
+  const comidas = Array.from(document.querySelectorAll(".comida-check input:checked"))
+    .map(cb => cb.value);
+  if (!comidas.length) { mostrarMsg("❌ Elegí al menos una comida.", "red"); return; }
+
+  const duracion  = document.querySelector("input[name='duracion']:checked")?.value || "dia";
+  const fechaRef  = document.getElementById("inpFecha").value || hoyISO;
+
+  const btn = document.getElementById("btnAgregar");
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
+
+  try {
+    await dbPush("extras", { nombre, comidas, fechaRef, duracion, activo: true });
+    mostrarMsg("✅ Extra agregado correctamente.", "green");
+    // Limpiar form
+    document.getElementById("inpNombre").value = "";
+    document.querySelectorAll(".comida-check").forEach(l => {
+      l.querySelector("input").checked = false;
+      l.classList.remove("sel");
+    });
+    document.getElementById("inpFecha").value = hoyISO;
+    // Reset duración a "dia"
+    document.querySelectorAll(".dur-opcion").forEach(l => l.classList.remove("sel"));
+    document.querySelector(".dur-opcion[data-dur='dia']").classList.add("sel");
+    document.querySelector("input[name='duracion'][value='dia']").checked = true;
+    cargarLista();
+  } catch {
+    mostrarMsg("❌ Error al guardar. Verificá el WiFi.", "red");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "⭐ Agregar extra";
+});
+
+function mostrarMsg(txt, color) {
+  const el = document.getElementById("msgForm");
+  el.textContent = txt;
+  el.style.color = color === "green" ? "#2e7d32" : "#c62828";
+  setTimeout(() => { el.textContent = ""; }, 3000);
+}
+
+// ===== CARGAR LISTA =====
+async function cargarLista() {
+  const contenedor = document.getElementById("listaExtras");
+  contenedor.innerHTML = '<p class="nota">Cargando...</p>';
+
+  try {
+    const data = await dbGet("extras");
+    if (!data) { contenedor.innerHTML = '<p class="nota">No hay extras registrados.</p>'; return; }
+
+    const activos = Object.entries(data)
+      .filter(([, e]) => e.activo)
+      .sort((a, b) => (a[1].nombre || "").localeCompare(b[1].nombre || "", "es"));
+
+    if (!activos.length) { contenedor.innerHTML = '<p class="nota">No hay extras activos.</p>'; return; }
+
+    contenedor.innerHTML = activos.map(([key, e]) => {
+      const comidasHTML = (e.comidas || [])
+        .map(c => `<span class="extra-comida-tag">${COMIDA_ICON[c] || ""} ${COMIDA_LABEL[c] || c}</span>`)
+        .join("");
+
+      const durClase = { dia: "dur-dia", semana: "dur-semana", permanente: "dur-permanente" }[e.duracion] || "dur-dia";
+      const durLabel = { dia: "📅 Solo hoy", semana: "📆 Semana", permanente: "♾️ Permanente" }[e.duracion] || e.duracion;
+
+      const fechaFmt = e.fechaRef ? formatDMY(e.fechaRef) : "—";
+
+      return `<div class="extra-card">
+        <div class="extra-info">
+          <div class="extra-nombre">⭐ ${e.nombre}</div>
+          <div class="extra-comidas">${comidasHTML}</div>
+          <div class="extra-meta">
+            <span class="extra-dur ${durClase}">${durLabel}</span>
+            Fecha ref: ${fechaFmt}
+          </div>
+        </div>
+        <button class="btn-eliminar" data-key="${key}" type="button">🗑️ Eliminar</button>
+      </div>`;
+    }).join("");
+
+    contenedor.querySelectorAll(".btn-eliminar").forEach(btn => {
+      btn.addEventListener("click", () => eliminarExtra(btn.dataset.key));
+    });
+
+  } catch {
+    contenedor.innerHTML = '<p class="nota" style="color:red;">❌ Error al cargar.</p>';
+  }
+}
+
+// ===== ELIMINAR EXTRA =====
+async function eliminarExtra(key) {
+  if (!confirm("¿Eliminar este extra?")) return;
+  try {
+    await dbRemove(`extras/${key}`);
+    cargarLista();
+  } catch {
+    alert("❌ Error al eliminar.");
+  }
+}
+
+cargarLista();
+</script>
+</body>
+</html>
