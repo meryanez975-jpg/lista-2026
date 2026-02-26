@@ -194,11 +194,11 @@
       margin-top: 2px;
     }
 
-    /* Ítems condicionales por rol */
+    /* Secciones condicionales por rol */
     .solo-super { display: none; }
     .solo-admin { display: none; }
-    .solo-super.visible { display: flex; }
-    .solo-admin.visible { display: flex; }
+    .solo-super.visible { display: block; }
+    .solo-admin.visible { display: block; }
 
     /* ===== CONTENIDO PRINCIPAL ===== */
     .page-content {
@@ -295,38 +295,17 @@
       </div>
     </div>
 
-    <!-- Sección REGISTRO -->
+    <!-- Sección: Acceso (siempre visible) -->
     <div class="drawer-section">
-      <div class="drawer-section-title">✏️ Registro</div>
+      <div class="drawer-section-title">🍽️ Acceso</div>
 
       <a href="PAGES/registro.html" class="drawer-item item-registro">
         <span class="item-icon">📝</span>
         <div>
-          <div>Nombre del personal</div>
-          <div class="item-sub">Marcar asistencia a comidas</div>
+          <div>Registrar comidas</div>
+          <div class="item-sub">Seleccioná tu nombre y marcá</div>
         </div>
       </a>
-
-      <a href="PAGES/menu_admin.html" class="drawer-item item-comidas solo-admin" id="linkNuevasComidas">
-        <span class="item-icon">🍲</span>
-        <div>
-          <div>Nuevas comidas</div>
-          <div class="item-sub">Cargar menú del día</div>
-        </div>
-      </a>
-
-      <a href="PAGES/lista_personal.html" class="drawer-item item-personal solo-super" id="linkListaPersonal">
-        <span class="item-icon">👥</span>
-        <div>
-          <div>Lista del personal</div>
-          <div class="item-sub">Ver empleados por sector</div>
-        </div>
-      </a>
-    </div>
-
-    <!-- Sección SERVICIO -->
-    <div class="drawer-section">
-      <div class="drawer-section-title">🍽️ Servicio</div>
 
       <a href="PAGES/servicio.html" class="drawer-item item-servicio">
         <span class="item-icon">🍽️</span>
@@ -335,25 +314,54 @@
           <div class="item-sub">Marcar platos entregados</div>
         </div>
       </a>
+    </div>
 
-      <a href="PAGES/conteo.html" class="drawer-item item-conteo solo-super" id="linkConteo">
-        <span class="item-icon">🧮</span>
+    <!-- Sección: Supervisor (solo supervisor + admin) -->
+    <div class="drawer-section solo-super" id="seccionSuper">
+      <div class="drawer-section-title">👁️ Supervisor</div>
+
+      <a href="PAGES/personal.html" class="drawer-item item-personal">
+        <span class="item-icon">👤</span>
         <div>
-          <div>Conteo semanal</div>
-          <div class="item-sub">Resumen de la semana</div>
+          <div>Agregar personal</div>
+          <div class="item-sub">Registrar nuevo empleado</div>
+        </div>
+      </a>
+
+      <a href="PAGES/conteo.html" class="drawer-item item-conteo">
+        <span class="item-icon">📋</span>
+        <div>
+          <div>Ver registrados</div>
+          <div class="item-sub">Lista de quienes marcaron</div>
+        </div>
+      </a>
+
+      <a href="PAGES/menu_admin.html" class="drawer-item item-comidas">
+        <span class="item-icon">🍲</span>
+        <div>
+          <div>Editar comidas</div>
+          <div class="item-sub">Cargar menú del día</div>
         </div>
       </a>
     </div>
 
-    <!-- Sección ADMINISTRACIÓN (solo admin) -->
+    <!-- Sección: Administración (solo admin) -->
     <div class="drawer-section solo-admin" id="seccionAdmin">
       <div class="drawer-section-title">🔐 Administración</div>
+
+      <a href="PAGES/lista_personal.html" class="drawer-item item-personal">
+        <span class="item-icon">👥</span>
+        <div>
+          <div>Lista del personal</div>
+          <div class="item-sub">Ver empleados por sector</div>
+        </div>
+      </a>
 
       <a href="PAGES/admin.html" class="drawer-item item-admin">
         <span class="item-icon">⚙️</span>
         <div>
           <div>Panel admin</div>
-          <div class="item-sub">Personal, menú y ajustes</div>
+          <div class="item-sub">Admins, datos y ajustes</div>
         </div>
       </a>
     </div>
@@ -412,9 +420,7 @@
     const mBtnEntrar        = document.getElementById("mBtnEntrar");
     const mBtnCerrar        = document.getElementById("mBtnCerrar");
     const mMsg              = document.getElementById("mMsg");
-    const linkNuevasComidas = document.getElementById("linkNuevasComidas");
-    const linkListaPersonal = document.getElementById("linkListaPersonal");
-    const linkConteo        = document.getElementById("linkConteo");
+    const seccionSuper      = document.getElementById("seccionSuper");
     const seccionAdmin      = document.getElementById("seccionAdmin");
 
     // ===== REVISAR SESIÓN AL CARGAR =====
@@ -522,13 +528,11 @@
       drawerUser.classList.add("visible");
       btnLock.textContent = "⚙️";
 
-      // Supervisor y admin ven: Conteo, Lista Personal
-      linkConteo.classList.add("visible");
-      linkListaPersonal.classList.add("visible");
+      // Supervisor y admin ven: sección supervisor
+      seccionSuper.classList.add("visible");
 
-      // Solo admin ve: Nuevas comidas, Sección Administración
+      // Solo admin ve: sección administración
       if (rol === "admin") {
-        linkNuevasComidas.classList.add("visible");
         seccionAdmin.classList.add("visible");
       }
     }
@@ -540,9 +544,7 @@
       sessionStorage.removeItem("admin_nombre");
       sessionStorage.removeItem("admin_rol");
       drawerUser.classList.remove("visible");
-      linkConteo.classList.remove("visible");
-      linkListaPersonal.classList.remove("visible");
-      linkNuevasComidas.classList.remove("visible");
+      seccionSuper.classList.remove("visible");
       seccionAdmin.classList.remove("visible");
       btnLock.textContent = "🔒";
       cerrarDrawer();
