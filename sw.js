@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 // Service Worker — Sistema de Comidas
-const CACHE_NAME = "comidas-v2";
+const CACHE_NAME = "comidas-v3";
 
 const ARCHIVOS_CACHE = [
   "/",
