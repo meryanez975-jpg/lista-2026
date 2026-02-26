@@ -180,11 +180,17 @@
   </section>
 
   <!-- ===== LISTA DE EXTRAS ===== -->
-  <section class="form-card" style="border-color:#ce93d8;">
-    <h3 style="margin:0 0 12px; color:#4a148c;">👥 Extras activos</h3>
-    <div id="listaExtras">
-      <p class="nota">Cargando...</p>
-    </div>
+  <section class="form-card" style="border-color:#ce93d8; padding-bottom:4px;">
+    <button id="btnToggleLista" type="button" style="
+      width:100%; padding:14px; border:none; border-radius:14px;
+      background:linear-gradient(135deg,#4527a0,#7c3aed);
+      color:#fff; font-size:15px; font-weight:900; cursor:pointer;
+      display:flex; align-items:center; justify-content:space-between;
+    ">
+      <span>👥 Ver extras activos</span>
+      <span id="iconToggle">▼</span>
+    </button>
+    <div id="listaExtras" style="margin-top:12px; display:none;"></div>
   </section>
 
   <div style="margin-top:8px;">
@@ -243,6 +249,10 @@ document.getElementById("btnAgregar").addEventListener("click", async () => {
   try {
     await dbPush("extras", { nombre, comidas, fechaRef, duracion, activo: true });
     mostrarMsg("✅ Extra agregado correctamente.", "green");
+    // Abrir lista automáticamente
+    listaAbierta = true;
+    document.getElementById("listaExtras").style.display = "block";
+    document.getElementById("iconToggle").textContent = "▲";
     // Limpiar form
     document.getElementById("inpNombre").value = "";
     document.querySelectorAll(".comida-check").forEach(l => {
@@ -328,7 +338,14 @@ async function eliminarExtra(key) {
   }
 }
 
-cargarLista();
+// ===== TOGGLE LISTA =====
+let listaAbierta = false;
+document.getElementById("btnToggleLista").addEventListener("click", () => {
+  listaAbierta = !listaAbierta;
+  document.getElementById("listaExtras").style.display = listaAbierta ? "block" : "none";
+  document.getElementById("iconToggle").textContent = listaAbierta ? "▲" : "▼";
+  if (listaAbierta) cargarLista();
+});
 </script>
 </body>
 </html>
