@@ -12,11 +12,221 @@
   <title>Sistema de Comidas</title>
   <link rel="stylesheet" href="estilo.css" />
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background: linear-gradient(160deg, #e8d5ff 0%, #d4f0e8 50%, #ffd6a5 100%);
       min-height: 100vh;
+      font-family: inherit;
     }
-    /* Modal de login */
+
+    /* ===== BARRA SUPERIOR ===== */
+    .top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: linear-gradient(90deg, #6a1b9a, #7e57c2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+    .btn-hamb-top {
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: transparent;
+      color: #fff;
+      font-size: 26px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      transition: background .2s;
+      line-height: 1;
+    }
+    .btn-hamb-top:active { background: rgba(255,255,255,.2); }
+    .top-titulo {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: .5px;
+      text-align: center;
+      flex: 1;
+    }
+    .btn-lock-top {
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: rgba(255,255,255,.18);
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+    }
+    .btn-lock-top:active { background: rgba(255,255,255,.35); }
+
+    /* ===== OVERLAY ===== */
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 300;
+    }
+    .drawer-overlay.activo { display: block; }
+
+    /* ===== DRAWER LATERAL ===== */
+    .drawer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 290px;
+      height: 100%;
+      background: #fff;
+      z-index: 400;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+    }
+    .drawer.abierto { transform: translateX(0); }
+
+    .drawer-header {
+      background: linear-gradient(135deg, #6a1b9a, #7e57c2);
+      padding: 20px 18px 16px;
+      color: #fff;
+    }
+    .drawer-header-titulo {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: .4px;
+      margin-bottom: 12px;
+    }
+    /* Info del usuario logueado dentro del drawer */
+    .drawer-user {
+      display: none;
+      background: rgba(255,255,255,.15);
+      border-radius: 12px;
+      padding: 10px 12px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .drawer-user.visible { display: flex; }
+    .drawer-user-nombre {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .btn-salir-drawer {
+      padding: 5px 12px;
+      border: 1.5px solid rgba(255,255,255,.6);
+      border-radius: 8px;
+      background: transparent;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-salir-drawer:active { background: rgba(255,255,255,.2); }
+
+    /* ===== SECCIONES DEL DRAWER ===== */
+    .drawer-section {
+      border-bottom: 1px solid #f0f0f0;
+      padding: 6px 0;
+    }
+    .drawer-section:last-child { border-bottom: none; }
+
+    .drawer-section-title {
+      padding: 10px 18px 6px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .drawer-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      text-decoration: none;
+      color: #222;
+      font-size: 15px;
+      font-weight: 600;
+      transition: background .15s;
+      border-radius: 0;
+    }
+    .drawer-item:hover, .drawer-item:active { background: #f3eeff; color: #6a1b9a; }
+    .drawer-item .item-icon {
+      font-size: 22px;
+      width: 32px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .drawer-item .item-sub {
+      font-size: 12px;
+      color: #888;
+      font-weight: 400;
+      margin-top: 1px;
+    }
+
+    /* Ítems condicionales por rol */
+    .solo-super  { display: none; }
+    .solo-admin  { display: none; }
+    .solo-super.visible { display: flex; }
+    .solo-admin.visible { display: flex; }
+
+    /* ===== CONTENIDO PRINCIPAL ===== */
+    .page-content {
+      margin-top: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 56px);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .bienvenida-icon { font-size: 72px; margin-bottom: 16px; }
+    .bienvenida-titulo {
+      font-size: 22px;
+      font-weight: 900;
+      color: #4a2080;
+      margin-bottom: 8px;
+    }
+    .bienvenida-sub {
+      font-size: 14px;
+      color: #666;
+      max-width: 260px;
+      line-height: 1.5;
+    }
+    .flecha-hint {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #9575cd;
+      font-weight: 600;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .45; }
+    }
+
+    /* ===== MODAL DE LOGIN ===== */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -42,120 +252,112 @@
       font-size: 20px;
       color: #4a2080;
     }
-    /* Botón lock discreto abajo a la derecha */
-    .btn-lock {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(180,160,220,.35);
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .2s;
-    }
-    .btn-lock:active { background: rgba(180,160,220,.7); }
-    /* Barra de usuario logueado */
-    .admin-bar {
-      display: none;
-      background: #f0e6ff;
-      border: 1.5px solid #c9a8f0;
-      border-radius: 14px;
-      padding: 10px 14px;
-      margin-bottom: 16px;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      color: #4a2080;
-      font-weight: 700;
-    }
-    .admin-bar.visible { display: flex; }
-    .btn-salir-index {
-      padding: 6px 14px;
-      border: 1.5px solid #e57373;
-      border-radius: 10px;
-      background: #ffebee;
-      color: #c62828;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    /* ===== MENÚ HAMBURGUESA ===== */
-    .hamb-container {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin: 12px 0 8px;
-    }
-    .hamb-wrap {
-      position: relative;
-      flex: 1;
-      min-width: 130px;
-      max-width: 200px;
-    }
-    .btn-hamb {
-      width: 100%;
-      padding: 20px 12px;
-      border: none;
-      border-radius: 20px;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.15);
-      transition: transform .15s, box-shadow .15s;
-      letter-spacing: .5px;
-    }
-    .btn-hamb:active { transform: scale(.97); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
-    .btn-hamb .hamb-icon { font-size: 28px; }
-    .btn-hamb .hamb-lineas { font-size: 18px; letter-spacing: 1px; opacity: .85; }
-    .btn-hamb.registro-color { background: linear-gradient(135deg, #b39ddb, #7e57c2); color: #fff; }
-    .btn-hamb.servicio-color { background: linear-gradient(135deg, #80cbc4, #26a69a); color: #fff; }
-    .hamb-menu {
-      position: absolute;
-      top: calc(100% + 10px);
-      left: 0;
-      right: 0;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 28px rgba(0,0,0,.18);
-      z-index: 100;
-      overflow: hidden;
-      animation: fadeIn .15s ease;
-    }
-    .hamb-menu a {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 15px 16px;
-      text-decoration: none;
-      color: #333;
-      font-size: 15px;
-      font-weight: 600;
-      border-bottom: 1px solid #f0f0f0;
-      transition: background .15s;
-    }
-    .hamb-menu a:last-child { border-bottom: none; }
-    .hamb-menu a:hover, .hamb-menu a:active { background: #f5f5f5; }
-    /* Ítems solo visibles para supervisor/admin */
-    .solo-super { display: none; }
-    .solo-super.visible { display: flex; }
   </style>
 </head>
 <body>
 
-  <!-- Modal de login admin -->
+  <!-- ===== BARRA SUPERIOR ===== -->
+  <header class="top-bar">
+    <button class="btn-hamb-top" id="btnHamb" title="Menú">☰</button>
+    <span class="top-titulo">SISTEMA DE COMIDAS</span>
+    <button class="btn-lock-top" id="btnLock" title="Acceso">🔒</button>
+  </header>
+
+  <!-- ===== OVERLAY DEL DRAWER ===== -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- ===== DRAWER LATERAL ===== -->
+  <nav class="drawer" id="drawer">
+
+    <!-- Encabezado -->
+    <div class="drawer-header">
+      <div class="drawer-header-titulo">🍽️ Sistema de Comidas</div>
+      <div class="drawer-user" id="drawerUser">
+        <span class="drawer-user-nombre" id="drawerNombre">👤 Admin</span>
+        <button class="btn-salir-drawer" id="btnSalirDrawer" type="button">Salir</button>
+      </div>
+    </div>
+
+    <!-- Sección REGISTRO -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">✏️ Registro</div>
+
+      <a href="PAGES/registro.html" class="drawer-item">
+        <span class="item-icon">📝</span>
+        <div>
+          <div>Nombre del personal</div>
+          <div class="item-sub">Marcar asistencia a comidas</div>
+        </div>
+      </a>
+
+      <a href="PAGES/menu_admin.html" class="drawer-item solo-admin" id="linkNuevasComidas">
+        <span class="item-icon">🍲</span>
+        <div>
+          <div>Nuevas comidas</div>
+          <div class="item-sub">Cargar menú del día</div>
+        </div>
+      </a>
+
+      <a href="PAGES/lista_personal.html" class="drawer-item solo-super" id="linkListaPersonal">
+        <span class="item-icon">👥</span>
+        <div>
+          <div>Lista del personal</div>
+          <div class="item-sub">Ver empleados por sector</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Sección SERVICIO -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">🍽️ Servicio</div>
+
+      <a href="PAGES/servicio.html" class="drawer-item">
+        <span class="item-icon">🍽️</span>
+        <div>
+          <div>Ir a Servicio</div>
+          <div class="item-sub">Marcar platos entregados</div>
+        </div>
+      </a>
+
+      <a href="PAGES/conteo.html" class="drawer-item solo-super" id="linkConteo">
+        <span class="item-icon">🧮</span>
+        <div>
+          <div>Conteo semanal</div>
+          <div class="item-sub">Resumen de la semana</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Sección ADMINISTRACIÓN (solo admin) -->
+    <div class="drawer-section solo-admin" id="seccionAdmin">
+      <div class="drawer-section-title">🔐 Administración</div>
+
+      <a href="PAGES/admin.html" class="drawer-item">
+        <span class="item-icon">⚙️</span>
+        <div>
+          <div>Panel admin</div>
+          <div class="item-sub">Personal, menú y ajustes</div>
+        </div>
+      </a>
+    </div>
+
+  </nav>
+
+  <!-- ===== CONTENIDO PRINCIPAL ===== -->
+  <main class="page-content">
+    <div class="bienvenida-icon">🍽️</div>
+    <h1 class="bienvenida-titulo">Sistema de Comidas</h1>
+    <p class="bienvenida-sub">Usá el menú de la esquina superior izquierda para navegar.</p>
+    <div class="flecha-hint">
+      <span>☰</span>
+      <span>Tocá aquí arriba para empezar</span>
+    </div>
+  </main>
+
+  <!-- ===== MODAL DE LOGIN ===== -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-      <h3>🔐 Acceso administrador</h3>
+      <h3>🔐 Acceso</h3>
       <div class="form-card" style="margin:0; border:none; background:transparent; box-shadow:none; padding:0;">
         <label class="campo">
           <span>Número de celular</span>
@@ -176,103 +378,53 @@
     </div>
   </div>
 
-  <main class="menu" style="margin-top:20px;">
-    <p class="menu-titulo">SISTEMA DE COMIDAS</p>
-
-    <!-- Barra visible solo cuando está logueado -->
-    <div class="admin-bar" id="adminBar">
-      <span id="adminBarNombre">👤 Administrador</span>
-      <button class="btn-salir-index" id="btnSalirIndex" type="button">Salir</button>
-    </div>
-
-    <!-- Botón ADMINISTRACIÓN: solo para rol admin -->
-    <a class="card-btn admin hidden" id="btnAdmin" href="PAGES/admin.html">
-      <span class="icon">🔐</span>
-      <span class="text">ADMINISTRACIÓN</span>
-    </a>
-
-    <!-- Dos menús hamburguesa -->
-    <div class="hamb-container">
-
-      <!-- ☰ REGISTRO -->
-      <div class="hamb-wrap">
-        <button class="btn-hamb registro-color" id="hambRegistro" type="button">
-          <span class="hamb-icon">✏️</span>
-          <span class="hamb-lineas">☰</span>
-          <span>REGISTRO</span>
-        </button>
-        <div class="hamb-menu hidden" id="menuRegistro">
-          <a href="PAGES/registro.html">✏️ Registro</a>
-          <a href="PAGES/lista_personal.html" class="solo-super" id="linkListaPersonal">👥 Lista Personal</a>
-        </div>
-      </div>
-
-      <!-- ☰ SERVICIO -->
-      <div class="hamb-wrap">
-        <button class="btn-hamb servicio-color" id="hambServicio" type="button">
-          <span class="hamb-icon">🍽️</span>
-          <span class="hamb-lineas">☰</span>
-          <span>SERVICIO</span>
-        </button>
-        <div class="hamb-menu hidden" id="menuServicio">
-          <a href="PAGES/servicio.html">🍽️ Servicio</a>
-          <a href="PAGES/conteo.html" class="solo-super" id="linkConteo">🧮 Conteo</a>
-        </div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Botón lock discreto -->
-  <button class="btn-lock" id="btnLock" title="Administradores">🔒</button>
-
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>
+    const btnHamb           = document.getElementById("btnHamb");
+    const btnLock           = document.getElementById("btnLock");
+    const drawer            = document.getElementById("drawer");
+    const drawerOverlay     = document.getElementById("drawerOverlay");
+    const drawerUser        = document.getElementById("drawerUser");
+    const drawerNombre      = document.getElementById("drawerNombre");
+    const btnSalirDrawer    = document.getElementById("btnSalirDrawer");
     const modalOverlay      = document.getElementById("modalOverlay");
     const mPhone            = document.getElementById("mPhone");
     const mPass             = document.getElementById("mPass");
     const mBtnEntrar        = document.getElementById("mBtnEntrar");
     const mBtnCerrar        = document.getElementById("mBtnCerrar");
     const mMsg              = document.getElementById("mMsg");
-    const adminBar          = document.getElementById("adminBar");
-    const adminBarNombre    = document.getElementById("adminBarNombre");
-    const btnSalirIndex     = document.getElementById("btnSalirIndex");
-    const btnAdmin          = document.getElementById("btnAdmin");
-    const btnLock           = document.getElementById("btnLock");
-    const hambRegistro      = document.getElementById("hambRegistro");
-    const hambServicio      = document.getElementById("hambServicio");
-    const menuRegistro      = document.getElementById("menuRegistro");
-    const menuServicio      = document.getElementById("menuServicio");
+    const linkNuevasComidas = document.getElementById("linkNuevasComidas");
     const linkListaPersonal = document.getElementById("linkListaPersonal");
     const linkConteo        = document.getElementById("linkConteo");
+    const seccionAdmin      = document.getElementById("seccionAdmin");
 
-    // ===== REVISAR SI YA HAY SESIÓN =====
+    // ===== REVISAR SESIÓN AL CARGAR =====
     if (sessionStorage.getItem("admin_logged") === "1") {
       const rol = sessionStorage.getItem("admin_rol") || "admin";
       mostrarModoLogueado(sessionStorage.getItem("admin_nombre") || "Administrador", rol);
     }
 
-    // ===== HAMBURGUESAS: abrir/cerrar =====
-    hambRegistro.addEventListener("click", e => {
-      e.stopPropagation();
-      menuServicio.classList.add("hidden");
-      menuRegistro.classList.toggle("hidden");
+    // ===== DRAWER: abrir / cerrar =====
+    function abrirDrawer() {
+      drawer.classList.add("abierto");
+      drawerOverlay.classList.add("activo");
+    }
+    function cerrarDrawer() {
+      drawer.classList.remove("abierto");
+      drawerOverlay.classList.remove("activo");
+    }
+
+    btnHamb.addEventListener("click", abrirDrawer);
+    drawerOverlay.addEventListener("click", cerrarDrawer);
+
+    // Cerrar al hacer clic en un enlace del drawer
+    drawer.querySelectorAll(".drawer-item").forEach(a => {
+      a.addEventListener("click", cerrarDrawer);
     });
 
-    hambServicio.addEventListener("click", e => {
-      e.stopPropagation();
-      menuRegistro.classList.add("hidden");
-      menuServicio.classList.toggle("hidden");
-    });
-
-    document.addEventListener("click", () => {
-      menuRegistro.classList.add("hidden");
-      menuServicio.classList.add("hidden");
-    });
-
-    // ===== ABRIR MODAL =====
+    // ===== BOTÓN LOCK: abre login o va a admin =====
     btnLock.addEventListener("click", () => {
       if (sessionStorage.getItem("admin_logged") === "1") {
         if ((sessionStorage.getItem("admin_rol") || "admin") === "admin") {
@@ -322,7 +474,7 @@
 
         const admin = admins[phone];
         if (admin && admin.password === pass) {
-          const rol = admin.rol || "admin"; // sin campo rol = admin (compatibilidad)
+          const rol = admin.rol || "admin";
           sessionStorage.setItem("admin_logged", "1");
           sessionStorage.setItem("admin_phone", phone);
           sessionStorage.setItem("admin_nombre", admin.nombre || "Administrador");
@@ -349,40 +501,43 @@
     // ===== MOSTRAR SEGÚN ROL =====
     function mostrarModoLogueado(nombre, rol) {
       const etiqueta = rol === "supervisor" ? "👁️ Supervisor" : "👤 Admin";
-      adminBarNombre.textContent = `${etiqueta}: ${nombre}`;
-      adminBar.classList.add("visible");
+      drawerNombre.textContent = `${etiqueta}: ${nombre}`;
+      drawerUser.classList.add("visible");
       btnLock.textContent = "⚙️";
 
-      // Admin: ve botón Administración + ⚙️ va a admin.html
-      if (rol === "admin") {
-        btnAdmin.classList.remove("hidden");
-      }
-
-      // Supervisor y admin: ven Lista Personal y Conteo en los hamburguesas
-      linkListaPersonal.classList.add("visible");
+      // Supervisor y admin ven: Conteo, Lista Personal
       linkConteo.classList.add("visible");
+      linkListaPersonal.classList.add("visible");
+
+      // Solo admin ve: Nuevas comidas, Sección Administración
+      if (rol === "admin") {
+        linkNuevasComidas.classList.add("visible");
+        seccionAdmin.classList.add("visible");
+      }
     }
 
     // ===== SALIR =====
-    btnSalirIndex.addEventListener("click", () => {
+    btnSalirDrawer.addEventListener("click", () => {
       sessionStorage.removeItem("admin_logged");
       sessionStorage.removeItem("admin_phone");
       sessionStorage.removeItem("admin_nombre");
       sessionStorage.removeItem("admin_rol");
-      btnAdmin.classList.add("hidden");
-      linkListaPersonal.classList.remove("visible");
+      drawerUser.classList.remove("visible");
       linkConteo.classList.remove("visible");
-      adminBar.classList.remove("visible");
+      linkListaPersonal.classList.remove("visible");
+      linkNuevasComidas.classList.remove("visible");
+      seccionAdmin.classList.remove("visible");
       btnLock.textContent = "🔒";
+      cerrarDrawer();
     });
   </script>
 
-  <!-- Registro del Service Worker (PWA) -->
+  <!-- Service Worker (PWA) -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js")
-          .catch((e) => console.warn("SW error:", e));
+          .catch(e => console.warn("SW error:", e));
       });
     }
   </script>
