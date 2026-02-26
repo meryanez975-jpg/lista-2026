@@ -18,119 +18,97 @@
       font-family: Arial, sans-serif;
     }
 
-    /* ===== BARRA SUPERIOR ===== */
-    .top-bar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 54px;
-      background: #e8d5ff;
-      border-bottom: 2px solid #c9a8f0;
+    /* ===== PANTALLAS ===== */
+    .screen { display: none; min-height: 100vh; flex-direction: column; }
+    .screen.activa { display: flex; }
+
+    /* ===== SELECTOR (pantalla 1) ===== */
+    .selector-wrap {
+      flex: 1;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      z-index: 200;
-      box-shadow: 0 2px 10px rgba(140,80,220,.13);
-    }
-    .btn-hamb-top {
-      width: 42px;
-      height: 42px;
-      border: 2px solid #c9a8f0;
-      background: #fff;
-      color: #4a2080;
-      font-size: 22px;
-      cursor: pointer;
-      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-radius: 14px;
-      transition: background .15s;
-      font-weight: 900;
-    }
-    .btn-hamb-top:active { background: #f0e6ff; }
-    .top-titulo {
-      color: #4a2080;
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 2px;
+      padding: 32px 24px;
       text-align: center;
-      flex: 1;
     }
-    .btn-lock-top {
-      width: 42px;
-      height: 42px;
+    .selector-icon { font-size: 72px; margin-bottom: 12px; }
+    .selector-titulo {
+      font-size: 24px;
+      font-weight: 900;
+      color: #4a2080;
+      margin-bottom: 6px;
+      letter-spacing: .5px;
+    }
+    .selector-sub {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 36px;
+    }
+    .selector-cards { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 14px; }
+
+    .rol-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 22px;
+      border-radius: 22px;
+      border: 2.5px solid transparent;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,0,0,.10);
+      transition: transform .1s, box-shadow .1s;
+      text-align: left;
+      font-family: Arial, sans-serif;
+      background: none;
+      width: 100%;
+    }
+    .rol-card:active { transform: scale(0.97); box-shadow: 0 3px 10px rgba(0,0,0,.10); }
+    .rol-card .rc-icon { font-size: 36px; line-height: 1; }
+    .rol-card .rc-sub { font-size: 12px; font-weight: 400; opacity: .7; margin-top: 3px; }
+
+    .card-publico  { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
+    .card-super    { background: #c7dcff; color: #1a3080; border-color: #90b4f8; }
+    .card-admin    { background: #e8d5ff; color: #4a2080; border-color: #c9a8f0; }
+
+    /* ===== PANTALLAS INTERNAS (2, 3, 4) ===== */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,.55);
+      border-bottom: 2px solid rgba(255,255,255,.7);
+      backdrop-filter: blur(4px);
+    }
+    .btn-volver {
+      width: 40px; height: 40px;
       border: 2px solid #c9a8f0;
       background: #fff;
       color: #4a2080;
       font-size: 18px;
+      border-radius: 12px;
       cursor: pointer;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .15s;
+      display: flex; align-items: center; justify-content: center;
+      font-family: Arial, sans-serif;
+      flex-shrink: 0;
     }
-    .btn-lock-top:active { background: #f0e6ff; }
-
-    /* ===== OVERLAY ===== */
-    .drawer-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.35);
-      z-index: 300;
-    }
-    .drawer-overlay.activo { display: block; }
-
-    /* ===== DRAWER LATERAL ===== */
-    .drawer {
-      position: fixed;
-      top: 0; left: 0;
-      width: 280px;
-      height: 100%;
-      background: #fdfbff;
-      z-index: 400;
-      display: flex;
-      flex-direction: column;
-      transform: translateX(-100%);
-      transition: transform .25s ease;
-      overflow-y: auto;
-      border-right: 2px solid #e8d5ff;
-    }
-    .drawer.abierto { transform: translateX(0); }
-
-    /* Cabecera del drawer */
-    .drawer-header {
-      background: #f0e6ff;
-      border-bottom: 2px solid #c9a8f0;
-      padding: 18px 16px 14px;
-    }
-    .drawer-header-titulo {
-      font-size: 13px;
+    .btn-volver:active { background: #f0e6ff; }
+    .panel-header-titulo {
+      flex: 1;
+      font-size: 15px;
       font-weight: 800;
-      letter-spacing: 2px;
-      color: #888;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .drawer-user {
-      display: none;
-      background: #fff;
-      border: 1.5px solid #c9a8f0;
-      border-radius: 14px;
-      padding: 10px 12px;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .drawer-user.visible { display: flex; }
-    .drawer-user-nombre {
-      font-size: 13px;
-      font-weight: 700;
       color: #4a2080;
     }
-    .btn-salir-drawer {
-      padding: 5px 12px;
+    .panel-header-titulo .ph-sub {
+      font-size: 11px;
+      color: #888;
+      font-weight: 400;
+      margin-top: 1px;
+    }
+    .btn-salir-panel {
+      padding: 6px 14px;
       border: 1.5px solid #e57373;
       border-radius: 10px;
       background: #ffebee;
@@ -138,115 +116,65 @@
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      white-space: nowrap;
       font-family: Arial, sans-serif;
+      white-space: nowrap;
     }
-    .btn-salir-drawer:active { opacity: .85; }
+    .btn-salir-panel:active { opacity: .8; }
 
-    /* ===== SECCIONES DEL DRAWER ===== */
-    .drawer-section {
-      padding: 10px 12px;
-      border-bottom: 1.5px solid #f0e8ff;
+    .panel-body {
+      flex: 1;
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 440px;
+      width: 100%;
+      margin: 0 auto;
     }
-    .drawer-section:last-child { border-bottom: none; }
 
-    .drawer-section-title {
+    .panel-section-label {
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 1.5px;
       color: #aaa;
       text-transform: uppercase;
-      padding: 4px 4px 8px;
+      padding: 4px 2px 0;
     }
 
-    /* Cada ítem del drawer es una card-btn adaptada */
-    .drawer-item {
+    /* Botones del panel */
+    .panel-btn {
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 14px 16px;
+      padding: 18px 20px;
       text-decoration: none;
-      border-radius: 18px;
-      border: 2px solid transparent;
+      border-radius: 20px;
+      border: 2.5px solid transparent;
       font-size: 16px;
       font-weight: 800;
-      margin-bottom: 8px;
-      transition: transform .08s ease, box-shadow .08s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,.07);
+      box-shadow: 0 4px 14px rgba(0,0,0,.09);
+      transition: transform .1s, box-shadow .1s;
       font-family: Arial, sans-serif;
+      color: inherit;
     }
-    .drawer-item:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(0,0,0,.07); }
-    .drawer-item:last-child { margin-bottom: 0; }
+    .panel-btn:active { transform: scale(0.97); box-shadow: 0 2px 7px rgba(0,0,0,.09); }
+    .panel-btn .pb-icon { font-size: 30px; line-height: 1; }
+    .panel-btn .pb-sub { font-size: 12px; font-weight: 400; opacity: .7; margin-top: 2px; }
 
-    /* Colores de los ítems iguales al sistema */
-    .item-registro  { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
-    .item-comidas   { background: #ffd6a5; color: #7a4200; border-color: #f5b86a; }
-    .item-personal  { background: #ffd6e7; color: #5c0030; border-color: #f0a8c4; }
-    .item-servicio  { background: #ffe0b2; color: #7a3900; border-color: #ffb74d; }
-    .item-conteo    { background: #ffd6a5; color: #7a4200; border-color: #f5b86a; }
-    .item-admin     { background: #e8d5ff; color: #4a2080; border-color: #c9a8f0; }
-
-    .drawer-item .item-icon { font-size: 28px; line-height: 1; }
-    .drawer-item .item-sub {
-      font-size: 12px;
-      opacity: .7;
-      font-weight: 400;
-      margin-top: 2px;
-    }
-
-    /* Secciones condicionales por rol */
-    .solo-super { display: none; }
-    .solo-admin { display: none; }
-    .solo-super.visible { display: block; }
-    .solo-admin.visible { display: block; }
-
-    /* ===== CONTENIDO PRINCIPAL ===== */
-    .page-content {
-      margin-top: 54px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: calc(100vh - 54px);
-      padding: 32px 24px;
-      text-align: center;
-    }
-    .bienvenida-icon { font-size: 72px; margin-bottom: 16px; }
-    .bienvenida-titulo {
-      font-size: 22px;
-      font-weight: 800;
-      color: #4a2080;
-      margin-bottom: 8px;
-      letter-spacing: .5px;
-    }
-    .bienvenida-sub {
-      font-size: 14px;
-      color: #888;
-      max-width: 260px;
-      line-height: 1.5;
-    }
-    .flecha-hint {
-      margin-top: 28px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #c9a8f0;
-      font-weight: 800;
-      letter-spacing: 1px;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: .4; }
-    }
+    .pb-registro  { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
+    .pb-servicio  { background: #ffe0b2; color: #7a3900; border-color: #ffb74d; }
+    .pb-personal  { background: #ffd6e7; color: #5c0030; border-color: #f0a8c4; }
+    .pb-conteo    { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
+    .pb-menu      { background: #ffd6a5; color: #7a4200; border-color: #f5b86a; }
+    .pb-lista     { background: #fce4ec; color: #880e4f; border-color: #f48fb1; }
+    .pb-admin     { background: #e8d5ff; color: #4a2080; border-color: #c9a8f0; }
 
     /* ===== MODAL DE LOGIN ===== */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.45);
+      background: rgba(0,0,0,.5);
       z-index: 999;
       justify-content: center;
       align-items: center;
@@ -255,134 +183,233 @@
     .modal-overlay.activo { display: flex; }
     .modal-box {
       background: #fff;
-      border-radius: 22px;
+      border-radius: 24px;
       padding: 28px 24px;
-      width: min(400px, 100%);
-      box-shadow: 0 12px 40px rgba(0,0,0,.25);
-      animation: fadeIn .2s ease;
+      width: min(380px, 100%);
+      box-shadow: 0 14px 44px rgba(0,0,0,.28);
     }
     .modal-box h3 {
-      margin: 0 0 20px;
+      margin: 0 0 6px;
       text-align: center;
       font-size: 20px;
-      font-weight: 800;
+      font-weight: 900;
       color: #4a2080;
       font-family: Arial, sans-serif;
     }
+    .modal-box .modal-sub {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin: 0 0 22px;
+    }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }
+    .modal-box { animation: fadeIn .18s ease; }
   </style>
 </head>
 <body>
 
-  <!-- ===== BARRA SUPERIOR ===== -->
-  <header class="top-bar">
-    <button class="btn-hamb-top" id="btnHamb" title="Menú">☰</button>
-    <span class="top-titulo">SISTEMA DE COMIDAS</span>
-    <button class="btn-lock-top" id="btnLock" title="Acceso">🔒</button>
-  </header>
+  <!-- ══════════════════════════════════════
+       PANTALLA 1 — SELECTOR DE ROL
+  ══════════════════════════════════════ -->
+  <div class="screen activa" id="screenSelector">
+    <div class="selector-wrap">
+      <div class="selector-icon">🍽️</div>
+      <h1 class="selector-titulo">Sistema de Comidas</h1>
+      <p class="selector-sub">¿Cómo querés entrar?</p>
 
-  <!-- ===== OVERLAY DEL DRAWER ===== -->
-  <div class="drawer-overlay" id="drawerOverlay"></div>
+      <div class="selector-cards">
 
-  <!-- ===== DRAWER LATERAL ===== -->
-  <nav class="drawer" id="drawer">
+        <button class="rol-card card-publico" onclick="irPublico()">
+          <span class="rc-icon">🌐</span>
+          <div>
+            <div>Público</div>
+            <div class="rc-sub">Registrar comidas · Ir a Servicio</div>
+          </div>
+        </button>
 
-    <!-- Encabezado -->
-    <div class="drawer-header">
-      <div class="drawer-header-titulo">🍽️ Sistema de Comidas</div>
-      <div class="drawer-user" id="drawerUser">
-        <span class="drawer-user-nombre" id="drawerNombre">👤 Admin</span>
-        <button class="btn-salir-drawer" id="btnSalirDrawer" type="button">Salir</button>
+        <button class="rol-card card-super" onclick="pedirAcceso('supervisor')">
+          <span class="rc-icon">👁️</span>
+          <div>
+            <div>Supervisor</div>
+            <div class="rc-sub">Gestionar personal y menú</div>
+          </div>
+        </button>
+
+        <button class="rol-card card-admin" onclick="pedirAcceso('admin')">
+          <span class="rc-icon">🔐</span>
+          <div>
+            <div>Administrador</div>
+            <div class="rc-sub">Acceso completo al sistema</div>
+          </div>
+        </button>
+
       </div>
     </div>
+  </div>
 
-    <!-- Sección: Acceso (siempre visible) -->
-    <div class="drawer-section">
-      <div class="drawer-section-title">🍽️ Acceso</div>
 
-      <a href="PAGES/registro.html" class="drawer-item item-registro">
-        <span class="item-icon">📝</span>
+  <!-- ══════════════════════════════════════
+       PANTALLA 2 — PÚBLICO
+  ══════════════════════════════════════ -->
+  <div class="screen" id="screenPublico">
+    <div class="panel-header">
+      <button class="btn-volver" onclick="volverSelector()">←</button>
+      <div class="panel-header-titulo">
+        🌐 Acceso Público
+        <div class="ph-sub">Sin contraseña</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <a href="PAGES/registro.html" class="panel-btn pb-registro">
+        <span class="pb-icon">📝</span>
         <div>
           <div>Registrar comidas</div>
-          <div class="item-sub">Seleccioná tu nombre y marcá</div>
+          <div class="pb-sub">Seleccioná tu nombre y marcá</div>
         </div>
       </a>
 
-      <a href="PAGES/servicio.html" class="drawer-item item-servicio">
-        <span class="item-icon">🍽️</span>
+      <a href="PAGES/servicio.html" class="panel-btn pb-servicio">
+        <span class="pb-icon">🍽️</span>
         <div>
           <div>Ir a Servicio</div>
-          <div class="item-sub">Marcar platos entregados</div>
+          <div class="pb-sub">Marcar platos entregados</div>
         </div>
       </a>
+
     </div>
+  </div>
 
-    <!-- Sección: Supervisor (solo supervisor + admin) -->
-    <div class="drawer-section solo-super" id="seccionSuper">
-      <div class="drawer-section-title">👁️ Supervisor</div>
 
-      <a href="PAGES/personal.html" class="drawer-item item-personal">
-        <span class="item-icon">👤</span>
+  <!-- ══════════════════════════════════════
+       PANTALLA 3 — SUPERVISOR
+  ══════════════════════════════════════ -->
+  <div class="screen" id="screenSupervisor">
+    <div class="panel-header">
+      <button class="btn-volver" onclick="salirYVolver()">←</button>
+      <div class="panel-header-titulo">
+        👁️ Supervisor
+        <div class="ph-sub" id="superNombreHeader"></div>
+      </div>
+      <button class="btn-salir-panel" onclick="salirYVolver()">Salir</button>
+    </div>
+    <div class="panel-body">
+
+      <a href="PAGES/personal.html" class="panel-btn pb-personal">
+        <span class="pb-icon">👤</span>
         <div>
           <div>Agregar personal</div>
-          <div class="item-sub">Registrar nuevo empleado</div>
+          <div class="pb-sub">Registrar nuevo empleado</div>
         </div>
       </a>
 
-      <a href="PAGES/conteo.html" class="drawer-item item-conteo">
-        <span class="item-icon">📋</span>
+      <a href="PAGES/conteo.html" class="panel-btn pb-conteo">
+        <span class="pb-icon">📋</span>
         <div>
           <div>Ver registrados</div>
-          <div class="item-sub">Lista de quienes marcaron</div>
+          <div class="pb-sub">Lista de quienes marcaron</div>
         </div>
       </a>
 
-      <a href="PAGES/menu_admin.html" class="drawer-item item-comidas">
-        <span class="item-icon">🍲</span>
+      <a href="PAGES/menu_admin.html" class="panel-btn pb-menu">
+        <span class="pb-icon">🍲</span>
         <div>
           <div>Editar comidas</div>
-          <div class="item-sub">Cargar menú del día</div>
+          <div class="pb-sub">Cargar menú del día</div>
         </div>
       </a>
+
     </div>
+  </div>
 
-    <!-- Sección: Administración (solo admin) -->
-    <div class="drawer-section solo-admin" id="seccionAdmin">
-      <div class="drawer-section-title">🔐 Administración</div>
 
-      <a href="PAGES/lista_personal.html" class="drawer-item item-personal">
-        <span class="item-icon">👥</span>
+  <!-- ══════════════════════════════════════
+       PANTALLA 4 — ADMIN
+  ══════════════════════════════════════ -->
+  <div class="screen" id="screenAdmin">
+    <div class="panel-header">
+      <button class="btn-volver" onclick="salirYVolver()">←</button>
+      <div class="panel-header-titulo">
+        🔐 Administrador
+        <div class="ph-sub" id="adminNombreHeader"></div>
+      </div>
+      <button class="btn-salir-panel" onclick="salirYVolver()">Salir</button>
+    </div>
+    <div class="panel-body">
+
+      <div class="panel-section-label">Acceso público</div>
+
+      <a href="PAGES/registro.html" class="panel-btn pb-registro">
+        <span class="pb-icon">📝</span>
+        <div>
+          <div>Registrar comidas</div>
+          <div class="pb-sub">Seleccioná nombre y marcá</div>
+        </div>
+      </a>
+
+      <a href="PAGES/servicio.html" class="panel-btn pb-servicio">
+        <span class="pb-icon">🍽️</span>
+        <div>
+          <div>Ir a Servicio</div>
+          <div class="pb-sub">Marcar platos entregados</div>
+        </div>
+      </a>
+
+      <div class="panel-section-label">Supervisor</div>
+
+      <a href="PAGES/personal.html" class="panel-btn pb-personal">
+        <span class="pb-icon">👤</span>
+        <div>
+          <div>Agregar personal</div>
+          <div class="pb-sub">Registrar nuevo empleado</div>
+        </div>
+      </a>
+
+      <a href="PAGES/conteo.html" class="panel-btn pb-conteo">
+        <span class="pb-icon">📋</span>
+        <div>
+          <div>Ver registrados</div>
+          <div class="pb-sub">Lista de quienes marcaron</div>
+        </div>
+      </a>
+
+      <a href="PAGES/menu_admin.html" class="panel-btn pb-menu">
+        <span class="pb-icon">🍲</span>
+        <div>
+          <div>Editar comidas</div>
+          <div class="pb-sub">Cargar menú del día</div>
+        </div>
+      </a>
+
+      <div class="panel-section-label">Administración</div>
+
+      <a href="PAGES/lista_personal.html" class="panel-btn pb-lista">
+        <span class="pb-icon">👥</span>
         <div>
           <div>Lista del personal</div>
-          <div class="item-sub">Ver empleados por sector</div>
+          <div class="pb-sub">Ver empleados por sector</div>
         </div>
       </a>
 
-      <a href="PAGES/admin.html" class="drawer-item item-admin">
-        <span class="item-icon">⚙️</span>
+      <a href="PAGES/admin.html" class="panel-btn pb-admin">
+        <span class="pb-icon">⚙️</span>
         <div>
           <div>Panel admin</div>
-          <div class="item-sub">Admins, datos y ajustes</div>
+          <div class="pb-sub">Admins, datos y ajustes</div>
         </div>
       </a>
+
     </div>
+  </div>
 
-  </nav>
 
-  <!-- ===== CONTENIDO PRINCIPAL ===== -->
-  <main class="page-content">
-    <div class="bienvenida-icon">🍽️</div>
-    <h1 class="bienvenida-titulo">Sistema de Comidas</h1>
-    <p class="bienvenida-sub">Usá el menú de la esquina superior izquierda para navegar.</p>
-    <div class="flecha-hint">
-      <span>☰</span>
-      <span>Tocá aquí arriba para empezar</span>
-    </div>
-  </main>
-
-  <!-- ===== MODAL DE LOGIN ===== -->
+  <!-- ══════════════════════════════════════
+       MODAL DE CONTRASEÑA
+  ══════════════════════════════════════ -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-      <h3>🔐 Acceso</h3>
+      <h3 id="mTitulo">🔐 Acceso</h3>
+      <p class="modal-sub" id="mSub">Ingresá tus datos para continuar</p>
       <div class="form-card" style="margin:0; border:none; background:transparent; box-shadow:none; padding:0;">
         <label class="campo">
           <span>Número de celular</span>
@@ -397,82 +424,96 @@
       </div>
       <button id="mBtnCerrar" type="button"
               style="margin-top:14px; width:100%; padding:10px; border:1.5px solid #ddd;
-                     border-radius:12px; background:#f5f5f5; font-size:14px; cursor:pointer;">
+                     border-radius:12px; background:#f5f5f5; font-size:14px; cursor:pointer; font-family:Arial,sans-serif;">
         Cancelar
       </button>
     </div>
   </div>
 
+
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>
-    const btnHamb           = document.getElementById("btnHamb");
-    const btnLock           = document.getElementById("btnLock");
-    const drawer            = document.getElementById("drawer");
-    const drawerOverlay     = document.getElementById("drawerOverlay");
-    const drawerUser        = document.getElementById("drawerUser");
-    const drawerNombre      = document.getElementById("drawerNombre");
-    const btnSalirDrawer    = document.getElementById("btnSalirDrawer");
-    const modalOverlay      = document.getElementById("modalOverlay");
-    const mPhone            = document.getElementById("mPhone");
-    const mPass             = document.getElementById("mPass");
-    const mBtnEntrar        = document.getElementById("mBtnEntrar");
-    const mBtnCerrar        = document.getElementById("mBtnCerrar");
-    const mMsg              = document.getElementById("mMsg");
-    const seccionSuper      = document.getElementById("seccionSuper");
-    const seccionAdmin      = document.getElementById("seccionAdmin");
+    // ── Referencias ──
+    const modalOverlay = document.getElementById("modalOverlay");
+    const mPhone       = document.getElementById("mPhone");
+    const mPass        = document.getElementById("mPass");
+    const mBtnEntrar   = document.getElementById("mBtnEntrar");
+    const mBtnCerrar   = document.getElementById("mBtnCerrar");
+    const mMsg         = document.getElementById("mMsg");
+    const mTitulo      = document.getElementById("mTitulo");
+    const mSub         = document.getElementById("mSub");
 
-    // ===== REVISAR SESIÓN AL CARGAR =====
-    if (sessionStorage.getItem("admin_logged") === "1") {
-      const rol = sessionStorage.getItem("admin_rol") || "admin";
-      mostrarModoLogueado(sessionStorage.getItem("admin_nombre") || "Administrador", rol);
+    let rolPendiente = ""; // "supervisor" o "admin"
+
+    // ── Al cargar: si había sesión activa, retomar pantalla ──
+    (function retomar() {
+      const logged = sessionStorage.getItem("admin_logged");
+      if (logged !== "1") return;
+      const rol    = sessionStorage.getItem("admin_rol") || "admin";
+      const nombre = sessionStorage.getItem("admin_nombre") || "";
+      if (rol === "supervisor") mostrarPantallaSuper(nombre);
+      else mostrarPantallaAdmin(nombre);
+    })();
+
+    // ── NAVEGAR A PANTALLAS ──
+    function mostrarSolo(id) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("activa"));
+      document.getElementById(id).classList.add("activa");
+      window.scrollTo(0, 0);
     }
 
-    // ===== DRAWER: abrir / cerrar =====
-    function abrirDrawer() {
-      drawer.classList.add("abierto");
-      drawerOverlay.classList.add("activo");
-    }
-    function cerrarDrawer() {
-      drawer.classList.remove("abierto");
-      drawerOverlay.classList.remove("activo");
+    function irPublico() {
+      mostrarSolo("screenPublico");
     }
 
-    btnHamb.addEventListener("click", abrirDrawer);
-    drawerOverlay.addEventListener("click", cerrarDrawer);
+    function mostrarPantallaSuper(nombre) {
+      document.getElementById("superNombreHeader").textContent = nombre;
+      mostrarSolo("screenSupervisor");
+    }
 
-    // Cerrar al hacer clic en un enlace del drawer
-    drawer.querySelectorAll(".drawer-item").forEach(a => {
-      a.addEventListener("click", cerrarDrawer);
-    });
+    function mostrarPantallaAdmin(nombre) {
+      document.getElementById("adminNombreHeader").textContent = nombre;
+      mostrarSolo("screenAdmin");
+    }
 
-    // ===== BOTÓN LOCK: abre login o va a admin =====
-    btnLock.addEventListener("click", () => {
-      if (sessionStorage.getItem("admin_logged") === "1") {
-        if ((sessionStorage.getItem("admin_rol") || "admin") === "admin") {
-          window.location.href = "PAGES/admin.html";
-        }
-        return;
-      }
+    function volverSelector() {
+      mostrarSolo("screenSelector");
+    }
+
+    function salirYVolver() {
+      sessionStorage.removeItem("admin_logged");
+      sessionStorage.removeItem("admin_phone");
+      sessionStorage.removeItem("admin_nombre");
+      sessionStorage.removeItem("admin_rol");
+      volverSelector();
+    }
+
+    // ── PEDIR ACCESO (abre modal) ──
+    function pedirAcceso(rol) {
+      rolPendiente = rol;
+      mTitulo.textContent = rol === "supervisor" ? "👁️ Supervisor" : "🔐 Administrador";
+      mSub.textContent    = "Ingresá tu celular y contraseña";
+      mPhone.value = "";
+      mPass.value  = "";
+      mMsg.textContent = "";
       modalOverlay.classList.add("activo");
       mPhone.focus();
-    });
+    }
 
-    // ===== CERRAR MODAL =====
-    mBtnCerrar.addEventListener("click", cerrarModal);
-    modalOverlay.addEventListener("click", e => {
-      if (e.target === modalOverlay) cerrarModal();
-    });
-
+    // ── CERRAR MODAL ──
     function cerrarModal() {
       modalOverlay.classList.remove("activo");
       mPhone.value = "";
       mPass.value  = "";
       mMsg.textContent = "";
+      rolPendiente = "";
     }
+    mBtnCerrar.addEventListener("click", cerrarModal);
+    modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
 
-    // ===== LOGIN =====
+    // ── LOGIN ──
     mBtnEntrar.addEventListener("click", async () => {
       const phone = mPhone.value.trim();
       const pass  = mPass.value.trim();
@@ -490,27 +531,37 @@
         let admins = await dbGet("config/admins");
         if (!admins) {
           const oldPass = await dbGet("config/admin_pass");
-          const defaultPass = oldPass || "1234";
-          await dbSet("config/admins/0000", { nombre: "Admin", password: defaultPass, rol: "admin" });
-          admins = { "0000": { nombre: "Admin", password: defaultPass, rol: "admin" } };
+          const dp = oldPass || "1234";
+          await dbSet("config/admins/0000", { nombre: "Admin", password: dp, rol: "admin" });
+          admins = { "0000": { nombre: "Admin", password: dp, rol: "admin" } };
         }
 
         const admin = admins[phone];
         if (admin && admin.password === pass) {
-          const rol = admin.rol || "admin";
-          sessionStorage.setItem("admin_logged", "1");
-          sessionStorage.setItem("admin_phone", phone);
-          sessionStorage.setItem("admin_nombre", admin.nombre || "Administrador");
-          sessionStorage.setItem("admin_rol", rol);
-          cerrarModal();
-          mostrarModoLogueado(admin.nombre || "Administrador", rol);
+          const rol    = admin.rol || "admin";
+          const nombre = admin.nombre || "Administrador";
+
+          // Solo dejar entrar si el rol coincide con lo que pidió
+          if (rol !== rolPendiente && !(rol === "admin" && rolPendiente === "admin")) {
+            mMsg.textContent = "❌ Tu cuenta no tiene acceso a esta sección.";
+            mPass.value = "";
+            mPass.focus();
+          } else {
+            sessionStorage.setItem("admin_logged", "1");
+            sessionStorage.setItem("admin_phone",  phone);
+            sessionStorage.setItem("admin_nombre", nombre);
+            sessionStorage.setItem("admin_rol",    rol);
+            cerrarModal();
+            if (rol === "supervisor") mostrarPantallaSuper(nombre);
+            else mostrarPantallaAdmin(nombre);
+          }
         } else {
           mMsg.textContent = "❌ Número o contraseña incorrectos.";
           mPass.value = "";
           mPass.focus();
         }
       } catch(e) {
-        mMsg.textContent = "❌ Sin conexión. Verifica el WiFi.";
+        mMsg.textContent = "❌ Sin conexión. Verificá el WiFi.";
       }
 
       mBtnEntrar.disabled = false;
@@ -520,35 +571,6 @@
     [mPhone, mPass].forEach(el =>
       el.addEventListener("keydown", e => { if (e.key === "Enter") mBtnEntrar.click(); })
     );
-
-    // ===== MOSTRAR SEGÚN ROL =====
-    function mostrarModoLogueado(nombre, rol) {
-      const etiqueta = rol === "supervisor" ? "👁️ Supervisor" : "👤 Admin";
-      drawerNombre.textContent = `${etiqueta}: ${nombre}`;
-      drawerUser.classList.add("visible");
-      btnLock.textContent = "⚙️";
-
-      // Supervisor y admin ven: sección supervisor
-      seccionSuper.classList.add("visible");
-
-      // Solo admin ve: sección administración
-      if (rol === "admin") {
-        seccionAdmin.classList.add("visible");
-      }
-    }
-
-    // ===== SALIR =====
-    btnSalirDrawer.addEventListener("click", () => {
-      sessionStorage.removeItem("admin_logged");
-      sessionStorage.removeItem("admin_phone");
-      sessionStorage.removeItem("admin_nombre");
-      sessionStorage.removeItem("admin_rol");
-      drawerUser.classList.remove("visible");
-      seccionSuper.classList.remove("visible");
-      seccionAdmin.classList.remove("visible");
-      btnLock.textContent = "🔒";
-      cerrarDrawer();
-    });
   </script>
 
   <!-- Service Worker (PWA) -->
