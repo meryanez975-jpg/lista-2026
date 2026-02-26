@@ -15,13 +15,9 @@
       background: linear-gradient(160deg, #e8d5ff 0%, #d4f0e8 50%, #ffd6a5 100%);
       min-height: 100vh;
       font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
     }
-
-    /* ===== PANTALLAS ===== */
-    .screen { display: none; min-height: 100vh; flex-direction: column; }
-    .screen.activa { display: flex; }
-
-    /* ===== BARRA SUPERIOR (todas las pantallas) ===== */
     .top-bar {
       display: flex;
       align-items: center;
@@ -37,27 +33,7 @@
       font-weight: 800;
       color: #4a2080;
     }
-    .top-bar-titulo .tb-sub {
-      font-size: 11px;
-      color: #888;
-      font-weight: 400;
-      margin-top: 1px;
-    }
-    .btn-salir-top {
-      padding: 6px 14px;
-      border: 1.5px solid #e57373;
-      border-radius: 10px;
-      background: #ffebee;
-      color: #c62828;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
-      white-space: nowrap;
-    }
-    .btn-salir-top:active { opacity: .8; }
-
-    /* ===== CUERPO DEL PANEL ===== */
+    .top-bar-titulo .tb-sub { font-size: 11px; color: #888; font-weight: 400; margin-top: 1px; }
     .panel-body {
       flex: 1;
       padding: 20px 18px;
@@ -68,278 +44,80 @@
       width: 100%;
       margin: 0 auto;
     }
-    .panel-section-label {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      color: #aaa;
-      text-transform: uppercase;
-      padding: 4px 2px 0;
-    }
-
-    /* ===== BOTONES DE NAVEGACIÓN ===== */
     .panel-btn {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 18px 20px;
-      text-decoration: none;
-      border-radius: 20px;
-      border: 2.5px solid transparent;
-      font-size: 16px;
-      font-weight: 800;
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 20px; text-decoration: none;
+      border-radius: 20px; border: 2.5px solid transparent;
+      font-size: 16px; font-weight: 800;
       box-shadow: 0 4px 14px rgba(0,0,0,.09);
       transition: transform .1s, box-shadow .1s;
-      font-family: Arial, sans-serif;
-      color: inherit;
+      font-family: Arial, sans-serif; color: inherit;
     }
     .panel-btn:active { transform: scale(0.97); box-shadow: 0 2px 7px rgba(0,0,0,.09); }
     .panel-btn .pb-icon { font-size: 30px; line-height: 1; }
     .panel-btn .pb-sub { font-size: 12px; font-weight: 400; opacity: .7; margin-top: 2px; }
+    .pb-registro { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
+    .pb-servicio { background: #ffe0b2; color: #7a3900; border-color: #ffb74d; }
 
-    .pb-registro  { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
-    .pb-servicio  { background: #ffe0b2; color: #7a3900; border-color: #ffb74d; }
-    .pb-personal  { background: #ffd6e7; color: #5c0030; border-color: #f0a8c4; }
-    .pb-conteo    { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
-    .pb-menu      { background: #ffd6a5; color: #7a4200; border-color: #f5b86a; }
-    .pb-lista     { background: #fce4ec; color: #880e4f; border-color: #f48fb1; }
-    .pb-admin     { background: #e8d5ff; color: #4a2080; border-color: #c9a8f0; }
-
-    /* ===== MODAL DE CÓDIGO ===== */
+    /* Modal */
     .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.50);
-      z-index: 999;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.50); z-index: 999;
+      justify-content: center; align-items: center; padding: 20px;
     }
     .modal-overlay.activo { display: flex; }
     .modal-box {
-      background: #fff;
-      border-radius: 24px;
-      padding: 28px 24px;
-      width: min(360px, 100%);
-      box-shadow: 0 14px 44px rgba(0,0,0,.28);
+      background: #fff; border-radius: 24px; padding: 28px 24px;
+      width: min(360px, 100%); box-shadow: 0 14px 44px rgba(0,0,0,.28);
       animation: fadeIn .18s ease;
     }
     @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
-    .modal-box h3 {
-      margin: 0 0 6px;
-      text-align: center;
-      font-size: 19px;
-      font-weight: 900;
-      color: #4a2080;
-      font-family: Arial, sans-serif;
-    }
-    .modal-box .modal-sub {
-      text-align: center;
-      font-size: 13px;
-      color: #888;
-      margin: 0 0 22px;
-    }
-    .btn-publico-modal {
-      width: 100%;
-      padding: 11px;
-      margin-top: 10px;
-      border: 1.5px solid #8dd4b8;
-      border-radius: 12px;
-      background: #b5ead7;
-      color: #1a5c40;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
-    }
-    .btn-publico-modal:active { opacity: .8; }
+    .modal-box h3 { margin: 0 0 6px; text-align: center; font-size: 19px; font-weight: 900; color: #4a2080; font-family: Arial, sans-serif; }
+    .modal-box .modal-sub { text-align: center; font-size: 13px; color: #888; margin: 0 0 22px; }
     .btn-cancelar-modal {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      border: 1.5px solid #ddd;
-      border-radius: 12px;
-      background: #f5f5f5;
-      font-size: 13px;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
+      width: 100%; padding: 10px; margin-top: 8px;
+      border: 1.5px solid #ddd; border-radius: 12px;
+      background: #f5f5f5; font-size: 13px; cursor: pointer; font-family: Arial, sans-serif;
     }
-    .btn-cancelar-modal:active { opacity: .8; }
   </style>
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════
-       PANTALLA — PÚBLICO
-  ══════════════════════════════════════ -->
-  <div class="screen" id="screenPublico">
-    <div class="top-bar">
-      <span class="top-icon">🍽️</span>
-      <div class="top-bar-titulo">
-        Sistema de Comidas
-        <div class="tb-sub">Acceso público</div>
-      </div>
-    </div>
-    <div class="panel-body">
-
-      <a href="PAGES/registro.html" class="panel-btn pb-registro">
-        <span class="pb-icon">📝</span>
-        <div>
-          <div>Registrar comidas</div>
-          <div class="pb-sub">Seleccioná tu nombre y marcá</div>
-        </div>
-      </a>
-
-      <a href="PAGES/servicio.html" class="panel-btn pb-servicio">
-        <span class="pb-icon">🍽️</span>
-        <div>
-          <div>Ir a Servicio</div>
-          <div class="pb-sub">Marcar platos entregados</div>
-        </div>
-      </a>
-
+  <div class="top-bar">
+    <span class="top-icon">🍽️</span>
+    <div class="top-bar-titulo">
+      Sistema de Comidas
+      <div class="tb-sub">Acceso público</div>
     </div>
   </div>
 
-
-  <!-- ══════════════════════════════════════
-       PANTALLA — SUPERVISOR
-  ══════════════════════════════════════ -->
-  <div class="screen" id="screenSupervisor">
-    <div class="top-bar">
-      <span class="top-icon">🍽️</span>
-      <div class="top-bar-titulo">
-        👁️ Supervisor
-        <div class="tb-sub" id="superNombre"></div>
+  <div class="panel-body">
+    <a href="PAGES/registro.html" class="panel-btn pb-registro">
+      <span class="pb-icon">📝</span>
+      <div>
+        <div>Registrar comidas</div>
+        <div class="pb-sub">Seleccioná tu nombre y marcá</div>
       </div>
-      <button class="btn-salir-top" onclick="irPublico()">Salir</button>
-    </div>
-    <div class="panel-body">
-
-      <a href="PAGES/personal.html" class="panel-btn pb-personal">
-        <span class="pb-icon">👤</span>
-        <div>
-          <div>Agregar personal</div>
-          <div class="pb-sub">Registrar nuevo empleado</div>
-        </div>
-      </a>
-
-      <a href="PAGES/conteo.html" class="panel-btn pb-conteo">
-        <span class="pb-icon">📋</span>
-        <div>
-          <div>Ver registrados</div>
-          <div class="pb-sub">Lista de quienes marcaron</div>
-        </div>
-      </a>
-
-      <a href="PAGES/menu_admin.html" class="panel-btn pb-menu">
-        <span class="pb-icon">🍲</span>
-        <div>
-          <div>Editar comidas</div>
-          <div class="pb-sub">Cargar menú del día</div>
-        </div>
-      </a>
-
-    </div>
+    </a>
+    <a href="PAGES/servicio.html" class="panel-btn pb-servicio">
+      <span class="pb-icon">🍽️</span>
+      <div>
+        <div>Ir a Servicio</div>
+        <div class="pb-sub">Marcar platos entregados</div>
+      </div>
+    </a>
   </div>
 
-
-  <!-- ══════════════════════════════════════
-       PANTALLA — ADMIN
-  ══════════════════════════════════════ -->
-  <div class="screen" id="screenAdmin">
-    <div class="top-bar">
-      <span class="top-icon">🍽️</span>
-      <div class="top-bar-titulo">
-        🔐 Administrador
-        <div class="tb-sub" id="adminNombre"></div>
-      </div>
-      <button class="btn-salir-top" onclick="irPublico()">Salir</button>
-    </div>
-    <div class="panel-body">
-
-      <div class="panel-section-label">Acceso público</div>
-
-      <a href="PAGES/registro.html" class="panel-btn pb-registro">
-        <span class="pb-icon">📝</span>
-        <div>
-          <div>Registrar comidas</div>
-          <div class="pb-sub">Seleccioná nombre y marcá</div>
-        </div>
-      </a>
-
-      <a href="PAGES/servicio.html" class="panel-btn pb-servicio">
-        <span class="pb-icon">🍽️</span>
-        <div>
-          <div>Ir a Servicio</div>
-          <div class="pb-sub">Marcar platos entregados</div>
-        </div>
-      </a>
-
-      <div class="panel-section-label">Supervisor</div>
-
-      <a href="PAGES/personal.html" class="panel-btn pb-personal">
-        <span class="pb-icon">👤</span>
-        <div>
-          <div>Agregar personal</div>
-          <div class="pb-sub">Registrar nuevo empleado</div>
-        </div>
-      </a>
-
-      <a href="PAGES/conteo.html" class="panel-btn pb-conteo">
-        <span class="pb-icon">📋</span>
-        <div>
-          <div>Ver registrados</div>
-          <div class="pb-sub">Lista de quienes marcaron</div>
-        </div>
-      </a>
-
-      <a href="PAGES/menu_admin.html" class="panel-btn pb-menu">
-        <span class="pb-icon">🍲</span>
-        <div>
-          <div>Editar comidas</div>
-          <div class="pb-sub">Cargar menú del día</div>
-        </div>
-      </a>
-
-      <div class="panel-section-label">Administración</div>
-
-      <a href="PAGES/lista_personal.html" class="panel-btn pb-lista">
-        <span class="pb-icon">👥</span>
-        <div>
-          <div>Lista del personal</div>
-          <div class="pb-sub">Ver empleados por sector</div>
-        </div>
-      </a>
-
-      <a href="PAGES/admin.html" class="panel-btn pb-admin">
-        <span class="pb-icon">⚙️</span>
-        <div>
-          <div>Panel admin</div>
-          <div class="pb-sub">Admins, datos y ajustes</div>
-        </div>
-      </a>
-
-    </div>
-  </div>
-
-
-  <!-- ══════════════════════════════════════
-       ZONAS INVISIBLES DE ACCESO
-  ══════════════════════════════════════ -->
-  <!-- Esquina inferior izquierda: 3 toques → supervisor -->
+  <!-- Zona invisible: esquina inferior izquierda (supervisor) -->
   <div id="zonaSupervisor"
        style="position:fixed;bottom:0;left:0;width:72px;height:72px;z-index:500;"></div>
 
-  <!-- ══════════════════════════════════════
-       MODAL — CAMBIAR MODO
-  ══════════════════════════════════════ -->
+  <!-- Modal de acceso -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-      <h3>🔑 Cambiar modo</h3>
-      <p class="modal-sub">Ingresá el código para cambiar</p>
-      <div class="form-card" style="margin:0; border:none; background:transparent; box-shadow:none; padding:0;">
+      <h3>🔑 Acceso</h3>
+      <p class="modal-sub">Ingresá tus datos para continuar</p>
+      <div class="form-card" style="margin:0;border:none;background:transparent;box-shadow:none;padding:0;">
         <label class="campo">
           <span>Número de celular</span>
           <input type="tel" id="mPhone" inputmode="numeric" placeholder="Ej: 099123456">
@@ -348,58 +126,25 @@
           <span>Contraseña</span>
           <input type="password" id="mPass" placeholder="Contraseña">
         </label>
-        <button class="btn-primario" id="mBtnEntrar" type="button">Cambiar modo</button>
+        <button class="btn-primario" id="mBtnEntrar" type="button">Entrar</button>
         <p class="nota" id="mMsg"></p>
       </div>
-      <button class="btn-publico-modal" id="mBtnPublico" type="button">
-        🌐 Volver a modo público
-      </button>
-      <button class="btn-cancelar-modal" id="mBtnCerrar" type="button">
-        Cancelar
-      </button>
+      <button class="btn-cancelar-modal" id="mBtnCerrar" type="button">Cancelar</button>
     </div>
   </div>
-
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script>
-    // ── Referencias ──
     const modalOverlay = document.getElementById("modalOverlay");
     const mPhone       = document.getElementById("mPhone");
     const mPass        = document.getElementById("mPass");
     const mBtnEntrar   = document.getElementById("mBtnEntrar");
     const mBtnCerrar   = document.getElementById("mBtnCerrar");
-    const mBtnPublico  = document.getElementById("mBtnPublico");
     const mMsg         = document.getElementById("mMsg");
 
-    // ── Cargar modo guardado ──
-    function aplicarModoGuardado() {
-      const modo   = localStorage.getItem("modo_actual") || "publico";
-      const nombre = localStorage.getItem("modo_nombre") || "";
-      activarModo(modo, nombre);
-    }
-
-    function activarModo(modo, nombre) {
-      localStorage.setItem("modo_actual", modo);
-      localStorage.setItem("modo_nombre", nombre);
-      document.querySelectorAll(".screen").forEach(s => s.classList.remove("activa"));
-      if (modo === "supervisor") {
-        document.getElementById("superNombre").textContent = nombre;
-        document.getElementById("screenSupervisor").classList.add("activa");
-      } else if (modo === "admin") {
-        document.getElementById("adminNombre").textContent = nombre;
-        document.getElementById("screenAdmin").classList.add("activa");
-      } else {
-        document.getElementById("screenPublico").classList.add("activa");
-      }
-      window.scrollTo(0, 0);
-    }
-
-    function irPublico() { activarModo("publico", ""); }
-
-    // ── TRIGGER 1: 3 toques en esquina inferior izquierda → supervisor ──
+    // ── TRIGGER 1: 3 toques esquina inferior izquierda → supervisor ──
     let cornerTaps = 0, cornerTimer = null;
     document.getElementById("zonaSupervisor").addEventListener("click", () => {
       cornerTaps++;
@@ -425,7 +170,7 @@
       if (dx > 60) abrirModal();
     }, { passive: true });
 
-    // ── Modal: abrir / cerrar ──
+    // ── Modal ──
     function abrirModal() {
       mPhone.value = ""; mPass.value = ""; mMsg.textContent = "";
       modalOverlay.classList.add("activo");
@@ -436,10 +181,9 @@
       mPhone.value = ""; mPass.value = ""; mMsg.textContent = "";
     }
     mBtnCerrar.addEventListener("click", cerrarModal);
-    mBtnPublico.addEventListener("click", () => { cerrarModal(); irPublico(); });
     modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
 
-    // ── Login / cambio de modo ──
+    // ── Login → redirige a la página del rol ──
     mBtnEntrar.addEventListener("click", async () => {
       const phone = mPhone.value.trim();
       const pass  = mPass.value.trim();
@@ -458,8 +202,17 @@
         }
         const admin = admins[phone];
         if (admin && admin.password === pass) {
+          const rol    = admin.rol || "admin";
+          const nombre = admin.nombre || "Administrador";
+          sessionStorage.setItem("rol_activo",    rol);
+          sessionStorage.setItem("rol_nombre",    nombre);
+          sessionStorage.setItem("rol_phone",     phone);
           cerrarModal();
-          activarModo(admin.rol || "admin", admin.nombre || "Administrador");
+          if (rol === "supervisor") {
+            window.location.href = "PAGES/panel_supervisor.html";
+          } else {
+            window.location.href = "PAGES/panel_admin.html";
+          }
         } else {
           mMsg.textContent = "❌ Número o contraseña incorrectos.";
           mPass.value = ""; mPass.focus();
@@ -469,23 +222,18 @@
       }
 
       mBtnEntrar.disabled = false;
-      mBtnEntrar.textContent = "Cambiar modo";
+      mBtnEntrar.textContent = "Entrar";
     });
 
     [mPhone, mPass].forEach(el =>
       el.addEventListener("keydown", e => { if (e.key === "Enter") mBtnEntrar.click(); })
     );
-
-    // ── Iniciar ──
-    aplicarModoGuardado();
   </script>
 
-  <!-- Service Worker (PWA) -->
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js")
-          .catch(e => console.warn("SW error:", e));
+        navigator.serviceWorker.register("/sw.js").catch(e => console.warn("SW error:", e));
       });
     }
   </script>
