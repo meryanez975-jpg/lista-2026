@@ -202,6 +202,29 @@
       background: #4a2080;
       border-radius: 3px;
     }
+
+    /* Botón flotante ⚙️ */
+    .fab-ajustes {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #4a2080;
+      color: #fff;
+      font-size: 26px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(74,32,128,.40);
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+      z-index: 50;
+    }
+    .fab-ajustes:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(74,32,128,.30); }
   </style>
 </head>
 <body>
@@ -238,27 +261,11 @@
       <!-- 1. ADMINISTRACIÓN -->
       <div class="seccion">Administración</div>
 
-      <a href="otros.html" class="dr-btn op-admin">
-        <span class="dr-icon">⚙️</span>
-        <div>
-          <div>Ajustes admin</div>
-          <div class="dr-sub">Admins, datos y ajustes</div>
-        </div>
-      </a>
-
       <a href="conteo.html" class="dr-btn op-conteo">
         <span class="dr-icon">📋</span>
         <div>
           <div>Ver registrados</div>
           <div class="dr-sub">Lista de quienes marcaron</div>
-        </div>
-      </a>
-
-      <a href="lista_personal.html" class="dr-btn op-lista">
-        <span class="dr-icon">👥</span>
-        <div>
-          <div>Lista del personal</div>
-          <div class="dr-sub">Ver empleados por sector</div>
         </div>
       </a>
 
@@ -310,6 +317,9 @@
 
     </div>
   </div>
+
+  <!-- Botón flotante ajustes -->
+  <a href="otros.html" class="fab-ajustes" title="Ajustes admin">⚙️</a>
 
   <!-- Pantalla de bienvenida -->
   <div class="bienvenida">
