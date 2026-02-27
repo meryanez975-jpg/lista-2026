@@ -54,12 +54,12 @@
     .fecha-nav-btn:active { opacity: .7; }
     .fecha-label { font-size: 14px; font-weight: 800; color: #5a2d00; text-align: center; }
 
-    /* Resumen de estados */
+    /* Resumen dinámico */
     .resumen {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
-      margin-bottom: 14px;
+      display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
     }
     .resumen-item {
+      flex: 1; min-width: 70px;
       background: #fff; border-radius: 14px; padding: 10px 6px;
       text-align: center; border: 2px solid;
     }
@@ -68,9 +68,9 @@
     .r-pendiente  { border-color: #bdbdbd; color: #616161; }
     .r-servido    { border-color: #a5d6a7; color: #2e7d32; }
     .r-falta-plato{ border-color: #ffcc80; color: #e65100; }
-    .r-falta-beb  { border-color: #90caf9; color: #1565c0; }
+    .r-falta-sopa { border-color: #80cbc4; color: #00695c; }
 
-    /* Sub-header (volver + título) */
+    /* Sub-header */
     .sub-header {
       display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
     }
@@ -101,9 +101,9 @@
     .est-pendiente   { background: #f5f5f5;  border-color: #bdbdbd; color: #616161; }
     .est-servido     { background: #e8f5e9;  border-color: #a5d6a7; color: #2e7d32; }
     .est-falta-plato { background: #fff3e0;  border-color: #ffcc80; color: #e65100; }
-    .est-falta-beb   { background: #e3f2fd;  border-color: #90caf9; color: #1565c0; }
+    .est-falta-sopa  { background: #e0f2f1;  border-color: #80cbc4; color: #00695c; }
 
-    /* Modal de selección de estado */
+    /* Modal */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.45);
       display: flex; align-items: flex-end; justify-content: center;
@@ -122,19 +122,18 @@
       width: 100%; display: flex; align-items: center; gap: 14px;
       padding: 14px 16px; border: 2px solid; border-radius: 16px;
       margin-bottom: 10px; cursor: pointer; font-size: 15px; font-weight: 800;
-      background: #fff; transition: opacity .1s;
+      background: #fff; transition: opacity .1s; font-family: Arial, sans-serif;
     }
     .opcion-btn:active { opacity: .75; }
-    .opcion-btn:last-child { margin-bottom: 0; }
     .op-icon { font-size: 22px; flex-shrink: 0; }
-    .op-pendiente    { border-color: #bdbdbd; color: #616161; }
-    .op-servido      { border-color: #a5d6a7; color: #2e7d32; background: #f1fff6; }
-    .op-falta-plato  { border-color: #ffcc80; color: #e65100; background: #fff8f0; }
-    .op-falta-beb    { border-color: #90caf9; color: #1565c0; background: #f0f8ff; }
+    .op-pendiente   { border-color: #bdbdbd; color: #616161; }
+    .op-servido     { border-color: #a5d6a7; color: #2e7d32; background: #f1fff6; }
+    .op-falta-plato { border-color: #ffcc80; color: #e65100; background: #fff8f0; }
+    .op-falta-sopa  { border-color: #80cbc4; color: #00695c; background: #e0f2f1; }
     .op-btn-cancelar {
       width: 100%; padding: 13px; border: 2px solid #ddd; border-radius: 14px;
       background: #f5f5f5; color: #888; font-size: 15px; font-weight: 700;
-      cursor: pointer; margin-top: 12px;
+      cursor: pointer; margin-top: 12px; font-family: Arial, sans-serif;
     }
 
     .sin-datos { text-align: center; padding: 28px 16px; color: #aaa; font-size: 15px; }
@@ -184,38 +183,19 @@
   <div id="stepLista" class="hidden">
     <section class="form-card" style="border-color:#ffcc80;">
 
-      <!-- Sub-header -->
       <div class="sub-header">
         <button class="btn-volver-sub" id="btnVolverMeals" type="button">← Comidas</button>
         <span class="sub-titulo" id="listaTitulo"></span>
       </div>
 
-      <!-- Navegación de fecha -->
       <div class="fecha-nav">
         <button class="fecha-nav-btn" id="btnDiaAnterior" type="button">◀</button>
         <span class="fecha-label" id="fechaNavLabel">—</span>
         <button class="fecha-nav-btn" id="btnDiaSiguiente" type="button">▶</button>
       </div>
 
-      <!-- Resumen -->
-      <div class="resumen" id="resumenEstados">
-        <div class="resumen-item r-pendiente">
-          <span class="resumen-num" id="cntPendiente">0</span>
-          <span class="resumen-txt">⏳ Pendiente</span>
-        </div>
-        <div class="resumen-item r-servido">
-          <span class="resumen-num" id="cntServido">0</span>
-          <span class="resumen-txt">✅ Servido</span>
-        </div>
-        <div class="resumen-item r-falta-plato">
-          <span class="resumen-num" id="cntFaltaPlato">0</span>
-          <span class="resumen-txt">🍽️ Falta plato</span>
-        </div>
-        <div class="resumen-item r-falta-beb">
-          <span class="resumen-num" id="cntFaltaBeb">0</span>
-          <span class="resumen-txt">🥤 Falta bebida</span>
-        </div>
-      </div>
+      <!-- Resumen dinámico -->
+      <div class="resumen" id="resumenEstados"></div>
 
       <!-- Buscador -->
       <input type="text" id="buscadorSrv" placeholder="🔍 Buscar nombre..."
@@ -224,8 +204,6 @@
         autocomplete="off">
 
       <p class="loading" id="msgLista">Cargando...</p>
-
-      <!-- Lista de personas -->
       <div id="listaPersonas"></div>
     </section>
 
@@ -234,24 +212,11 @@
 
 </main>
 
-<!-- ===== MODAL SELECTOR DE ESTADO ===== -->
+<!-- ===== MODAL ===== -->
 <div class="modal-overlay hidden" id="modalEstado">
   <div class="modal-sheet">
     <div class="modal-nombre" id="modalNombre">Seleccioná estado</div>
-
-    <button class="opcion-btn op-pendiente"   id="op1" type="button">
-      <span class="op-icon">⏳</span> Pendiente
-    </button>
-    <button class="opcion-btn op-servido"     id="op2" type="button">
-      <span class="op-icon">✅</span> Ya fue servido
-    </button>
-    <button class="opcion-btn op-falta-plato" id="op3" type="button">
-      <span class="op-icon">🍽️</span> Falta el plato
-    </button>
-    <button class="opcion-btn op-falta-beb"   id="op4" type="button">
-      <span class="op-icon">🥤</span> Falta la bebida
-    </button>
-
+    <div id="modalOpciones"></div>
     <button class="op-btn-cancelar" id="btnCerrarModal" type="button">Cancelar</button>
   </div>
 </div>
@@ -261,32 +226,43 @@
 <script src="../firebase-config.js"></script>
 <script>
 
+// ===== ESTADOS =====
 const ESTADOS = {
-  pendiente:   { cls: "est-pendiente",   label: "⏳ Pendiente" },
-  servido:     { cls: "est-servido",     label: "✅ Servido" },
-  falta_plato: { cls: "est-falta-plato", label: "🍽️ Falta plato" },
-  falta_beb:   { cls: "est-falta-beb",   label: "🥤 Falta bebida" }
+  pendiente:   { cls: "est-pendiente",   label: "⏳ Pendiente",      resCls: "r-pendiente",   resTxt: "⏳ Pendiente" },
+  servido:     { cls: "est-servido",     label: "✅ Ya se sirvió",   resCls: "r-servido",     resTxt: "✅ Servido" },
+  falta_plato: { cls: "est-falta-plato", label: "🍽️ Falta el plato", resCls: "r-falta-plato", resTxt: "🍽️ Falta plato" },
+  falta_sopa:  { cls: "est-falta-sopa",  label: "🥣 Falta la sopa",  resCls: "r-falta-sopa",  resTxt: "🥣 Falta sopa" }
 };
 
-const stepMeals   = document.getElementById("stepMeals");
-const stepLista   = document.getElementById("stepLista");
-const listaTitulo = document.getElementById("listaTitulo");
+// Opciones disponibles según comida
+const OPCIONES_POR_MEAL = {
+  desayuno: ["pendiente", "servido"],
+  almuerzo: ["pendiente", "servido", "falta_plato", "falta_sopa"],
+  merienda: ["pendiente", "servido"],
+  cena:     ["pendiente", "servido"]
+};
+
+const stepMeals     = document.getElementById("stepMeals");
+const stepLista     = document.getElementById("stepLista");
+const listaTitulo   = document.getElementById("listaTitulo");
 const listaPersonas = document.getElementById("listaPersonas");
-const msgLista    = document.getElementById("msgLista");
-const modalEstado = document.getElementById("modalEstado");
-const modalNombre = document.getElementById("modalNombre");
+const msgLista      = document.getElementById("msgLista");
+const modalEstado   = document.getElementById("modalEstado");
+const modalNombre   = document.getElementById("modalNombre");
+const modalOpciones = document.getElementById("modalOpciones");
 
-let mealActual      = null;
-let fechaActual     = iso(new Date());
-let personal        = {};
-let personalListo   = false;   // se carga solo una vez
-let servicioData    = {};
-let listaCompleta   = [];      // lista sin filtrar, para el buscador
-let personaModal    = null;
+let mealActual    = null;
+let fechaActual   = iso(new Date());
+let personal      = {};
+let personalListo = false;
+let servicioData  = {};
+let listaCompleta = [];
+let personaModal  = null;
+let listaCache    = [];
 
-// ===== Mostrar fecha de hoy en el header =====
+// ===== Fecha en el header =====
 const hoy = new Date();
-const diasNombre = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+const diasNombre  = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
 const mesesNombre = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 document.getElementById("fechaHoy").textContent =
   `${diasNombre[hoy.getDay()]} ${hoy.getDate()} de ${mesesNombre[hoy.getMonth()]} ${hoy.getFullYear()}`;
@@ -297,7 +273,7 @@ document.querySelectorAll(".meal-tile").forEach(tile => {
 });
 
 function abrirServicio(meal) {
-  mealActual = meal;
+  mealActual  = meal;
   fechaActual = iso(new Date());
   listaTitulo.textContent = `${COMIDA_ICON[meal]} ${COMIDA_LABEL[meal]}`;
   stepMeals.classList.add("hidden");
@@ -313,10 +289,10 @@ document.getElementById("btnVolverMeals").addEventListener("click", () => {
 
 // ===== NAVEGACIÓN DE FECHA =====
 function actualizarFechaLabel() {
-  const d = new Date(fechaActual + "T00:00:00");
+  const d    = new Date(fechaActual + "T00:00:00");
   const esHoy = fechaActual === iso(new Date());
   const nombre = diasNombre[d.getDay()];
-  const label = `${nombre.charAt(0).toUpperCase() + nombre.slice(1)} ${d.getDate()}/${pad(d.getMonth()+1)}`;
+  const label  = `${nombre.charAt(0).toUpperCase() + nombre.slice(1)} ${d.getDate()}/${pad(d.getMonth()+1)}`;
   document.getElementById("fechaNavLabel").innerHTML =
     label + (esHoy ? '<span class="hoy-tag">HOY</span>' : "");
 }
@@ -336,6 +312,7 @@ async function cargarLista() {
   msgLista.textContent = "Cargando...";
   msgLista.classList.remove("hidden");
   listaPersonas.innerHTML = "";
+  document.getElementById("resumenEstados").innerHTML = "";
   servicioData = {};
 
   const buscador = document.getElementById("buscadorSrv");
@@ -343,15 +320,13 @@ async function cargarLista() {
   buscador.value = "";
 
   try {
-    // Cargar personal solo la primera vez
     if (!personalListo) {
-      personal = (await dbGet("personal")) || {};
+      personal      = (await dbGet("personal")) || {};
       personalListo = true;
     }
 
     const activos = Object.entries(personal).filter(([, p]) => p.activo);
 
-    // Cargar SOLO los registros del día y comida actuales (no todo el árbol)
     const [regsResult, srv] = await Promise.all([
       Promise.all(activos.map(([key]) =>
         dbGet(`registros/${key}/${fechaActual}/${mealActual}`)
@@ -380,14 +355,14 @@ async function cargarLista() {
         Sin registros de <strong>${COMIDA_LABEL[mealActual]}</strong> para este día.<br>
         <span style="font-size:13px;">Verificá que el personal haya marcado SI.</span>
       </div>`;
-      actualizarResumen([]);
+      renderResumen([]);
       return;
     }
 
     buscador.style.display = "block";
     renderLista(listaCompleta);
 
-  } catch (err) {
+  } catch {
     msgLista.textContent = "❌ Error al cargar. Verifica el WiFi.";
   }
 }
@@ -405,7 +380,7 @@ document.getElementById("buscadorSrv").addEventListener("input", function () {
 function renderLista(lista) {
   listaPersonas.innerHTML = lista.map(p => {
     const estado = servicioData[p.key] || "pendiente";
-    const est = ESTADOS[estado];
+    const est    = ESTADOS[estado] || ESTADOS.pendiente;
     return `<div class="persona-srv" data-key="${p.key}">
       <div>
         <div class="persona-srv-nombre">${primerNombre(p.nombre)}</div>
@@ -417,38 +392,55 @@ function renderLista(lista) {
     </div>`;
   }).join("");
 
-  // Eventos en cada badge
   listaPersonas.querySelectorAll(".estado-badge").forEach(btn => {
     btn.addEventListener("click", () => abrirModal(btn.dataset.key, lista));
   });
 
-  actualizarResumen(lista);
+  renderResumen(lista);
 }
 
-// ===== RESUMEN =====
-function actualizarResumen(lista) {
-  let pendiente = 0, servido = 0, faltaPlato = 0, faltaBeb = 0;
+// ===== RESUMEN DINÁMICO =====
+function renderResumen(lista) {
+  const opciones = OPCIONES_POR_MEAL[mealActual] || ["pendiente","servido"];
+  const conteo   = {};
+  opciones.forEach(o => { conteo[o] = 0; });
   lista.forEach(p => {
     const e = servicioData[p.key] || "pendiente";
-    if (e === "pendiente")   pendiente++;
-    if (e === "servido")     servido++;
-    if (e === "falta_plato") faltaPlato++;
-    if (e === "falta_beb")   faltaBeb++;
+    if (conteo[e] !== undefined) conteo[e]++;
   });
-  document.getElementById("cntPendiente").textContent  = pendiente;
-  document.getElementById("cntServido").textContent    = servido;
-  document.getElementById("cntFaltaPlato").textContent = faltaPlato;
-  document.getElementById("cntFaltaBeb").textContent   = faltaBeb;
+
+  document.getElementById("resumenEstados").innerHTML = opciones.map(o => {
+    const est = ESTADOS[o];
+    return `<div class="resumen-item ${est.resCls}">
+      <span class="resumen-num">${conteo[o]}</span>
+      <span class="resumen-txt">${est.resTxt}</span>
+    </div>`;
+  }).join("");
 }
 
-// ===== MODAL DE ESTADO =====
-let listaCache = [];
-
+// ===== MODAL =====
 function abrirModal(key, lista) {
   personaModal = key;
-  listaCache = lista;
+  listaCache   = lista;
   const p = lista.find(x => x.key === key);
   modalNombre.textContent = `👤 ${p?.nombre || key}`;
+
+  const opciones = OPCIONES_POR_MEAL[mealActual] || ["pendiente","servido"];
+  modalOpciones.innerHTML = opciones.map(o => {
+    const est = ESTADOS[o];
+    return `<button class="opcion-btn op-${o.replace("_","-")}" data-estado="${o}" type="button">
+      <span class="op-icon">${est.label.split(" ")[0]}</span>
+      ${est.label.substring(est.label.indexOf(" ")+1)}
+    </button>`;
+  }).join("");
+
+  modalOpciones.querySelectorAll(".opcion-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      cambiarEstado(personaModal, btn.dataset.estado);
+      cerrarModal();
+    });
+  });
+
   modalEstado.classList.remove("hidden");
 }
 
@@ -462,47 +454,39 @@ modalEstado.addEventListener("click", e => {
 });
 document.getElementById("btnCerrarModal").addEventListener("click", cerrarModal);
 
-// Opciones de estado
-[
-  { id: "op1", estado: "pendiente" },
-  { id: "op2", estado: "servido" },
-  { id: "op3", estado: "falta_plato" },
-  { id: "op4", estado: "falta_beb" }
-].forEach(({ id, estado }) => {
-  document.getElementById(id).addEventListener("click", () => {
-    if (!personaModal) return;
-    cambiarEstado(personaModal, estado);
-    cerrarModal();
-  });
-});
-
 // ===== CAMBIAR ESTADO =====
 async function cambiarEstado(key, nuevoEstado) {
   servicioData[key] = nuevoEstado;
 
-  // Actualizar badge en pantalla inmediatamente
   const badge = listaPersonas.querySelector(`.estado-badge[data-key="${key}"]`);
   if (badge) {
-    badge.className = `estado-badge ${ESTADOS[nuevoEstado].cls}`;
-    badge.textContent = ESTADOS[nuevoEstado].label;
+    const est = ESTADOS[nuevoEstado] || ESTADOS.pendiente;
+    badge.className  = `estado-badge ${est.cls}`;
+    badge.textContent = est.label;
   }
 
-  actualizarResumen(listaCache);
+  renderResumen(listaCache);
 
-  // Guardar en Firebase
   try {
     await dbSet(`servicio/${fechaActual}/${mealActual}/${key}`, nuevoEstado);
   } catch {
-    // Si falla, revertir visualmente
     servicioData[key] = "pendiente";
     if (badge) {
-      badge.className = `estado-badge ${ESTADOS["pendiente"].cls}`;
-      badge.textContent = ESTADOS["pendiente"].label;
+      badge.className   = `estado-badge ${ESTADOS.pendiente.cls}`;
+      badge.textContent = ESTADOS.pendiente.label;
     }
-    actualizarResumen(listaCache);
+    renderResumen(listaCache);
     alert("❌ Error al guardar. Verifica el WiFi.");
   }
 }
+
+// ===== REINICIAR AL VOLVER A LA APP =====
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    personalListo = false;
+    if (mealActual) cargarLista();
+  }
+});
 
 </script>
 </body>
