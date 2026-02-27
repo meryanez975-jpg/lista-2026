@@ -257,6 +257,7 @@ let personal      = {};
 let personalListo = false;
 let servicioData  = {};
 let listaCompleta = [];
+let extrasCompleta = [];
 let personaModal  = null;
 let listaCache    = [];
 
@@ -266,6 +267,18 @@ const diasNombre  = ["domingo","lunes","martes","miércoles","jueves","viernes",
 const mesesNombre = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 document.getElementById("fechaHoy").textContent =
   `${diasNombre[hoy.getDay()]} ${hoy.getDate()} de ${mesesNombre[hoy.getMonth()]} ${hoy.getFullYear()}`;
+
+// ===== HELPER: ¿el extra aplica en esta fecha? =====
+function extraAplicaEnFecha(e, fecha) {
+  if (!e.activo) return false;
+  if (e.duracion === "dia") return e.fechaRef === fecha;
+  if (e.duracion === "semana") {
+    const semExtra = iso(startOfWeekMonday(new Date(e.fechaRef + "T00:00:00")));
+    const semFecha = iso(startOfWeekMonday(new Date(fecha + "T00:00:00")));
+    return semExtra === semFecha;
+  }
+  return true; // permanente
+}
 
 // ===== ELEGIR COMIDA =====
 document.querySelectorAll(".meal-tile").forEach(tile => {
@@ -350,7 +363,32 @@ async function cargarLista() {
 
     msgLista.classList.add("hidden");
 
-    if (!listaCompleta.length) {
+    // ===== CARGAR EXTRAS =====
+    extrasCompleta = [];
+    try {
+      const extrasData = await dbGet("extras");
+      if (extrasData) {
+        const promesasExtras = [];
+        for (const [key, e] of Object.entries(extrasData)) {
+          if (!e.activo) continue;
+          if (e.habilitado) {
+            promesasExtras.push(
+              dbGet(`registros_extras/${key}/${fechaActual}/${mealActual}`)
+                .catch(() => null)
+                .then(val => {
+                  if (val === "SI") extrasCompleta.push({ key: `ext_${key}`, nombre: e.nombre, esExtra: true });
+                })
+            );
+          } else if (extraAplicaEnFecha(e, fechaActual) && (e.comidas || []).includes(mealActual)) {
+            extrasCompleta.push({ key: `ext_${key}`, nombre: e.nombre, esExtra: true });
+          }
+        }
+        await Promise.all(promesasExtras);
+        extrasCompleta.sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
+      }
+    } catch { /* extras no bloquean el servicio */ }
+
+    if (!listaCompleta.length && !extrasCompleta.length) {
       listaPersonas.innerHTML = `<div class="sin-datos">
         Sin registros de <strong>${COMIDA_LABEL[mealActual]}</strong> para este día.<br>
         <span style="font-size:13px;">Verificá que el personal haya marcado SI.</span>
@@ -360,7 +398,7 @@ async function cargarLista() {
     }
 
     buscador.style.display = "block";
-    renderLista(listaCompleta);
+    renderLista(listaCompleta, extrasCompleta);
 
   } catch {
     msgLista.textContent = "❌ Error al cargar. Verifica el WiFi.";
@@ -373,30 +411,49 @@ document.getElementById("buscadorSrv").addEventListener("input", function () {
   const filtrada = q
     ? listaCompleta.filter(p => primerNombre(p.nombre).toLowerCase().includes(q))
     : listaCompleta;
-  renderLista(filtrada);
+  const filtradaExtras = q
+    ? extrasCompleta.filter(e => (e.nombre || "").toLowerCase().includes(q))
+    : extrasCompleta;
+  renderLista(filtrada, filtradaExtras);
 });
 
-// ===== RENDER LISTA =====
-function renderLista(lista) {
-  listaPersonas.innerHTML = lista.map(p => {
-    const estado = servicioData[p.key] || "pendiente";
-    const est    = ESTADOS[estado] || ESTADOS.pendiente;
-    return `<div class="persona-srv" data-key="${p.key}">
-      <div>
-        <div class="persona-srv-nombre">${primerNombre(p.nombre)}</div>
-        <div class="persona-srv-sub">${labelSector(p)} · ${labelTurno(p)}</div>
-      </div>
-      <button class="estado-badge ${est.cls}" data-key="${p.key}" type="button">
-        ${est.label}
-      </button>
-    </div>`;
-  }).join("");
+// ===== RENDER FILA DE PERSONA (regular o extra) =====
+function renderPersonaRow(p) {
+  const estado = servicioData[p.key] || "pendiente";
+  const est    = ESTADOS[estado] || ESTADOS.pendiente;
+  const subTxt = p.esExtra
+    ? '<span style="color:#7c3aed;font-weight:700;">⭐ Extra</span>'
+    : `${labelSector(p)} · ${labelTurno(p)}`;
+  return `<div class="persona-srv" data-key="${p.key}">
+    <div>
+      <div class="persona-srv-nombre">${primerNombre(p.nombre)}</div>
+      <div class="persona-srv-sub">${subTxt}</div>
+    </div>
+    <button class="estado-badge ${est.cls}" data-key="${p.key}" type="button">
+      ${est.label}
+    </button>
+  </div>`;
+}
 
+// ===== RENDER LISTA =====
+function renderLista(lista, extras = []) {
+  let html = lista.map(p => renderPersonaRow(p)).join("");
+
+  if (extras.length) {
+    html += `<div style="padding:8px 14px;background:#f3e5f5;border-top:2px solid #ce93d8;border-bottom:1px solid #ede7f6;">
+      <span style="font-size:12px;font-weight:900;color:#4a148c;letter-spacing:.3px;">⭐ PERSONAL EXTRA</span>
+    </div>`;
+    html += extras.map(e => renderPersonaRow(e)).join("");
+  }
+
+  listaPersonas.innerHTML = html;
+
+  const combined = [...lista, ...extras];
   listaPersonas.querySelectorAll(".estado-badge").forEach(btn => {
-    btn.addEventListener("click", () => abrirModal(btn.dataset.key, lista));
+    btn.addEventListener("click", () => abrirModal(btn.dataset.key, combined));
   });
 
-  renderResumen(lista);
+  renderResumen(combined);
 }
 
 // ===== RESUMEN DINÁMICO =====
@@ -423,7 +480,7 @@ function abrirModal(key, lista) {
   personaModal = key;
   listaCache   = lista;
   const p = lista.find(x => x.key === key);
-  modalNombre.textContent = `👤 ${p?.nombre || key}`;
+  modalNombre.textContent = `${p?.esExtra ? "⭐" : "👤"} ${p?.nombre || key}`;
 
   const opciones = OPCIONES_POR_MEAL[mealActual] || ["pendiente","servido"];
   modalOpciones.innerHTML = opciones.map(o => {

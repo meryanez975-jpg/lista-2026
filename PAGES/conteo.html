@@ -271,10 +271,11 @@ async function calcular() {
   ultimosDatos = null;
 
   try {
-    const [personalData, registrosData, extrasData] = await Promise.all([
+    const [personalData, registrosData, extrasData, registrosExtrasData] = await Promise.all([
       dbGet("personal"),
       dbGet("registros"),
-      dbGet("extras")
+      dbGet("extras"),
+      dbGet("registros_extras")
     ]);
 
     if (!personalData) { msgConteo.textContent = "No hay personal registrado."; return; }
@@ -362,14 +363,22 @@ async function calcular() {
 
         const filasExtras = extrasActivos.map(e => {
           const celdas = fechas.map((fecha, i) => {
-            if (extraAplicaEnFecha(e, fecha)) {
+            let aparece = false;
+            if (e.habilitado) {
+              // Habilitado: contar solo si registró SI
+              aparece = registrosExtrasData?.[e.key]?.[fecha]?.[comidaActual] === "SI";
+            } else {
+              // No habilitado: contar por rango de fecha
+              aparece = extraAplicaEnFecha(e, fecha);
+            }
+            if (aparece) {
               totalExtrasDia[i]++;
               granTotalPorDia[i]++;
               return `<td class="celda-nombre">${e.nombre}</td>`;
             }
             return `<td></td>`;
           }).join("");
-          return `<tr><td>${e.nombre}</td>${celdas}</tr>`;
+          return `<tr><td>${e.nombre}${e.habilitado ? ' <span style="font-size:10px;color:#2e7d32;font-weight:700;">✅</span>' : ""}</td>${celdas}</tr>`;
         }).join("");
 
         const filaTotalExtras = `<tr class="total-row">

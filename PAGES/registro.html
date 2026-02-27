@@ -273,6 +273,7 @@ const btnConfirmarMeal = document.getElementById("btnConfirmarMeal");
 let persona       = null;
 let diaLibreIdx   = -1;  // 0=Lun … 6=Dom, -1 = sin restricción
 let todosPersonal = {};
+let todosExtras   = {};
 let semanaOffset  = 0;
 let weekFechas    = [];
 let weekRegistros = {};  // { fecha: { meal: "SI"|"NO"|null } }
@@ -297,8 +298,9 @@ function esDiaLibreLocal(idx) {
   return diaLibreIdx >= 0 && diaLibreIdx === idx;
 }
 
-// ===== CARGAR PERSONAL =====
+// ===== CARGAR PERSONAL Y EXTRAS =====
 dbGet("personal").then(data => { todosPersonal = data || {}; });
+dbGet("extras").then(data => { todosExtras = data || {}; });
 
 // ===== AUTOCOMPLETADO =====
 nombreInput.addEventListener("input", () => {
@@ -306,15 +308,22 @@ nombreInput.addEventListener("input", () => {
   const query = nombreInput.value.trim().toLowerCase();
   if (!query) { autoList.classList.add("hidden"); return; }
 
-  const res = Object.entries(todosPersonal)
+  const resPersonal = Object.entries(todosPersonal)
     .filter(([, p]) => p.activo && primerNombre(p.nombre).toLowerCase().includes(query))
-    .sort((a, b) => primerNombre(a[1].nombre).localeCompare(primerNombre(b[1].nombre), "es"))
+    .map(([key, p]) => ({ key, nombre: primerNombre(p.nombre), esExtra: false }));
+
+  const resExtras = Object.entries(todosExtras)
+    .filter(([, e]) => e.activo && e.habilitado && primerNombre(e.nombre).toLowerCase().includes(query))
+    .map(([key, e]) => ({ key: `ext_${key}`, nombre: primerNombre(e.nombre), esExtra: true }));
+
+  const res = [...resPersonal, ...resExtras]
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
     .slice(0, 8);
 
   if (!res.length) { autoList.classList.add("hidden"); return; }
-  autoList.innerHTML = res.map(([key, p]) => `
-    <div class="autocomplete-item" data-key="${key}" data-nombre="${primerNombre(p.nombre) || ""}">
-      <strong>${primerNombre(p.nombre) || ""}</strong>
+  autoList.innerHTML = res.map(item => `
+    <div class="autocomplete-item" data-key="${item.key}" data-nombre="${item.nombre || ""}">
+      ${item.esExtra ? "⭐ " : ""}<strong>${item.nombre || ""}</strong>${item.esExtra ? ' <span style="font-size:11px;color:#888;">(extra)</span>' : ""}
     </div>`).join("");
   autoList.classList.remove("hidden");
 
@@ -341,18 +350,53 @@ btnEntrar.addEventListener("click", async () => {
 
   try {
     let foundKey = nombreInput.dataset.selectedKey || null;
-    let foundData = null;
 
+    // ¿Es un extra habilitado?
+    if (foundKey && foundKey.startsWith("ext_")) {
+      const realKey = foundKey.replace("ext_", "");
+      const extraData = todosExtras[realKey];
+      if (!extraData || !extraData.activo || !extraData.habilitado) {
+        msgLogin.textContent = "❌ Extra no encontrado o no habilitado.";
+      } else {
+        persona = { key: foundKey, realKey, esExtra: true, nombre: extraData.nombre };
+        diaLibreIdx = -1;
+        semanaOffset = 0;
+        mostrarApp();
+      }
+      btnEntrar.disabled = false;
+      btnEntrar.textContent = "➡️ Entrar";
+      return;
+    }
+
+    // Personal regular
+    let foundData = null;
     if (foundKey && todosPersonal[foundKey]) {
       foundData = todosPersonal[foundKey];
     } else {
-      const match = Object.entries(todosPersonal).find(([, p]) =>
+      // Buscar también en extras por nombre si no se encontró en personal
+      const matchPersonal = Object.entries(todosPersonal).find(([, p]) =>
         p.activo && primerNombre(p.nombre).toLowerCase() === query.toLowerCase()
       );
-      if (match) { foundKey = match[0]; foundData = match[1]; }
+      if (matchPersonal) { foundKey = matchPersonal[0]; foundData = matchPersonal[1]; }
+      else {
+        // Intentar en extras habilitados
+        const matchExtra = Object.entries(todosExtras).find(([, e]) =>
+          e.activo && e.habilitado && primerNombre(e.nombre).toLowerCase() === query.toLowerCase()
+        );
+        if (matchExtra) {
+          const [eKey, eData] = matchExtra;
+          persona = { key: `ext_${eKey}`, realKey: eKey, esExtra: true, nombre: eData.nombre };
+          diaLibreIdx = -1;
+          semanaOffset = 0;
+          mostrarApp();
+          btnEntrar.disabled = false;
+          btnEntrar.textContent = "➡️ Entrar";
+          return;
+        }
+      }
     }
 
-    if (!foundData)         { msgLogin.textContent = "❌ Nombre no encontrado."; }
+    if (!foundData)             { msgLogin.textContent = "❌ Nombre no encontrado."; }
     else if (!foundData.activo) { msgLogin.textContent = "❌ Persona inactiva. Consultá al admin."; }
     else {
       persona = { key: foundKey, ...foundData };
@@ -376,15 +420,26 @@ function mostrarApp() {
   stepMealWeek.classList.add("hidden");
   stepExito.classList.add("hidden");
 
-  datosPersona.innerHTML = `
-    <div style="background:#fff;border:1.5px solid #a5d6a7;border-radius:14px;padding:14px 16px;margin-bottom:4px;">
-      <div style="font-size:18px;font-weight:900;color:#1b5e20;margin-bottom:8px;">👤 ${primerNombre(persona.nombre)}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#2e7d32;">🏢 ${labelSector(persona)}</span>
-        <span style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#1565c0;">🕐 ${labelTurno(persona)}</span>
-        <span style="background:#fff9c4;border:1px solid #ffe082;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#7a5900;">📅 Libre: ${labelDiaLibre(persona)}</span>
-      </div>
-    </div>`;
+  if (persona.esExtra) {
+    datosPersona.innerHTML = `
+      <div style="background:#fff;border:1.5px solid #ce93d8;border-radius:14px;padding:14px 16px;margin-bottom:4px;">
+        <div style="font-size:18px;font-weight:900;color:#4a148c;margin-bottom:8px;">⭐ ${primerNombre(persona.nombre)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:#f3e5f5;border:1px solid #ce93d8;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#7c3aed;">⭐ Personal Extra Habilitado</span>
+          <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#2e7d32;">🍽️ Todas las comidas disponibles</span>
+        </div>
+      </div>`;
+  } else {
+    datosPersona.innerHTML = `
+      <div style="background:#fff;border:1.5px solid #a5d6a7;border-radius:14px;padding:14px 16px;margin-bottom:4px;">
+        <div style="font-size:18px;font-weight:900;color:#1b5e20;margin-bottom:8px;">👤 ${primerNombre(persona.nombre)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#2e7d32;">🏢 ${labelSector(persona)}</span>
+          <span style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#1565c0;">🕐 ${labelTurno(persona)}</span>
+          <span style="background:#fff9c4;border:1px solid #ffe082;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;color:#7a5900;">📅 Libre: ${labelDiaLibre(persona)}</span>
+        </div>
+      </div>`;
+  }
 
   cargarSemana();
 }
@@ -411,13 +466,16 @@ async function cargarSemana() {
 
   comidaTiles.innerHTML = '<p class="loading" style="font-size:13px;">Cargando...</p>';
 
-  const comidasTurno = comidasDeTurno(persona.turno);
+  const comidasTurno = persona.esExtra ? COMIDAS_ALL : comidasDeTurno(persona.turno);
   weekRegistros = {};
   weekMenu      = {};
 
   await Promise.all(weekFechas.map(async fecha => {
+    const regPath = persona.esExtra
+      ? `registros_extras/${persona.realKey}/${fecha}`
+      : `registros/${persona.key}/${fecha}`;
     const [reg, menu] = await Promise.all([
-      dbGet(`registros/${persona.key}/${fecha}`).catch(() => null),
+      dbGet(regPath).catch(() => null),
       dbGet(`menu/${fecha}`).catch(() => null)
     ]);
     weekRegistros[fecha] = {};
@@ -430,7 +488,7 @@ async function cargarSemana() {
 
 // ===== RENDER TARJETAS DE COMIDA =====
 function renderMealTiles() {
-  const comidasTurno = comidasDeTurno(persona.turno);
+  const comidasTurno = persona.esExtra ? COMIDAS_ALL : comidasDeTurno(persona.turno);
   const hoyISO = iso(new Date());
 
   comidaTiles.innerHTML = comidasTurno.map(meal => {
@@ -551,7 +609,7 @@ function marcarDia(fecha, val) {
 
 // ===== VALIDAR Y HABILITAR CONFIRMAR =====
 function actualizarBtnConfirmar() {
-  const comidasTurno = comidasDeTurno(persona.turno);
+  const comidasTurno = persona.esExtra ? COMIDAS_ALL : comidasDeTurno(persona.turno);
   let total = 0, marcados = 0;
   weekFechas.forEach((fecha, i) => {
     if (esDiaLibreLocal(i)) return;
@@ -579,9 +637,12 @@ btnConfirmarMeal.addEventListener("click", async () => {
     await Promise.all(
       Object.entries(pendingMarks)
         .filter(([, v]) => v !== null)
-        .map(([fecha, val]) =>
-          dbSet(`registros/${persona.key}/${fecha}/${mealActual}`, val)
-        )
+        .map(([fecha, val]) => {
+          const path = persona.esExtra
+            ? `registros_extras/${persona.realKey}/${fecha}/${mealActual}`
+            : `registros/${persona.key}/${fecha}/${mealActual}`;
+          return dbSet(path, val);
+        })
     );
 
     // Actualizar caché local
@@ -598,7 +659,7 @@ btnConfirmarMeal.addEventListener("click", async () => {
     renderMealTiles();
 
     // Si todas las comidas están completas → éxito
-    const comidasTurno = comidasDeTurno(persona.turno);
+    const comidasTurno = persona.esExtra ? COMIDAS_ALL : comidasDeTurno(persona.turno);
     const todasCompletas = comidasTurno.every(meal => {
       let total = 0, marcados = 0;
       weekFechas.forEach((fecha, i) => {
