@@ -244,26 +244,112 @@ async function cargarListaAdmins() {
     const lista = Object.entries(admins);
     el.innerHTML = lista.map(([cel, a]) => {
       const rolLabel = (a.rol === "supervisor")
-        ? `<span style="font-size:12px; color:#7e57c2; font-weight:700;">👁️ Supervisor</span>`
+        ? `<span style="font-size:12px; color:#7e57c2; font-weight:700;">🏢 Supervisor</span>`
         : `<span style="font-size:12px; color:#2e7d32; font-weight:700;">👤 Admin</span>`;
       return `
-      <div class="admin-fila">
-        <div>
-          <strong>${a.nombre || "Admin"}</strong>
-          <div style="font-size:13px; color:#888; margin-top:2px;">📱 ${cel} &nbsp; ${rolLabel}</div>
+      <div class="admin-fila" id="fila-${cel}" style="flex-direction:column; align-items:stretch; gap:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <div>
+            <strong>${a.nombre || "Admin"}</strong>
+            <div style="font-size:13px; color:#888; margin-top:3px;">📱 ${cel} &nbsp; ${rolLabel}</div>
+            <div style="font-size:13px; color:#888; margin-top:3px; display:flex; align-items:center; gap:6px;">
+              🔑 <span id="pass-txt-${cel}" style="letter-spacing:2px; font-family:monospace;">••••••</span>
+              <button type="button" class="btn-ver-pass" data-cel="${cel}" data-pass="${a.password || ''}"
+                style="background:none;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:11px;color:#7e57c2;padding:2px 7px;font-family:Arial;">
+                Ver
+              </button>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; flex-shrink:0;">
+            <button type="button" class="btn-editar-admin" data-cel="${cel}"
+              style="background:#e8d5ff;color:#4a2080;border:none;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;font-weight:700;">
+              ✏️
+            </button>
+            ${lista.length > 1
+              ? `<button class="btn-sm danger btn-del-admin" data-cel="${cel}" data-nombre="${(a.nombre||"Admin")}">🗑️</button>`
+              : `<span style="font-size:11px; color:#aaa; padding:4px;">Único</span>`
+            }
+          </div>
         </div>
-        ${lista.length > 1
-          ? `<button class="btn-sm danger btn-del-admin" data-cel="${cel}" data-nombre="${(a.nombre||"Admin")}">🗑️ Eliminar</button>`
-          : `<span style="font-size:12px; color:#aaa;">Único admin</span>`
-        }
       </div>`;
     }).join("");
-    // Event listeners seguros (evita problemas con caracteres especiales en nombres)
+
+    el.querySelectorAll(".btn-ver-pass").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const span = document.getElementById(`pass-txt-${btn.dataset.cel}`);
+        if (btn.textContent.trim() === "Ver") {
+          span.textContent = btn.dataset.pass;
+          span.style.letterSpacing = "normal";
+          btn.textContent = "Ocultar";
+        } else {
+          span.textContent = "••••••";
+          span.style.letterSpacing = "2px";
+          btn.textContent = "Ver";
+        }
+      });
+    });
+
+    el.querySelectorAll(".btn-editar-admin").forEach(btn => {
+      btn.addEventListener("click", () => mostrarFormEditar(btn.dataset.cel, admins[btn.dataset.cel]));
+    });
+
     el.querySelectorAll(".btn-del-admin").forEach(btn => {
       btn.addEventListener("click", () => eliminarAdmin(btn.dataset.cel, btn.dataset.nombre));
     });
   } catch(e) {
     el.innerHTML = '<p class="nota">❌ Error al cargar.</p>';
+  }
+}
+
+function mostrarFormEditar(cel, a) {
+  const fila = document.getElementById(`fila-${cel}`);
+  fila.innerHTML = `
+    <div style="background:#f5f0ff; border-radius:12px; padding:14px; border:1.5px solid #c9a8f0;">
+      <div style="font-size:13px; font-weight:800; color:#4a2080; margin-bottom:12px;">✏️ Editar — 📱 ${cel}</div>
+      <label class="campo" style="margin-bottom:8px;">
+        <span>Nombre</span>
+        <input type="text" id="edit-nombre-${cel}" value="${a.nombre || ''}" placeholder="Nombre">
+      </label>
+      <label class="campo" style="margin-bottom:8px;">
+        <span>Nueva contraseña (dejar vacío para mantener la actual)</span>
+        <input type="password" id="edit-pass-${cel}" placeholder="Nueva contraseña">
+      </label>
+      <label class="campo" style="margin-bottom:12px;">
+        <span>Rol</span>
+        <select id="edit-rol-${cel}" style="padding:10px 12px; border:1.5px solid #ddd; border-radius:10px; font-size:15px; width:100%;">
+          <option value="admin" ${(a.rol !== 'supervisor') ? 'selected' : ''}>👤 Administrador — acceso total</option>
+          <option value="supervisor" ${(a.rol === 'supervisor') ? 'selected' : ''}>🏢 Supervisor</option>
+        </select>
+      </label>
+      <div style="display:flex; gap:8px;">
+        <button type="button" id="btn-guardar-${cel}" class="btn-primario" style="flex:1;">💾 Guardar</button>
+        <button type="button" id="btn-cancelar-${cel}" class="btn-secundario">Cancelar</button>
+      </div>
+      <p class="nota" id="msg-edit-${cel}" style="margin-top:8px;"></p>
+    </div>`;
+
+  document.getElementById(`btn-guardar-${cel}`).addEventListener("click", () => guardarEdicion(cel, a));
+  document.getElementById(`btn-cancelar-${cel}`).addEventListener("click", () => cargarListaAdmins());
+}
+
+async function guardarEdicion(cel, datosActuales) {
+  const nombre = document.getElementById(`edit-nombre-${cel}`).value.trim();
+  const pass   = document.getElementById(`edit-pass-${cel}`).value.trim();
+  const rol    = document.getElementById(`edit-rol-${cel}`).value;
+  const msg    = document.getElementById(`msg-edit-${cel}`);
+
+  if (!nombre) { msg.textContent = "❌ El nombre no puede estar vacío."; return; }
+
+  try {
+    await dbSet(`config/admins/${cel}`, {
+      nombre,
+      password: pass || datosActuales.password,
+      rol
+    });
+    msg.textContent = "✅ Guardado correctamente.";
+    setTimeout(() => cargarListaAdmins(), 900);
+  } catch(e) {
+    msg.textContent = "❌ Error al guardar.";
   }
 }
 
