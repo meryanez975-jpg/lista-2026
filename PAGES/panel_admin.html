@@ -164,44 +164,43 @@
     .op-registro  { background: #b5ead7; color: #1a5c40; border-color: #8dd4b8; }
     .op-servicio  { background: #ffd6a5; color: #7a3900; border-color: #f5b86a; }
 
-    /* Pantalla de bienvenida */
+    /* Pantalla de bienvenida — centrada en toda la pantalla */
     .bienvenida {
-      flex: 1;
+      position: fixed;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 40px 24px;
       text-align: center;
+      pointer-events: none;
+      z-index: 0;
     }
     .bien-icono { font-size: 64px; }
     .bien-titulo { font-size: 22px; font-weight: 900; color: #4a2080; }
     .bien-sub { font-size: 14px; color: #999; margin-top: 4px; }
-    .bien-hint {
-      margin-top: 18px;
-      background: rgba(74,32,128,.08);
-      border-radius: 16px;
-      padding: 14px 20px;
-      font-size: 13px;
-      color: #4a2080;
-      font-weight: 700;
+
+    /* Pie del drawer con solo el icono ⚙️ */
+    .drawer-pie {
+      padding: 12px 16px;
+      border-top: 1.5px solid #f0eeff;
+      display: flex;
+      justify-content: flex-start;
+    }
+    .dr-gear {
+      width: 46px;
+      height: 46px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      font-size: 28px;
+      border-radius: 12px;
+      background: #e8d5ff;
+      text-decoration: none;
+      transition: transform .1s;
     }
-    .hint-rayitas {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .hint-rayitas span {
-      display: block;
-      width: 18px;
-      height: 2.5px;
-      background: #4a2080;
-      border-radius: 3px;
-    }
+    .dr-gear:active { transform: scale(0.90); }
 
   </style>
 </head>
@@ -238,14 +237,6 @@
 
       <!-- 1. ADMINISTRACIÓN -->
       <div class="seccion">Administración</div>
-
-      <a href="otros.html" class="dr-btn op-admin">
-        <span class="dr-icon">⚙️</span>
-        <div>
-          <div>Ajustes admin</div>
-          <div class="dr-sub">Admins, datos y ajustes</div>
-        </div>
-      </a>
 
       <a href="conteo.html" class="dr-btn op-conteo">
         <span class="dr-icon">📋</span>
@@ -302,17 +293,18 @@
       </a>
 
     </div>
+
+    <!-- Pie del drawer: solo icono ⚙️ -->
+    <div class="drawer-pie">
+      <a href="otros.html" class="dr-gear" title="Ajustes admin">⚙️</a>
+    </div>
   </div>
 
-  <!-- Pantalla de bienvenida -->
+  <!-- Pantalla de bienvenida centrada -->
   <div class="bienvenida">
     <div class="bien-icono">🔐</div>
     <div class="bien-titulo">Hola, <span id="nombreBien"></span></div>
-    <div class="bien-sub">Panel de Administrador</div>
-    <div class="bien-hint">
-      <div class="hint-rayitas"><span></span><span></span><span></span></div>
-      Presioná el menú para ver las opciones
-    </div>
+    <div class="bien-sub">Presioná el menú para ver las opciones</div>
   </div>
 
   <script>
