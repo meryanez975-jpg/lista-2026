@@ -62,15 +62,26 @@
     .dur-opcion .dur-icon { font-size: 20px; }
     .dur-opcion .dur-sub { font-size: 11px; font-weight: 400; opacity: .75; margin-top: 1px; }
 
-    /* Botón agregar */
+    /* Botón agregar/guardar */
     #btnAgregar {
       width: 100%; padding: 15px; border: none; border-radius: 16px;
       background: linear-gradient(135deg, #5e35b1, #7c3aed);
       color: #fff; font-size: 16px; font-weight: 900; cursor: pointer;
       margin-top: 14px; box-shadow: 0 4px 14px rgba(94,53,177,.30);
+      font-family: Arial, sans-serif;
     }
     #btnAgregar:disabled { background: #ccc; color: #999; box-shadow: none; cursor: not-allowed; }
     #btnAgregar:not(:disabled):active { transform: scale(0.98); }
+
+    /* Botón cancelar edición */
+    #btnCancelar {
+      width: 100%; padding: 12px; border: 1.5px solid #ddd;
+      border-radius: 14px; background: #f5f5f5;
+      font-size: 14px; font-weight: 700; color: #666;
+      cursor: pointer; margin-top: 8px;
+      font-family: Arial, sans-serif;
+    }
+    #btnCancelar:active { opacity: .8; }
 
     /* Lista de extras */
     .extra-card {
@@ -90,21 +101,29 @@
       display: inline-block; border-radius: 8px; padding: 2px 8px;
       font-size: 11px; font-weight: 800; margin-right: 4px;
     }
-    .dur-dia       { background: #fff3e0; color: #e65100; }
-    .dur-semana    { background: #e8f5e9; color: #1b5e20; }
+    .dur-dia        { background: #fff3e0; color: #e65100; }
+    .dur-semana     { background: #e8f5e9; color: #1b5e20; }
     .dur-permanente { background: #e3f2fd; color: #0d47a1; }
+
+    .btn-editar {
+      background: #e8f5e9; border: 1.5px solid #a5d6a7; border-radius: 10px;
+      padding: 7px 12px; font-size: 13px; color: #1b5e20; cursor: pointer;
+      font-weight: 700; white-space: nowrap; font-family: Arial, sans-serif;
+    }
+    .btn-editar:active { opacity: .8; }
 
     .btn-eliminar {
       background: #ffebee; border: 1.5px solid #ef9a9a; border-radius: 10px;
-      padding: 7px 12px; font-size: 13px; color: #c62828; cursor: pointer; font-weight: 700;
-      white-space: nowrap; align-self: center;
+      padding: 7px 12px; font-size: 13px; color: #c62828; cursor: pointer;
+      font-weight: 700; white-space: nowrap; font-family: Arial, sans-serif;
     }
     .btn-eliminar:active { opacity: .8; }
+
     .btn-habilitar {
       width: 100%; padding: 9px 14px; margin-top: 10px;
       background: #e8f5e9; border: 1.5px solid #a5d6a7;
       border-radius: 12px; font-size: 13px; font-weight: 800;
-      color: #1b5e20; cursor: pointer;
+      color: #1b5e20; cursor: pointer; font-family: Arial, sans-serif;
     }
     .btn-habilitar.habil-on {
       background: #c8e6c9; border-color: #43a047; color: #2e7d32;
@@ -125,7 +144,7 @@
 
   <!-- ===== FORMULARIO ===== -->
   <section class="form-card">
-    <h3 style="margin:0 0 14px; color:#4a148c;">➕ Agregar persona extra</h3>
+    <h3 id="formTitulo" style="margin:0 0 14px; color:#4a148c;">➕ Agregar persona extra</h3>
 
     <label class="campo" style="margin-bottom:12px;">
       <span>Nombre</span>
@@ -186,6 +205,7 @@
     </label>
 
     <button id="btnAgregar" type="button">⭐ Agregar extra</button>
+    <button id="btnCancelar" type="button" style="display:none;">✕ Cancelar edición</button>
     <p class="nota" id="msgForm"></p>
   </section>
 
@@ -204,7 +224,7 @@
   </section>
 
   <div style="margin-top:8px;">
-    <a class="btn-volver-bottom" href="panel_supervisor.html">⬅ Volver al panel</a>
+    <a class="btn-volver-bottom" id="btnVolver" href="panel_supervisor.html">⬅ Volver al panel</a>
   </div>
 </main>
 
@@ -216,6 +236,11 @@
 const rol = sessionStorage.getItem("rol_activo");
 if (rol !== "supervisor" && rol !== "admin") {
   window.location.replace("/index.html");
+}
+
+// Ajustar botón volver según rol
+if (rol === "admin") {
+  document.getElementById("btnVolver").href = "panel_admin.html";
 }
 
 // ===== FECHA DEFAULT = HOY =====
@@ -240,7 +265,61 @@ document.querySelectorAll(".dur-opcion").forEach(label => {
   });
 });
 
-// ===== AGREGAR EXTRA =====
+// ===== MODO EDICIÓN =====
+let editandoKey = null;
+
+function editarExtra(key, nombre, comidas, duracion, fechaRef) {
+  editandoKey = key;
+
+  document.getElementById("inpNombre").value = nombre;
+
+  // Marcar comidas
+  document.querySelectorAll(".comida-check").forEach(label => {
+    const cb = label.querySelector("input");
+    cb.checked = comidas.includes(cb.value);
+    label.classList.toggle("sel", cb.checked);
+  });
+
+  // Marcar duración
+  document.querySelectorAll(".dur-opcion").forEach(label => {
+    const rb = label.querySelector("input");
+    const activo = rb.value === duracion;
+    rb.checked = activo;
+    label.classList.toggle("sel", activo);
+  });
+
+  // Fecha
+  document.getElementById("inpFecha").value = fechaRef || hoyISO;
+
+  // Cambiar UI del formulario
+  document.getElementById("formTitulo").textContent = "✏️ Editar persona extra";
+  document.getElementById("btnAgregar").textContent = "💾 Guardar cambios";
+  document.getElementById("btnCancelar").style.display = "block";
+
+  // Scroll al formulario
+  document.querySelector(".form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cancelarEdicion() {
+  editandoKey = null;
+  document.getElementById("inpNombre").value = "";
+  document.querySelectorAll(".comida-check").forEach(l => {
+    l.querySelector("input").checked = false;
+    l.classList.remove("sel");
+  });
+  document.querySelectorAll(".dur-opcion").forEach(l => l.classList.remove("sel"));
+  document.querySelector(".dur-opcion[data-dur='dia']").classList.add("sel");
+  document.querySelector("input[name='duracion'][value='dia']").checked = true;
+  document.getElementById("inpFecha").value = hoyISO;
+  document.getElementById("formTitulo").textContent = "➕ Agregar persona extra";
+  document.getElementById("btnAgregar").textContent = "⭐ Agregar extra";
+  document.getElementById("btnCancelar").style.display = "none";
+  document.getElementById("msgForm").textContent = "";
+}
+
+document.getElementById("btnCancelar").addEventListener("click", cancelarEdicion);
+
+// ===== AGREGAR / EDITAR EXTRA =====
 document.getElementById("btnAgregar").addEventListener("click", async () => {
   const nombre = document.getElementById("inpNombre").value.trim();
   if (!nombre) { mostrarMsg("❌ Escribí el nombre.", "red"); return; }
@@ -249,38 +328,47 @@ document.getElementById("btnAgregar").addEventListener("click", async () => {
     .map(cb => cb.value);
   if (!comidas.length) { mostrarMsg("❌ Elegí al menos una comida.", "red"); return; }
 
-  const duracion  = document.querySelector("input[name='duracion']:checked")?.value || "dia";
-  const fechaRef  = document.getElementById("inpFecha").value || hoyISO;
+  const duracion = document.querySelector("input[name='duracion']:checked")?.value || "dia";
+  const fechaRef = document.getElementById("inpFecha").value || hoyISO;
 
   const btn = document.getElementById("btnAgregar");
+  const modoEdicion = !!editandoKey;
   btn.disabled = true;
   btn.textContent = "Guardando...";
 
   try {
-    await dbPush("extras", { nombre, comidas, fechaRef, duracion, activo: true });
-    mostrarMsg("✅ Extra agregado correctamente.", "green");
-    // Abrir lista automáticamente
-    listaAbierta = true;
-    document.getElementById("listaExtras").style.display = "block";
-    document.getElementById("iconToggle").textContent = "▲";
-    // Limpiar form
-    document.getElementById("inpNombre").value = "";
-    document.querySelectorAll(".comida-check").forEach(l => {
-      l.querySelector("input").checked = false;
-      l.classList.remove("sel");
-    });
-    document.getElementById("inpFecha").value = hoyISO;
-    // Reset duración a "dia"
-    document.querySelectorAll(".dur-opcion").forEach(l => l.classList.remove("sel"));
-    document.querySelector(".dur-opcion[data-dur='dia']").classList.add("sel");
-    document.querySelector("input[name='duracion'][value='dia']").checked = true;
+    if (modoEdicion) {
+      // EDITAR existente
+      await dbUpdate(`extras/${editandoKey}`, { nombre, comidas, fechaRef, duracion });
+      mostrarMsg("✅ Extra actualizado correctamente.", "green");
+      cancelarEdicion();
+    } else {
+      // AGREGAR nuevo
+      await dbPush("extras", { nombre, comidas, fechaRef, duracion, activo: true });
+      mostrarMsg("✅ Extra agregado correctamente.", "green");
+      // Abrir lista automáticamente
+      listaAbierta = true;
+      document.getElementById("listaExtras").style.display = "block";
+      document.getElementById("iconToggle").textContent = "▲";
+      // Limpiar form
+      document.getElementById("inpNombre").value = "";
+      document.querySelectorAll(".comida-check").forEach(l => {
+        l.querySelector("input").checked = false;
+        l.classList.remove("sel");
+      });
+      document.getElementById("inpFecha").value = hoyISO;
+      // Reset duración a "dia"
+      document.querySelectorAll(".dur-opcion").forEach(l => l.classList.remove("sel"));
+      document.querySelector(".dur-opcion[data-dur='dia']").classList.add("sel");
+      document.querySelector("input[name='duracion'][value='dia']").checked = true;
+    }
     cargarLista();
   } catch {
     mostrarMsg("❌ Error al guardar. Verificá el WiFi.", "red");
   }
 
   btn.disabled = false;
-  btn.textContent = "⭐ Agregar extra";
+  btn.textContent = editandoKey ? "💾 Guardar cambios" : "⭐ Agregar extra";
 });
 
 function mostrarMsg(txt, color) {
@@ -320,6 +408,8 @@ async function cargarLista() {
         ? `<span style="font-size:11px;background:#c8e6c9;color:#2e7d32;border-radius:6px;padding:2px 7px;font-weight:700;margin-left:6px;">✅ Habilitado</span>`
         : "";
 
+      const comidasStr = (e.comidas || []).join(",");
+
       return `<div class="extra-card" style="flex-direction:column;">
         <div style="display:flex;align-items:flex-start;gap:12px;">
           <div class="extra-info">
@@ -330,13 +420,37 @@ async function cargarLista() {
               Fecha ref: ${fechaFmt}
             </div>
           </div>
-          <button class="btn-eliminar" data-key="${key}" type="button">🗑️ Eliminar</button>
+          <div style="display:flex;flex-direction:column;gap:6px;align-self:center;">
+            <button class="btn-editar"
+              data-key="${key}"
+              data-nombre="${e.nombre}"
+              data-comidas="${comidasStr}"
+              data-duracion="${e.duracion}"
+              data-fecharef="${e.fechaRef || ''}"
+              type="button">✏️ Editar</button>
+            <button class="btn-eliminar" data-key="${key}" type="button">🗑️ Eliminar</button>
+          </div>
         </div>
-        ${esHabilitable ? `<button class="btn-habilitar ${habilitado ? "habil-on" : ""}" data-key="${key}" data-habil="${habilitado}" type="button">
-          ${habilitado ? "✅ Habilitado para elegir comidas" : "🔓 Habilitar para elegir comidas"}
-        </button>` : `<p style="font-size:11px;color:#aaa;margin:6px 0 0;text-align:center;">Solo 1 día — no habilitable</p>`}
+        ${esHabilitable
+          ? `<button class="btn-habilitar ${habilitado ? "habil-on" : ""}" data-key="${key}" data-habil="${habilitado}" type="button">
+              ${habilitado ? "✅ Habilitado para elegir comidas" : "🔓 Habilitar para elegir comidas"}
+             </button>`
+          : `<p style="font-size:11px;color:#aaa;margin:6px 0 0;text-align:center;">Solo 1 día — no habilitable</p>`}
       </div>`;
     }).join("");
+
+    contenedor.querySelectorAll(".btn-editar").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const comidas = btn.dataset.comidas ? btn.dataset.comidas.split(",") : [];
+        editarExtra(
+          btn.dataset.key,
+          btn.dataset.nombre,
+          comidas,
+          btn.dataset.duracion,
+          btn.dataset.fecharef
+        );
+      });
+    });
 
     contenedor.querySelectorAll(".btn-eliminar").forEach(btn => {
       btn.addEventListener("click", () => eliminarExtra(btn.dataset.key));
@@ -368,6 +482,8 @@ async function eliminarExtra(key) {
   if (!confirm("¿Eliminar este extra?")) return;
   try {
     await dbRemove(`extras/${key}`);
+    // Si estaba siendo editado, limpiar el form
+    if (editandoKey) cancelarEdicion();
     cargarLista();
   } catch {
     alert("❌ Error al eliminar.");
