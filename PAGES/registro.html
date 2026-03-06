@@ -81,6 +81,16 @@
       cursor: pointer; white-space: nowrap;
     }
     .meal-week-titulo { font-size: 20px; font-weight: 900; color: #1b5e20; }
+    .btn-atras-bottom {
+      width: 100%; padding: 13px; border: 1.5px solid #a5d6a7; border-radius: 16px;
+      background: #f4fff8; color: #2e7d32; font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 10px;
+    }
+    .btn-atras-bottom:active { opacity: .8; }
+    .ult-mod-info {
+      font-size: 12px; color: #555; background: #f0fff4; border: 1px solid #c8f5e2;
+      border-radius: 8px; padding: 5px 10px; margin-top: 6px; display: none;
+    }
 
     /* Filas de día */
     .dia-row {
@@ -219,6 +229,7 @@
           <button class="btn-volver-meals" id="btnVolverMeals" type="button">← Comidas</button>
           <span class="meal-week-titulo" id="mealWeekTitulo"></span>
         </div>
+        <div class="ult-mod-info" id="ultModInfo"></div>
 
         <!-- Semana nav (dentro de la comida) -->
         <div class="semana-nav" style="margin-bottom:10px;">
@@ -235,6 +246,7 @@
 
         <p class="aviso-completa" id="avisoCompleta"></p>
         <button id="btnConfirmarMeal" type="button" disabled>💾 Confirmar</button>
+        <button id="btnAtrasBottom" class="btn-atras-bottom" type="button">⬅ Atrás</button>
       </div>
     </div>
 
@@ -532,6 +544,28 @@ function abrirMealSemana(meal) {
   });
 
   mealWeekTitulo.textContent = `${COMIDA_ICON[meal]} ${COMIDA_LABEL[meal]}`;
+
+  // Resetear info de última modificación mientras carga
+  const ultModEl = document.getElementById("ultModInfo");
+  ultModEl.style.display = "none";
+  ultModEl.textContent = "";
+
+  // Cargar última modificación desde Firebase
+  const ultModPath = persona.esExtra
+    ? `registros_extras/${persona.realKey}/_ult_mod/${meal}`
+    : `registros/${persona.key}/_ult_mod/${meal}`;
+  dbGet(ultModPath).then(ts => {
+    if (ts) {
+      const d = new Date(ts);
+      const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+      const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+      const h = d.getHours().toString().padStart(2,"0");
+      const m = d.getMinutes().toString().padStart(2,"0");
+      ultModEl.textContent = `✏️ Última modificación: ${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}, ${h}:${m}`;
+      ultModEl.style.display = "block";
+    }
+  });
+
   stepMeals.classList.add("hidden");
   stepMealWeek.classList.remove("hidden");
   actualizarLabelSemana("semanaLabel2");
@@ -645,6 +679,12 @@ btnConfirmarMeal.addEventListener("click", async () => {
         })
     );
 
+    // Guardar timestamp de última modificación
+    const ultModPath = persona.esExtra
+      ? `registros_extras/${persona.realKey}/_ult_mod/${mealActual}`
+      : `registros/${persona.key}/_ult_mod/${mealActual}`;
+    await dbSet(ultModPath, new Date().toISOString());
+
     // Actualizar caché local
     Object.entries(pendingMarks).forEach(([fecha, val]) => {
       if (val !== null) {
@@ -684,11 +724,13 @@ btnConfirmarMeal.addEventListener("click", async () => {
 });
 
 // ===== VOLVER A TILES =====
-document.getElementById("btnVolverMeals").addEventListener("click", () => {
+function volverATiles() {
   stepMealWeek.classList.add("hidden");
   stepMeals.classList.remove("hidden");
   renderMealTiles();
-});
+}
+document.getElementById("btnVolverMeals").addEventListener("click", volverATiles);
+document.getElementById("btnAtrasBottom").addEventListener("click", volverATiles);
 
 // ===== NAVEGACIÓN SEMANA (en step 2 y step 3) =====
 document.getElementById("btnSemAnterior").addEventListener("click", () => {
