@@ -188,7 +188,7 @@ if (!esAdmin) window.location.href = "../index.html";
 
 const MESES_NOMBRE = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const MESES_CORTO  = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-const DIAS_SEMANA  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+// DIA_NOMBRE ya viene de firebase-config.js: ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"]
 
 let yearSeleccionado = new Date().getFullYear();
 
@@ -327,7 +327,7 @@ async function cargarHistorial(desde, hasta) {
 
     for (const fecha of fechas) {
       const d = new Date(fecha + "T00:00:00");
-      const diaSem = DIAS_SEMANA[d.getDay()];
+      const diaSem = DIA_NOMBRE[d.getDay()];
       const diaNum = d.getDate();
       const mesNom = MESES_CORTO[d.getMonth()];
       const anio   = d.getFullYear();
