@@ -72,15 +72,7 @@
     .comida-tile.parcial  .tile-estado { color: #f57f17; font-weight: 700; }
 
     /* Step 3 — semana de una comida */
-    .meal-week-header {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
-    }
-    .btn-volver-meals {
-      padding: 8px 14px; border: 1.5px solid #a5d6a7; border-radius: 12px;
-      background: #f4fff8; color: #2e7d32; font-size: 13px; font-weight: 700;
-      cursor: pointer; white-space: nowrap;
-    }
-    .meal-week-titulo { font-size: 20px; font-weight: 900; color: #1b5e20; }
+    .meal-week-titulo { font-size: 20px; font-weight: 900; color: #1b5e20; display: block; }
     .btn-atras-bottom {
       width: 100%; padding: 13px; border: 1.5px solid #a5d6a7; border-radius: 16px;
       background: #f4fff8; color: #2e7d32; font-size: 15px; font-weight: 700;
@@ -225,11 +217,10 @@
     <!-- ===== STEP 3: SEMANA DE UNA COMIDA ===== -->
     <div id="stepMealWeek" class="hidden">
       <div class="form-card" style="border-color:#a5d6a7;">
-        <div class="meal-week-header">
-          <button class="btn-volver-meals" id="btnVolverMeals" type="button">← Comidas</button>
-          <span class="meal-week-titulo" id="mealWeekTitulo"></span>
+        <div style="margin-bottom:10px;">
+          <div class="meal-week-titulo" id="mealWeekTitulo"></div>
+          <div class="ult-mod-info" id="ultModInfo" style="margin-top:6px;"></div>
         </div>
-        <div class="ult-mod-info" id="ultModInfo"></div>
 
         <!-- Semana nav (dentro de la comida) -->
         <div class="semana-nav" style="margin-bottom:10px;">
@@ -246,6 +237,7 @@
 
         <p class="aviso-completa" id="avisoCompleta"></p>
         <button id="btnConfirmarMeal" type="button" disabled>💾 Confirmar</button>
+        <div class="ult-mod-info" id="ultModBottom" style="display:none; margin-top:8px; text-align:center;"></div>
         <button id="btnAtrasBottom" class="btn-atras-bottom" type="button">⬅ Atrás</button>
       </div>
     </div>
@@ -683,7 +675,19 @@ btnConfirmarMeal.addEventListener("click", async () => {
     const ultModPath = persona.esExtra
       ? `registros_extras/${persona.realKey}/_ult_mod/${mealActual}`
       : `registros/${persona.key}/_ult_mod/${mealActual}`;
-    await dbSet(ultModPath, new Date().toISOString());
+    const nowISO = new Date().toISOString();
+    await dbSet(ultModPath, nowISO);
+
+    // Mostrar la mod en ambos lugares
+    const _d = new Date(nowISO);
+    const _dias  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+    const _meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+    const _h = _d.getHours().toString().padStart(2,"0");
+    const _m = _d.getMinutes().toString().padStart(2,"0");
+    const modTxt = `✏️ Última modificación: ${_dias[_d.getDay()]} ${_d.getDate()} ${_meses[_d.getMonth()]}, ${_h}:${_m}`;
+    const ultModEl2 = document.getElementById("ultModBottom");
+    ultModEl2.textContent = modTxt;
+    ultModEl2.style.display = "block";
 
     // Actualizar caché local
     Object.entries(pendingMarks).forEach(([fecha, val]) => {
@@ -729,7 +733,6 @@ function volverATiles() {
   stepMeals.classList.remove("hidden");
   renderMealTiles();
 }
-document.getElementById("btnVolverMeals").addEventListener("click", volverATiles);
 document.getElementById("btnAtrasBottom").addEventListener("click", volverATiles);
 
 // ===== NAVEGACIÓN SEMANA (en step 2 y step 3) =====
