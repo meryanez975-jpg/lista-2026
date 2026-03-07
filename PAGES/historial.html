@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4a148c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Historial</title>
+  <link rel="stylesheet" href="../estilo.css">
+  <style>
+    body {
+      background: linear-gradient(160deg, #ede7f6 0%, #f3e5f5 40%, #fce4ec 100%);
+      min-height: 100vh;
+    }
+    .hist-header {
+      background: linear-gradient(135deg, #4a148c, #7c3aed, #9c27b0);
+      border-radius: 0 0 36px 36px;
+      padding: 32px 24px 28px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 20px rgba(74,20,140,.28);
+      position: relative; overflow: hidden;
+    }
+    .hist-header::before {
+      content:""; position:absolute; top:-30px; right:-30px;
+      width:120px; height:120px; background:rgba(255,255,255,.10); border-radius:50%;
+    }
+    .hist-header .icon-grande { font-size:52px; display:block; margin-bottom:8px; }
+    .hist-header h1 { margin:0 0 4px; color:#fff; font-size:24px; font-weight:900; text-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .hist-header p  { margin:0; color:rgba(255,255,255,.85); font-size:13px; }
+    .panel { padding-top: 0 !important; }
+
+    /* Barra de filtro actual */
+    .filtro-barra {
+      background: #fff; border: 2px solid #ce93d8; border-radius: 16px;
+      padding: 12px 14px; display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 10px; gap: 10px;
+    }
+    .filtro-barra-texto { flex: 1; }
+    .filtro-barra-nombre { font-size: 15px; font-weight: 800; color: #4a148c; }
+    .filtro-barra-rango  { font-size: 12px; color: #999; margin-top: 2px; }
+    .btn-filtrar {
+      background: linear-gradient(135deg, #7c3aed, #9c27b0);
+      color: #fff; border: none; border-radius: 12px;
+      padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .btn-filtrar:active { opacity: .85; }
+
+    /* Panel de filtros */
+    .filtro-panel {
+      background: #fff; border: 2px solid #ce93d8; border-radius: 16px;
+      padding: 16px; margin-bottom: 12px;
+    }
+    .filtro-seccion-titulo {
+      font-size: 11px; font-weight: 800; color: #9c27b0;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .filtro-rapidos {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;
+    }
+    .filtro-btn {
+      background: #f3e5f5; border: 1.5px solid #ce93d8; border-radius: 10px;
+      padding: 11px 8px; font-size: 13px; font-weight: 700; color: #4a148c;
+      cursor: pointer; text-align: center;
+    }
+    .filtro-btn.span2 { grid-column: span 2; }
+    .filtro-btn.activo { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+    .filtro-btn:active { opacity: .8; }
+
+    /* Selector de año y mes */
+    .year-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+    .year-tab {
+      flex: 1; background: #f3e5f5; border: 1.5px solid #ce93d8; border-radius: 10px;
+      padding: 9px; font-size: 14px; font-weight: 800; color: #4a148c; cursor: pointer;
+    }
+    .year-tab.activo { background: #4a148c; color: #fff; border-color: #4a148c; }
+    .year-tab:active { opacity: .8; }
+    .meses-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .mes-btn {
+      background: #f3e5f5; border: 1.5px solid #ce93d8; border-radius: 10px;
+      padding: 10px 4px; font-size: 12px; font-weight: 700; color: #4a148c;
+      cursor: pointer; text-align: center;
+    }
+    .mes-btn.activo { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+    .mes-btn:active { opacity: .8; }
+
+    /* Resultados */
+    .resumen-bar {
+      font-size: 12px; color: #7c3aed; font-weight: 700; text-align: center;
+      margin-bottom: 12px; padding: 6px 12px; background: #f3e5f5;
+      border-radius: 10px;
+    }
+    .fecha-grupo {
+      margin-bottom: 14px; border-radius: 14px; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(74,20,140,.12);
+    }
+    .fecha-header {
+      background: linear-gradient(135deg, #4a148c, #7c3aed);
+      color: #fff; padding: 11px 14px;
+      font-size: 14px; font-weight: 900;
+    }
+    .comida-bloque { background: #fff; }
+    .comida-bloque + .comida-bloque { border-top: 1.5px solid #ede7f6; }
+    .comida-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px; background: #f3e5f5;
+      font-size: 13px; font-weight: 800; color: #4a148c;
+      border-bottom: 1px solid #e1bee7;
+    }
+    .comida-conteo { font-size: 12px; font-weight: 600; display: flex; gap: 8px; }
+    .persona-fila {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px; border-bottom: 1px solid #fafafa; font-size: 13px;
+    }
+    .persona-fila:last-child { border-bottom: none; }
+    .persona-nombre { font-weight: 600; color: #333; }
+    .badge-extra { background: #f3e5f5; color: #7c3aed; border-radius: 6px; padding: 2px 6px; font-size: 10px; font-weight: 700; margin-left: 4px; }
+    .badge-si { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; border-radius: 8px; padding: 3px 12px; font-size: 12px; font-weight: 800; }
+    .badge-no { background: #fce4ec; color: #880e4f; border: 1px solid #f48fb1; border-radius: 8px; padding: 3px 12px; font-size: 12px; font-weight: 800; }
+
+    .sin-datos {
+      text-align: center; color: #aaa; font-size: 14px;
+      padding: 40px 20px; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<main class="panel" style="padding-top:0;">
+
+  <div class="hist-header">
+    <span class="icon-grande">📋</span>
+    <h1>Historial</h1>
+    <p>Registros de comidas por período</p>
+  </div>
+
+  <div style="padding: 0 16px 24px;">
+
+    <!-- BARRA FILTRO ACTUAL -->
+    <div class="filtro-barra">
+      <div class="filtro-barra-texto">
+        <div class="filtro-barra-nombre" id="filtroNombre">Sin filtro</div>
+        <div class="filtro-barra-rango" id="filtroRango">Elegí un período</div>
+      </div>
+      <button class="btn-filtrar" id="btnFiltrar" type="button">🔍 Filtrar</button>
+    </div>
+
+    <!-- PANEL DE FILTROS -->
+    <div class="filtro-panel hidden" id="filtroPanel">
+
+      <div class="filtro-seccion-titulo">Acceso rápido</div>
+      <div class="filtro-rapidos">
+        <button class="filtro-btn" data-tipo="hoy"    type="button">📅 Hoy</button>
+        <button class="filtro-btn" data-tipo="ayer"   type="button">📅 Ayer</button>
+        <button class="filtro-btn" data-tipo="7dias"  type="button">📅 Últimos 7 días</button>
+        <button class="filtro-btn" data-tipo="30dias" type="button">📅 Últimos 30 días</button>
+        <button class="filtro-btn span2" data-tipo="3meses" type="button">📅 Últimos 3 meses</button>
+      </div>
+
+      <div class="filtro-seccion-titulo">Por mes</div>
+      <div class="year-tabs" id="yearTabs"></div>
+      <div class="meses-grid" id="mesesGrid"></div>
+
+    </div>
+
+    <!-- RESULTADOS -->
+    <div id="resultados">
+      <p class="sin-datos">Seleccioná un período<br>para ver el historial.</p>
+    </div>
+
+    <a class="btn-volver-bottom" href="otros.html">⬅ Volver</a>
+
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script>
+// Solo admin (no supervisor)
+const esAdmin =
+  (sessionStorage.getItem("admin_logged") === "1" && sessionStorage.getItem("admin_rol") !== "supervisor") ||
+  sessionStorage.getItem("rol_activo") === "admin";
+if (!esAdmin) window.location.href = "../index.html";
+
+const MESES_NOMBRE = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const MESES_CORTO  = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DIAS_SEMANA  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
+let yearSeleccionado = new Date().getFullYear();
+
+// ===== YEARS TABS (desde 2025 hasta hoy) =====
+const anioActual = new Date().getFullYear();
+const yearTabsEl = document.getElementById("yearTabs");
+for (let y = anioActual; y >= 2025; y--) {
+  const btn = document.createElement("button");
+  btn.className = "year-tab" + (y === anioActual ? " activo" : "");
+  btn.textContent = y;
+  btn.type = "button";
+  btn.dataset.year = y;
+  btn.addEventListener("click", () => {
+    yearSeleccionado = y;
+    yearTabsEl.querySelectorAll(".year-tab").forEach(b => b.classList.remove("activo"));
+    btn.classList.add("activo");
+    renderMesesGrid();
+  });
+  yearTabsEl.appendChild(btn);
+}
+
+// ===== MESES GRID =====
+function renderMesesGrid() {
+  const el = document.getElementById("mesesGrid");
+  el.innerHTML = "";
+  const hoy = new Date();
+  MESES_CORTO.forEach((mes, i) => {
+    // No mostrar meses futuros
+    if (yearSeleccionado > hoy.getFullYear()) return;
+    if (yearSeleccionado === hoy.getFullYear() && i > hoy.getMonth()) return;
+    const btn = document.createElement("button");
+    btn.className = "mes-btn";
+    btn.textContent = mes;
+    btn.type = "button";
+    const ultimoDia = new Date(yearSeleccionado, i + 1, 0).getDate();
+    const desde = `${yearSeleccionado}-${String(i+1).padStart(2,"0")}-01`;
+    const hasta  = `${yearSeleccionado}-${String(i+1).padStart(2,"0")}-${String(ultimoDia).padStart(2,"0")}`;
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filtro-btn, .mes-btn").forEach(b => b.classList.remove("activo"));
+      btn.classList.add("activo");
+      aplicarFiltro({
+        nombre: `${MESES_NOMBRE[i]} ${yearSeleccionado}`,
+        rango: `${formatDMY(desde)} → ${formatDMY(hasta)}`,
+        desde, hasta
+      });
+    });
+    el.appendChild(btn);
+  });
+}
+renderMesesGrid();
+
+// ===== TOGGLE PANEL =====
+document.getElementById("btnFiltrar").addEventListener("click", () => {
+  document.getElementById("filtroPanel").classList.toggle("hidden");
+});
+
+// ===== FILTROS RÁPIDOS =====
+document.querySelectorAll(".filtro-btn[data-tipo]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const hoy = new Date();
+    const hoyISO = iso(hoy);
+    const tipo = btn.dataset.tipo;
+    let desde, hasta, nombre, rango;
+    hasta = hoyISO;
+
+    if (tipo === "hoy") {
+      desde = hoyISO; nombre = "Hoy";
+      rango = formatDMY(hoyISO);
+    } else if (tipo === "ayer") {
+      desde = hasta = iso(addDays(hoy, -1));
+      nombre = "Ayer"; rango = formatDMY(desde);
+    } else if (tipo === "7dias") {
+      desde = iso(addDays(hoy, -6));
+      nombre = "Últimos 7 días";
+      rango = `${formatDMY(desde)} → ${formatDMY(hasta)}`;
+    } else if (tipo === "30dias") {
+      desde = iso(addDays(hoy, -29));
+      nombre = "Últimos 30 días";
+      rango = `${formatDMY(desde)} → ${formatDMY(hasta)}`;
+    } else if (tipo === "3meses") {
+      desde = iso(addDays(hoy, -89));
+      nombre = "Últimos 3 meses";
+      rango = `${formatDMY(desde)} → ${formatDMY(hasta)}`;
+    }
+
+    document.querySelectorAll(".filtro-btn, .mes-btn").forEach(b => b.classList.remove("activo"));
+    btn.classList.add("activo");
+    aplicarFiltro({ nombre, rango, desde, hasta });
+  });
+});
+
+// ===== APLICAR FILTRO =====
+function aplicarFiltro({ nombre, rango, desde, hasta }) {
+  document.getElementById("filtroNombre").textContent = nombre;
+  document.getElementById("filtroRango").textContent  = rango;
+  document.getElementById("filtroPanel").classList.add("hidden");
+  cargarHistorial(desde, hasta);
+}
+
+// ===== GENERAR RANGO DE FECHAS =====
+function rangoFechas(desde, hasta) {
+  const out = [];
+  let cur = new Date(desde + "T00:00:00");
+  const fin = new Date(hasta + "T00:00:00");
+  while (cur <= fin) { out.push(iso(cur)); cur = addDays(cur, 1); }
+  return out.reverse(); // más reciente primero
+}
+
+// ===== CARGAR HISTORIAL =====
+async function cargarHistorial(desde, hasta) {
+  const res = document.getElementById("resultados");
+  res.innerHTML = '<p class="sin-datos">Cargando...</p>';
+
+  try {
+    const [personalData, registrosData, extrasData, regExtrasData] = await Promise.all([
+      dbGet("personal").catch(() => null),
+      dbGet("registros").catch(() => null),
+      dbGet("extras").catch(() => null),
+      dbGet("registros_extras").catch(() => null)
+    ]);
+
+    const personas = Object.entries(personalData || {})
+      .filter(([, p]) => p.activo)
+      .map(([key, p]) => ({ key, nombre: p.nombre, esExtra: false }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+
+    const extras = Object.entries(extrasData || {})
+      .filter(([, e]) => e.activo)
+      .map(([key, e]) => ({ key, nombre: e.nombre, esExtra: true }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+
+    const fechas = rangoFechas(desde, hasta);
+    let html = "";
+    let diasConDatos = 0;
+    let totalRegistros = 0;
+
+    for (const fecha of fechas) {
+      const d = new Date(fecha + "T00:00:00");
+      const diaSem = DIAS_SEMANA[d.getDay()];
+      const diaNum = d.getDate();
+      const mesNom = MESES_CORTO[d.getMonth()];
+      const anio   = d.getFullYear();
+
+      let htmlComidas = "";
+      let fechaTieneDatos = false;
+
+      for (const meal of COMIDAS_ALL) {
+        const regs = [];
+
+        personas.forEach(p => {
+          const val = registrosData?.[p.key]?.[fecha]?.[meal];
+          if (val === "SI" || val === "NO") regs.push({ nombre: p.nombre, val, esExtra: false });
+        });
+        extras.forEach(e => {
+          const val = regExtrasData?.[e.key]?.[fecha]?.[meal];
+          if (val === "SI" || val === "NO") regs.push({ nombre: e.nombre, val, esExtra: true });
+        });
+
+        if (!regs.length) continue;
+        fechaTieneDatos = true;
+        totalRegistros += regs.length;
+
+        const siCount = regs.filter(r => r.val === "SI").length;
+        const noCount = regs.filter(r => r.val === "NO").length;
+
+        // SI primero, luego NO
+        const ordenados = [
+          ...regs.filter(r => r.val === "SI"),
+          ...regs.filter(r => r.val === "NO")
+        ];
+
+        htmlComidas += `
+          <div class="comida-bloque">
+            <div class="comida-header">
+              <span>${COMIDA_ICON[meal]} ${COMIDA_LABEL[meal]}</span>
+              <div class="comida-conteo">
+                <span style="color:#2e7d32;">✅ ${siCount}</span>
+                ${noCount > 0 ? `<span style="color:#c62828;">❌ ${noCount}</span>` : ""}
+              </div>
+            </div>
+            ${ordenados.map(r => `
+              <div class="persona-fila">
+                <span class="persona-nombre">
+                  ${primerNombre(r.nombre)}${r.esExtra ? '<span class="badge-extra">⭐ extra</span>' : ""}
+                </span>
+                <span class="${r.val === "SI" ? "badge-si" : "badge-no"}">${r.val}</span>
+              </div>
+            `).join("")}
+          </div>`;
+      }
+
+      if (!fechaTieneDatos) continue;
+      diasConDatos++;
+
+      html += `
+        <div class="fecha-grupo">
+          <div class="fecha-header">📅 ${diaSem} ${diaNum} ${mesNom} ${anio}</div>
+          ${htmlComidas}
+        </div>`;
+    }
+
+    if (!diasConDatos) {
+      res.innerHTML = '<p class="sin-datos">No hay registros para<br>el período seleccionado.</p>';
+      return;
+    }
+
+    res.innerHTML = `
+      <div class="resumen-bar">
+        ${diasConDatos} día${diasConDatos !== 1 ? "s" : ""} con registros &nbsp;·&nbsp; ${totalRegistros} marcas en total
+      </div>
+      ${html}`;
+
+  } catch(e) {
+    res.innerHTML = '<p class="sin-datos">❌ Error al cargar.<br>Verifica el WiFi.</p>';
+  }
+}
+</script>
+
+</body>
+</html>

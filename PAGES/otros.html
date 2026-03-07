@@ -66,6 +66,14 @@
       </button>
     </section>
 
+    <section id="secHistorial" style="margin-bottom:14px;">
+      <button class="tile" id="btnHistorial" type="button" style="width:100%; border-color:#ce93d8; background:linear-gradient(135deg,#fce4ec,#f3e5f5);">
+        <div class="tile-icon">📋</div>
+        <div class="tile-title" style="color:#4a148c;">HISTORIAL</div>
+        <div class="tile-sub">Ver registros por fecha o período</div>
+      </button>
+    </section>
+
     <p class="nota" id="msgOtros"></p>
     <a class="btn-volver-bottom" href="panel_admin.html">⬅ Volver</a>
   </div>
@@ -181,6 +189,12 @@
 <script src="../firebase-config.js"></script>
 <script>
 if (sessionStorage.getItem("admin_logged") !== "1" && !["admin","supervisor"].includes(sessionStorage.getItem("rol_activo"))) window.location.href = "../index.html";
+
+// Historial solo visible para admin (no supervisor)
+const _esAdmin =
+  (sessionStorage.getItem("admin_logged") === "1" && sessionStorage.getItem("admin_rol") !== "supervisor") ||
+  sessionStorage.getItem("rol_activo") === "admin";
+if (!_esAdmin) document.getElementById("secHistorial").style.display = "none";
 
 const menuOtros      = document.getElementById("menuOtros");
 const panelAdmins    = document.getElementById("panelAdmins");
@@ -450,6 +464,10 @@ document.getElementById("prevGraf").addEventListener("click", () => {
 document.getElementById("nextGraf").addEventListener("click", () => {
   weekGraf = addDays(weekGraf, 7);
   actualizarRangoGraf();
+});
+
+document.getElementById("btnHistorial").addEventListener("click", () => {
+  window.location.href = "historial.html";
 });
 
 document.getElementById("btnGraficos").addEventListener("click", () => {
