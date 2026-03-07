@@ -70,6 +70,7 @@
     .tile-estado { font-size: 12px; color: #888; display: block; margin-top: 3px; }
     .comida-tile.completa .tile-estado { color: #2e7d32; font-weight: 700; }
     .comida-tile.parcial  .tile-estado { color: #f57f17; font-weight: 700; }
+    .tile-mod { font-size: 10px; color: #999; display: block; margin-top: 4px; line-height: 1.3; }
 
     /* Step 3 — semana de una comida */
     .meal-week-titulo { font-size: 20px; font-weight: 900; color: #1b5e20; display: block; }
@@ -219,7 +220,6 @@
       <div class="form-card" style="border-color:#a5d6a7;">
         <div style="margin-bottom:10px;">
           <div class="meal-week-titulo" id="mealWeekTitulo"></div>
-          <div class="ult-mod-info" id="ultModInfo" style="margin-top:6px;"></div>
         </div>
 
         <!-- Semana nav (dentro de la comida) -->
@@ -237,7 +237,6 @@
 
         <p class="aviso-completa" id="avisoCompleta"></p>
         <button id="btnConfirmarMeal" type="button" disabled>💾 Confirmar</button>
-        <div class="ult-mod-info" id="ultModBottom" style="display:none; margin-top:8px; text-align:center;"></div>
         <button id="btnAtrasBottom" class="btn-atras-bottom" type="button">⬅ Atrás</button>
       </div>
     </div>
@@ -282,6 +281,7 @@ let semanaOffset  = 0;
 let weekFechas    = [];
 let weekRegistros = {};  // { fecha: { meal: "SI"|"NO"|null } }
 let weekMenu      = {};  // { fecha: menuData }
+let weekUltMod    = {};  // { meal: "ISO timestamp" }
 let mealActual    = null;
 let pendingMarks  = {};  // { fecha: "SI"|"NO" } — marcas en la vista actual antes de confirmar
 
@@ -473,8 +473,14 @@ async function cargarSemana() {
   const comidasTurno = persona.esExtra ? COMIDAS_ALL : comidasDeTurno(persona.turno);
   weekRegistros = {};
   weekMenu      = {};
+  weekUltMod    = {};
 
-  await Promise.all(weekFechas.map(async fecha => {
+  const ultModBasePath = persona.esExtra
+    ? `registros_extras/${persona.realKey}/_ult_mod`
+    : `registros/${persona.key}/_ult_mod`;
+
+  const [, ultModData] = await Promise.all([
+    Promise.all(weekFechas.map(async fecha => {
     const regPath = persona.esExtra
       ? `registros_extras/${persona.realKey}/${fecha}`
       : `registros/${persona.key}/${fecha}`;
@@ -485,7 +491,10 @@ async function cargarSemana() {
     weekRegistros[fecha] = {};
     comidasTurno.forEach(c => { weekRegistros[fecha][c] = reg?.[c] || null; });
     weekMenu[fecha] = menu || null;
-  }));
+  })),
+    dbGet(ultModBasePath).catch(() => null)
+  ]);
+  weekUltMod = ultModData || {};
 
   renderMealTiles();
 }
@@ -509,10 +518,22 @@ function renderMealTiles() {
     else if (marcados < total){ clsTile = "parcial";  estadoTxt = `${marcados}/${total} días`; }
     else                      { clsTile = "completa"; estadoTxt = "✅ Completo"; }
 
+    const tsRaw = weekUltMod[meal];
+    let modHtml = "";
+    if (tsRaw) {
+      const td = new Date(tsRaw);
+      const tDias  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+      const tMeses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+      const th = td.getHours().toString().padStart(2,"0");
+      const tm = td.getMinutes().toString().padStart(2,"0");
+      modHtml = `<span class="tile-mod">✏️ ${tDias[td.getDay()]} ${td.getDate()} ${tMeses[td.getMonth()]}, ${th}:${tm}</span>`;
+    }
+
     return `<div class="comida-tile ${clsTile}" data-meal="${meal}">
       <span class="tile-icon">${COMIDA_ICON[meal]}</span>
       <span class="tile-name">${COMIDA_LABEL[meal]}</span>
       <span class="tile-estado">${estadoTxt}</span>
+      ${modHtml}
     </div>`;
   }).join("");
 
@@ -536,27 +557,6 @@ function abrirMealSemana(meal) {
   });
 
   mealWeekTitulo.textContent = `${COMIDA_ICON[meal]} ${COMIDA_LABEL[meal]}`;
-
-  // Resetear info de última modificación mientras carga
-  const ultModEl = document.getElementById("ultModInfo");
-  ultModEl.style.display = "none";
-  ultModEl.textContent = "";
-
-  // Cargar última modificación desde Firebase
-  const ultModPath = persona.esExtra
-    ? `registros_extras/${persona.realKey}/_ult_mod/${meal}`
-    : `registros/${persona.key}/_ult_mod/${meal}`;
-  dbGet(ultModPath).then(ts => {
-    if (ts) {
-      const d = new Date(ts);
-      const dias = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-      const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-      const h = d.getHours().toString().padStart(2,"0");
-      const m = d.getMinutes().toString().padStart(2,"0");
-      ultModEl.textContent = `✏️ Última modificación: ${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}, ${h}:${m}`;
-      ultModEl.style.display = "block";
-    }
-  });
 
   stepMeals.classList.add("hidden");
   stepMealWeek.classList.remove("hidden");
@@ -677,17 +677,7 @@ btnConfirmarMeal.addEventListener("click", async () => {
       : `registros/${persona.key}/_ult_mod/${mealActual}`;
     const nowISO = new Date().toISOString();
     await dbSet(ultModPath, nowISO);
-
-    // Mostrar la mod en ambos lugares
-    const _d = new Date(nowISO);
-    const _dias  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-    const _meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-    const _h = _d.getHours().toString().padStart(2,"0");
-    const _m = _d.getMinutes().toString().padStart(2,"0");
-    const modTxt = `✏️ Última modificación: ${_dias[_d.getDay()]} ${_d.getDate()} ${_meses[_d.getMonth()]}, ${_h}:${_m}`;
-    const ultModEl2 = document.getElementById("ultModBottom");
-    ultModEl2.textContent = modTxt;
-    ultModEl2.style.display = "block";
+    weekUltMod[mealActual] = nowISO;
 
     // Actualizar caché local
     Object.entries(pendingMarks).forEach(([fecha, val]) => {
@@ -753,7 +743,7 @@ document.getElementById("btnSemSiguiente2").addEventListener("click", () => {
 
 // ===== OTRA PERSONA =====
 document.getElementById("btnOtraPersona").addEventListener("click", () => {
-  persona = null; diaLibreIdx = -1; semanaOffset = 0; weekRegistros = {}; weekMenu = {};
+  persona = null; diaLibreIdx = -1; semanaOffset = 0; weekRegistros = {}; weekMenu = {}; weekUltMod = {};
   appBox.classList.add("hidden");
   loginBox.classList.remove("hidden");
   stepMeals.classList.remove("hidden");
