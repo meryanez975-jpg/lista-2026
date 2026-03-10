@@ -15,3 +15,10 @@ $RECYCLE.BIN/
 COMO_USAR_CLAUDE_CODE.md
 RESUMEN_PROYECTO.md
 TECNOLOGIAS.md
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
