@@ -189,19 +189,6 @@
   <!-- ===== STEP 1: ELEGIR COMIDA ===== -->
   <div id="stepMeals">
 
-    <!-- Panel: Los que dijeron NO / Días libres hoy -->
-    <div class="panel-no-vienen">
-      <button class="btn-no-vienen" id="btnToggleNoVienen" type="button">
-        <span class="btn-no-vienen-titulo">🔴 Los que dijeron NO / Día libre hoy</span>
-        <span class="btn-no-vienen-badge hidden" id="noVieneBadge"></span>
-        <span class="btn-no-vienen-arrow" id="noVieneArrow">▼</span>
-      </button>
-      <div class="no-vienen-body hidden" id="noVieneContenido">
-        <p style="font-size:13px;color:#aaa;margin-top:8px;" id="noVieneMsg"></p>
-        <div id="noVieneBody"></div>
-      </div>
-    </div>
-
     <section class="form-card" style="border-color:#ffcc80;">
       <h4 style="margin:0 0 14px; color:#7a4200;">¿Qué comida estás sirviendo?</h4>
       <div class="meal-grid">
@@ -252,6 +239,18 @@
 
       <p class="loading" id="msgLista">Cargando...</p>
       <div id="listaPersonas"></div>
+
+      <!-- Panel: días libres + NO — al final de la lista -->
+      <div id="panelNoVienen" style="display:none; margin-top:14px; border-top:1px solid #ffe0b2; padding-top:12px;">
+        <button class="btn-no-vienen" id="btnToggleNoVienen" type="button">
+          <span class="btn-no-vienen-titulo">🔴 Día libre / Dijeron NO</span>
+          <span class="btn-no-vienen-badge hidden" id="noVieneBadge"></span>
+          <span class="btn-no-vienen-arrow" id="noVieneArrow">▼</span>
+        </button>
+        <div id="noVieneContenido" class="hidden" style="margin-top:8px;">
+          <div id="noVieneBody"></div>
+        </div>
+      </div>
     </section>
 
     <a class="btn-volver-bottom" href="../index.html" style="margin-top:0;">⬅ Volver al inicio</a>
@@ -379,6 +378,12 @@ async function cargarLista() {
   buscador.style.display = "none";
   buscador.value = "";
 
+  // Resetear panel NO/libres
+  document.getElementById("panelNoVienen").style.display = "none";
+  document.getElementById("noVieneContenido").classList.add("hidden");
+  document.getElementById("noVieneArrow").textContent = "▼";
+  document.getElementById("noVieneBadge").classList.add("hidden");
+
   try {
     if (!personalListo) {
       personal      = (await dbGet("personal")) || {};
@@ -407,6 +412,24 @@ async function cargarLista() {
       })
       .map(([key, p]) => ({ key, ...p }))
       .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
+
+    // ===== Panel días libres + NOs (respeta turno de cada persona) =====
+    {
+      const d = new Date(fechaActual + "T00:00:00");
+      const dWeekIdx = d.getDay() === 0 ? 6 : d.getDay() - 1; // 0=Lun…6=Dom
+
+      const libres = activos
+        .filter(([, p]) => comidasDeTurno(p.turno).includes(mealActual) && esDiaLibre(p, dWeekIdx))
+        .map(([, p]) => p)
+        .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
+
+      const nos = activos
+        .filter(([key, p]) => comidasDeTurno(p.turno).includes(mealActual) && regHoy[key] === "NO")
+        .map(([, p]) => p)
+        .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
+
+      renderNoVienen(libres, nos);
+    }
 
     msgLista.classList.add("hidden");
 
@@ -584,110 +607,53 @@ async function cambiarEstado(key, nuevoEstado) {
   }
 }
 
-// ===== PANEL: LOS QUE DIJERON NO / DÍAS LIBRES =====
-let noVieneAbierto = false;
-let noVieneCargado = false;
-
-document.getElementById("btnToggleNoVienen").addEventListener("click", async () => {
-  noVieneAbierto = !noVieneAbierto;
-  document.getElementById("noVieneContenido").classList.toggle("hidden", !noVieneAbierto);
-  document.getElementById("noVieneArrow").textContent = noVieneAbierto ? "▲" : "▼";
-  if (noVieneAbierto && !noVieneCargado) {
-    await cargarNoVienen();
-    noVieneCargado = true;
-  }
+// ===== TOGGLE PANEL NO/LIBRES =====
+document.getElementById("btnToggleNoVienen").addEventListener("click", () => {
+  const contenido = document.getElementById("noVieneContenido");
+  const arrow     = document.getElementById("noVieneArrow");
+  const abierto   = !contenido.classList.contains("hidden");
+  contenido.classList.toggle("hidden", abierto);
+  arrow.textContent = abierto ? "▼" : "▲";
 });
 
-async function cargarNoVienen() {
-  const msg  = document.getElementById("noVieneMsg");
-  const body = document.getElementById("noVieneBody");
-  msg.textContent = "Cargando...";
-  body.innerHTML  = "";
+// ===== RENDER PANEL NO/LIBRES =====
+function renderNoVienen(libres, nos) {
+  const panel = document.getElementById("panelNoVienen");
+  const body  = document.getElementById("noVieneBody");
+  const badge = document.getElementById("noVieneBadge");
 
-  try {
-    const hoyISO = iso(new Date());
-    const hoyDia = new Date().getDay();
-    const hoyWeekIdx = hoyDia === 0 ? 6 : hoyDia - 1; // 0=Lun…6=Dom
+  if (!libres.length && !nos.length) { panel.style.display = "none"; return; }
 
-    const [personalData, registrosData] = await Promise.all([
-      dbGet("personal"),
-      dbGet("registros")
-    ]);
-
-    if (!personalData) { msg.textContent = "Sin datos de personal."; return; }
-
-    const activos = Object.entries(personalData)
-      .filter(([, p]) => p.activo)
-      .map(([key, p]) => ({ key, ...p }));
-
-    // — Días libres hoy —
-    const libresHoy = activos
-      .filter(p => esDiaLibre(p, hoyWeekIdx))
-      .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
-
-    // — Quienes dijeron NO por comida hoy —
-    const nosPorComida = { desayuno: [], almuerzo: [], merienda: [], cena: [] };
-    activos.forEach(p => {
-      if (esDiaLibre(p, hoyWeekIdx)) return;
-      comidasDeTurno(p.turno).forEach(c => {
-        if (registrosData?.[p.key]?.[hoyISO]?.[c] === "NO") nosPorComida[c].push(p);
-      });
-    });
-    COMIDAS_ALL.forEach(c => nosPorComida[c].sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es")));
-
-    let html = "";
-
-    // Días libres
-    if (libresHoy.length) {
-      html += `<div class="no-vienen-grupo">
-        <div class="no-vienen-titulo-g">🏖️ Día libre hoy</div>
-        ${libresHoy.map(p =>
-          `<div class="no-viene-item libre">${primerNombre(p.nombre)}<span class="no-viene-sub">${labelSector(p)}</span></div>`
-        ).join("")}
-      </div>`;
-    }
-
-    // NOs por comida
-    let hayNos = false;
-    COMIDAS_ALL.forEach(c => {
-      if (!nosPorComida[c].length) return;
-      hayNos = true;
-      html += `<div class="no-vienen-grupo">
-        <div class="no-vienen-titulo-g">${COMIDA_ICON[c]} ${COMIDA_LABEL[c]} — dijeron NO</div>
-        ${nosPorComida[c].map(p =>
-          `<div class="no-viene-item">${primerNombre(p.nombre)}<span class="no-viene-sub">${labelSector(p)}</span></div>`
-        ).join("")}
-      </div>`;
-    });
-
-    if (!libresHoy.length && !hayNos) {
-      html = `<p style="text-align:center;color:#aaa;font-size:14px;padding:12px 0;">Nadie tiene día libre ni registró NO hoy.</p>`;
-    }
-
-    // Badge con total
-    const totalPersonas = new Set([
-      ...libresHoy.map(p => p.key),
-      ...COMIDAS_ALL.flatMap(c => nosPorComida[c].map(p => p.key))
-    ]).size;
-    const badge = document.getElementById("noVieneBadge");
-    if (totalPersonas > 0) {
-      badge.textContent = `${totalPersonas} persona${totalPersonas > 1 ? "s" : ""}`;
-      badge.classList.remove("hidden");
-    }
-
-    body.innerHTML = html;
-    msg.textContent = "";
-
-  } catch {
-    msg.textContent = "❌ Error al cargar. Verifica el WiFi.";
+  let html = "";
+  if (libres.length) {
+    html += `<div class="no-vienen-grupo">
+      <div class="no-vienen-titulo-g">🏖️ Día libre este día</div>
+      ${libres.map(p =>
+        `<div class="no-viene-item libre">${primerNombre(p.nombre)}<span class="no-viene-sub">${labelSector(p)}</span></div>`
+      ).join("")}
+    </div>`;
   }
+  if (nos.length) {
+    html += `<div class="no-vienen-grupo">
+      <div class="no-vienen-titulo-g">❌ Dijeron NO</div>
+      ${nos.map(p =>
+        `<div class="no-viene-item">${primerNombre(p.nombre)}<span class="no-viene-sub">${labelSector(p)}</span></div>`
+      ).join("")}
+    </div>`;
+  }
+
+  const total = new Set([...libres.map(p => p.key), ...nos.map(p => p.key)]).size;
+  badge.textContent = `${total} persona${total > 1 ? "s" : ""}`;
+  badge.classList.remove("hidden");
+
+  body.innerHTML = html;
+  panel.style.display = "block";
 }
 
 // ===== REINICIAR AL VOLVER A LA APP =====
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     personalListo = false;
-    noVieneCargado = false; // forzar recarga del panel al volver
     if (mealActual) cargarLista();
   }
 });

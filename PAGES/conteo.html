@@ -101,6 +101,11 @@
       background: #fff9c4; color: #7a5900; font-weight: 900; font-size: 11px;
       border-radius: 6px; padding: 2px 5px; display: inline-block;
     }
+    /* Celda NO */
+    .celda-no {
+      background: #fce4ec; color: #c62828; font-weight: 900; font-size: 11px;
+      border-radius: 6px; padding: 2px 5px; display: inline-block;
+    }
     /* Fila total */
     .total-row td {
       background: #fff3e0; font-weight: 900; font-size: 13px;
@@ -342,6 +347,7 @@ async function calcular() {
             granTotalPorDia[i]++;
             return `<td class="celda-nombre">${primerNombre(p.nombre)}</td>`;
           }
+          if (val === "NO") return `<td><span class="celda-no">NO</span></td>`;
           return `<td></td>`;
         }).join("");
 
