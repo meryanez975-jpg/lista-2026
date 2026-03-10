@@ -141,6 +141,39 @@
       background: #ef6c00; color: #fff; font-size: 11px; font-weight: 700;
       border-radius: 6px; padding: 2px 6px; margin-left: 6px;
     }
+
+    /* Panel "Los que dijeron NO / Días libres" */
+    .panel-no-vienen {
+      background: #fff; border: 2px solid #e57373; border-radius: 18px;
+      margin-bottom: 14px; overflow: hidden;
+    }
+    .btn-no-vienen {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      background: none; border: none; cursor: pointer; padding: 14px 16px;
+      font-family: Arial, sans-serif; gap: 8px;
+    }
+    .btn-no-vienen:active { background: #fff5f5; }
+    .btn-no-vienen-titulo { font-size: 15px; font-weight: 900; color: #c62828; flex: 1; text-align: left; }
+    .btn-no-vienen-badge {
+      font-size: 11px; font-weight: 700; color: #fff; background: #e57373;
+      border-radius: 20px; padding: 2px 8px; white-space: nowrap;
+    }
+    .btn-no-vienen-arrow { font-size: 14px; color: #c62828; }
+    .no-vienen-body { padding: 0 14px 14px; border-top: 1px solid #ffcdd2; margin-top: 0; }
+    .no-vienen-grupo { margin-top: 12px; }
+    .no-vienen-titulo-g {
+      font-size: 11px; font-weight: 900; letter-spacing: 1px;
+      text-transform: uppercase; color: #999; margin-bottom: 6px;
+    }
+    .no-viene-item {
+      font-size: 14px; font-weight: 700; color: #444; padding: 6px 10px;
+      border-left: 3px solid #e57373; margin-bottom: 4px; border-radius: 0 8px 8px 0;
+      background: #fff5f5;
+    }
+    .no-viene-item.libre {
+      border-left-color: #fbc02d; background: #fffde7; color: #7a5900;
+    }
+    .no-viene-sub { font-size: 11px; color: #bbb; font-weight: 400; margin-left: 6px; }
   </style>
 </head>
 <body>
@@ -155,6 +188,20 @@
 
   <!-- ===== STEP 1: ELEGIR COMIDA ===== -->
   <div id="stepMeals">
+
+    <!-- Panel: Los que dijeron NO / Días libres hoy -->
+    <div class="panel-no-vienen">
+      <button class="btn-no-vienen" id="btnToggleNoVienen" type="button">
+        <span class="btn-no-vienen-titulo">🔴 Los que dijeron NO / Día libre hoy</span>
+        <span class="btn-no-vienen-badge hidden" id="noVieneBadge"></span>
+        <span class="btn-no-vienen-arrow" id="noVieneArrow">▼</span>
+      </button>
+      <div class="no-vienen-body hidden" id="noVieneContenido">
+        <p style="font-size:13px;color:#aaa;margin-top:8px;" id="noVieneMsg"></p>
+        <div id="noVieneBody"></div>
+      </div>
+    </div>
+
     <section class="form-card" style="border-color:#ffcc80;">
       <h4 style="margin:0 0 14px; color:#7a4200;">¿Qué comida estás sirviendo?</h4>
       <div class="meal-grid">
@@ -537,10 +584,110 @@ async function cambiarEstado(key, nuevoEstado) {
   }
 }
 
+// ===== PANEL: LOS QUE DIJERON NO / DÍAS LIBRES =====
+let noVieneAbierto = false;
+let noVieneCargado = false;
+
+document.getElementById("btnToggleNoVienen").addEventListener("click", async () => {
+  noVieneAbierto = !noVieneAbierto;
+  document.getElementById("noVieneContenido").classList.toggle("hidden", !noVieneAbierto);
+  document.getElementById("noVieneArrow").textContent = noVieneAbierto ? "▲" : "▼";
+  if (noVieneAbierto && !noVieneCargado) {
+    await cargarNoVienen();
+    noVieneCargado = true;
+  }
+});
+
+async function cargarNoVienen() {
+  const msg  = document.getElementById("noVieneMsg");
+  const body = document.getElementById("noVieneBody");
+  msg.textContent = "Cargando...";
+  body.innerHTML  = "";
+
+  try {
+    const hoyISO = iso(new Date());
+    const hoyDia = new Date().getDay();
+    const hoyWeekIdx = hoyDia === 0 ? 6 : hoyDia - 1; // 0=Lun…6=Dom
+
+    const [personalData, registrosData] = await Promise.all([
+      dbGet("personal"),
+      dbGet("registros")
+    ]);
+
+    if (!personalData) { msg.textContent = "Sin datos de personal."; return; }
+
+    const activos = Object.entries(personalData)
+      .filter(([, p]) => p.activo)
+      .map(([key, p]) => ({ key, ...p }));
+
+    // — Días libres hoy —
+    const libresHoy = activos
+      .filter(p => esDiaLibre(p, hoyWeekIdx))
+      .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es"));
+
+    // — Quienes dijeron NO por comida hoy —
+    const nosPorComida = { desayuno: [], almuerzo: [], merienda: [], cena: [] };
+    activos.forEach(p => {
+      if (esDiaLibre(p, hoyWeekIdx)) return;
+      comidasDeTurno(p.turno).forEach(c => {
+        if (registrosData?.[p.key]?.[hoyISO]?.[c] === "NO") nosPorComida[c].push(p);
+      });
+    });
+    COMIDAS_ALL.forEach(c => nosPorComida[c].sort((a, b) => (a.nombre || "").localeCompare(b.nombre || "", "es")));
+
+    let html = "";
+
+    // Días libres
+    if (libresHoy.length) {
+      html += `<div class="no-vienen-grupo">
+        <div class="no-vienen-titulo-g">🏖️ Día libre hoy</div>
+        ${libresHoy.map(p =>
+          `<div class="no-viene-item libre">${primerNombre(p.nombre)}<span class="no-viene-sub">${labelSector(p)}</span></div>`
+        ).join("")}
+      </div>`;
+    }
+
+    // NOs por comida
+    let hayNos = false;
+    COMIDAS_ALL.forEach(c => {
+      if (!nosPorComida[c].length) return;
+      hayNos = true;
+      html += `<div class="no-vienen-grupo">
+        <div class="no-vienen-titulo-g">${COMIDA_ICON[c]} ${COMIDA_LABEL[c]} — dijeron NO</div>
+        ${nosPorComida[c].map(p =>
+          `<div class="no-viene-item">${primerNombre(p.nombre)}<span class="no-viene-sub">${labelSector(p)}</span></div>`
+        ).join("")}
+      </div>`;
+    });
+
+    if (!libresHoy.length && !hayNos) {
+      html = `<p style="text-align:center;color:#aaa;font-size:14px;padding:12px 0;">Nadie tiene día libre ni registró NO hoy.</p>`;
+    }
+
+    // Badge con total
+    const totalPersonas = new Set([
+      ...libresHoy.map(p => p.key),
+      ...COMIDAS_ALL.flatMap(c => nosPorComida[c].map(p => p.key))
+    ]).size;
+    const badge = document.getElementById("noVieneBadge");
+    if (totalPersonas > 0) {
+      badge.textContent = `${totalPersonas} persona${totalPersonas > 1 ? "s" : ""}`;
+      badge.classList.remove("hidden");
+    }
+
+    body.innerHTML = html;
+    msg.textContent = "";
+
+  } catch {
+    msg.textContent = "❌ Error al cargar. Verifica el WiFi.";
+  }
+}
+
 // ===== REINICIAR AL VOLVER A LA APP =====
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     personalListo = false;
+    noVieneCargado = false; // forzar recarga del panel al volver
     if (mealActual) cargarLista();
   }
 });

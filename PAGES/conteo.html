@@ -311,9 +311,23 @@ async function calcular() {
       if (!lista.length) return;
       const sLabel = s.charAt(0).toUpperCase() + s.slice(1);
 
+      // Ocultar personas que dijeron NO en TODOS sus días aplicables
+      const listaFiltrada = lista.filter(p => {
+        const diasAplic = fechas.filter(fecha => {
+          const dt = new Date(fecha + "T00:00:00");
+          const wi = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
+          return !esDiaLibre(p, wi);
+        });
+        if (!diasAplic.length) return true;
+        return diasAplic.some(fecha =>
+          registrosData?.[p.key]?.[fecha]?.[comidaActual] !== "NO"
+        );
+      });
+      if (!listaFiltrada.length) return;
+
       const totalSectorDia = Array(7).fill(0);
 
-      const filaPersonas = lista.map(p => {
+      const filaPersonas = listaFiltrada.map(p => {
         const celdas = fechas.map((fecha, i) => {
           const dt = new Date(fecha + "T00:00:00");
           const weekIdx = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
@@ -326,7 +340,7 @@ async function calcular() {
           if (val === "SI") {
             totalSectorDia[i]++;
             granTotalPorDia[i]++;
-            return `<td class="celda-nombre">${p.nombre}</td>`;
+            return `<td class="celda-nombre">${primerNombre(p.nombre)}</td>`;
           }
           return `<td></td>`;
         }).join("");
